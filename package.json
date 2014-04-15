@@ -1,0 +1,13 @@
+{
+  "name": "LibreMoney",
+  "version": "0.0.1",
+  "description": "LibreMoney project.",
+  "author": "Prof1983 <prof1983@yandex.ru>",
+  "main": "app.js",
+  "dependencies": {
+    "express": "3.x.x"
+  },
+  "engines": {
+    "node": "0.10.x"
+  }  
+}

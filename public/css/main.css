@@ -1,0 +1,42 @@
+main {
+	text-align: center;
+}
+footer {
+	text-align: center;
+}
+#mainMenu {
+	border: 0px;
+	height: 40px;
+	width: 100%;
+}
+#header {
+	background-color: #666666;
+}
+.amenu {
+	border: 0px solid red;
+	margin: 2px;
+	padding: 2px;
+	color: white;
+}
+.oauth {
+	background: url('../img/sprites.png?3') no-repeat scroll 0% 0% transparent;
+	display: block;
+	float: left;
+	cursor: pointer;
+	height: 48px;
+	margin: 6px 10px 0px 0px;
+	position: relative;
+	width: 48px;
+}
+.oauth-vkontakte {
+	background-position: 0px -136px;
+}
+.oauth-mail {
+	background-position: 0px -252px;
+}
+.oauth-facebook {
+	background-position: 0px -78px;
+}
+.oauth-twitter {
+	background-position: 0px -194px;
+}
