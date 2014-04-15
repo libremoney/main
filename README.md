@@ -3,4 +3,4 @@ LibreMoney
 
 LibreMoney project
 
-[http://libremoney.org/][]
+<http://libremoney.org/>
