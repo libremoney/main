@@ -1,42 +1,181 @@
-main {
-	text-align: center;
+body {
+  background-color: #9DC7A9; /*WESLEY */
+  background: url(../img/blur-background.jpg) repeat center center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  min-height:  100% !important;
 }
-footer {
-	text-align: center;
+
+
+main.myMain1 {
+  text-align: center;
 }
+footer.myFooter1 {
+  text-align: center;
+}
+/*
 #mainMenu {
-	border: 0px;
-	height: 40px;
-	width: 100%;
+  border: 0px;
+  height: 40px;
+  width: 100%;
 }
 #header {
-	background-color: #666666;
+  background-color: #666666;
 }
 .amenu {
-	border: 0px solid red;
-	margin: 2px;
-	padding: 2px;
-	color: white;
+  border: 0px solid red;
+  margin: 2px;
+  padding: 2px;
+  color: white;
 }
 .oauth {
-	background: url('../img/sprites.png?3') no-repeat scroll 0% 0% transparent;
-	display: block;
-	float: left;
-	cursor: pointer;
-	height: 48px;
-	margin: 6px 10px 0px 0px;
-	position: relative;
-	width: 48px;
+  background: url('../img/sprites.png?3') no-repeat scroll 0% 0% transparent;
+  display: block;
+  float: left;
+  cursor: pointer;
+  height: 48px;
+  margin: 6px 10px 0px 0px;
+  position: relative;
+  width: 48px;
 }
 .oauth-vkontakte {
-	background-position: 0px -136px;
+  background-position: 0px -136px;
 }
 .oauth-mail {
-	background-position: 0px -252px;
+  background-position: 0px -252px;
 }
 .oauth-facebook {
-	background-position: 0px -78px;
+  background-position: 0px -78px;
 }
 .oauth-twitter {
-	background-position: 0px -194px;
+  background-position: 0px -194px;
+}
+*/
+
+
+
+.divBlock {
+  border: 1px solid black;
+  float: left;
+  height: 200px;
+  margin: 10px;
+  padding: 5px;
+  width: 400px;
+}
+
+.divCommunityBlock {
+  background-color: #EEFFEE;
+  border: 1px solid black;
+  float: left;
+  height: 200px;
+  margin: 10px;
+  padding: 5px;
+  width: 320px;
+}
+
+.divCommunityBlock:hover {
+  background-color: #DDEEDD;
+}
+
+.divCommunityBlock_ProjectsAll {
+  font-weight: bold;
+}
+
+.divCommunityBlock_ProjectsOk {
+  color: green;
+  font-weight: bold;
+}
+
+.divCommunityBlock_ProjectsBad {
+  color: red;
+  font-weight: bold;
+}
+
+.divCommunityBlock_ProjectsRun {
+  color: gray;
+  font-weight: bold;
+}
+
+.divCommunityBlock_ProjectsFundBegin {
+  color: black;
+  font-weight: bold;
+}
+
+.divCommunityBlock_ProjectsFundNon {
+  color: black;
+  font-weight: bold;
+}
+
+.divCommunityBlock_Users {
+  color: black;
+  font-weight: bold;
+}
+
+.divMenuCommunity {
+  background-color: #FFEEEE;
+}
+
+.divMenuCommunity:hover {
+  background-color: #EEDDDD;
+}
+
+.divMenuProjects {
+  background-color: #EEEEFF;
+}
+
+.divMenuProjects:hover {
+  background-color: #DDDDEE;
+}
+
+.divMenuTransactions {
+  background-color: #EEFFFF;
+}
+
+.divMenuTransactions:hover {
+  background-color: #DDEEEE;
+}
+
+.divMenuUsers {
+  background-color: #EEFFEE;
+}
+
+.divMenuUsers:hover {
+  background-color: #DDEEDD;
+}
+
+.divProjectBlock {
+  background-color: #EEEEEE;
+  border: 1px solid black;
+  float: left;
+  height: 200px;
+  margin: 10px;
+  padding: 5px;
+  width: 400px;
+}
+
+.divProjectBlock:hover {
+  background-color: #DDDDDD;
+}
+
+.divProjectBlockOk {
+  background-color: #EEFFEE;
+}
+
+.divProjectBlockOk:hover {
+  background-color: #DDFFDD;
+}
+
+.divTrBlock {
+  border: 1px solid black;
+  margin: 2px;
+}
+
+.divUserBlock {
+  background-color: #EEFFEE;
+}
+
+.divUserBlock:hover {
+  background-color: #DDFFDD;
 }
