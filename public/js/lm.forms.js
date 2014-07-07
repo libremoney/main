@@ -1,26 +1,23 @@
-var NRS = (function(NRS, $, undefined) {
-	NRS.confirmedFormWarning = false;
+var Lm = (function(Lm, $, undefined) {
+	Lm.ConfirmedFormWarning = false;
 
-	NRS.forms = {
+	Lm.Forms = {
 		"errorMessages": {}
 	};
 
-	$(".modal form input").keydown(function(e) {
+
+	function ModalFormKeydown(e, th) {
 		if (e.which == "13") {
 			e.preventDefault();
-			if (NRS.settings["submit_on_enter"] && e.target.type != "textarea") {
-				$(this).submit();
+			if (Lm.Settings["submit_on_enter"] && e.target.type != "textarea") {
+				th.submit();
 			} else {
 				return false;
 			}
 		}
-	});
+	}
 
-	$(".modal button.btn-primary:not([data-dismiss=modal])").click(function() {
-		NRS.submitForm($(this).closest(".modal"), $(this));
-	});
-
-	NRS.submitForm = function($modal, $btn) {
+	function SubmitForm($modal, $btn) {
 		if (!$btn) {
 			$btn = $modal.find("button.btn-primary:not([data-dismiss=modal])");
 		}
@@ -36,19 +33,19 @@ var NRS = (function(NRS, $, undefined) {
 		var errorMessage = $modal.find("input[name=error_message]").val();
 		var data = null;
 
-		var formFunction = NRS["forms"][requestType];
+		var formFunction = Lm["forms"][requestType];
 
 		var originalRequestType = requestType;
 
 		var $form = $modal.find("form:first");
 
-		if (NRS.downloadingBlockchain) {
+		if (Lm.DownloadingBlockchain) {
 			$modal.find(".error_message").html("Please wait until the blockchain has finished downloading.").show();
-			NRS.unlockForm($modal, $btn);
+			Lm.UnlockForm($modal, $btn);
 			return;
-		} else if (NRS.state.isScanning) {
+		} else if (Lm.State.isScanning) {
 			$modal.find(".error_message").html("The blockchain is currently being rescanned. Please wait a minute and then try submitting again.").show();
-			NRS.unlockForm($modal, $btn);
+			Lm.UnlockForm($modal, $btn);
 			return;
 		}
 
@@ -81,7 +78,7 @@ var NRS = (function(NRS, $, undefined) {
 				}
 
 				$modal.find(".error_message").html(error).show();
-				NRS.unlockForm($modal, $btn);
+				Lm.UnlockForm($modal, $btn);
 				invalidElement = true;
 				return false;
 			}
@@ -98,7 +95,7 @@ var NRS = (function(NRS, $, undefined) {
 				return;
 			} else if (output.error) {
 				$modal.find(".error_message").html(output.error.escapeHTML()).show();
-				NRS.unlockForm($modal, $btn);
+				Lm.UnlockForm($modal, $btn);
 				return;
 			} else {
 				if (output.requestType) {
@@ -114,14 +111,14 @@ var NRS = (function(NRS, $, undefined) {
 					errorMessage = output.errorMessage;
 				}
 				if (output.stop) {
-					NRS.unlockForm($modal, $btn, true);
+					Lm.UnlockForm($modal, $btn, true);
 					return;
 				}
 			}
 		}
 
 		if (!data) {
-			data = NRS.getFormData($modal.find("form:first"));
+			data = Lm.GetFormData($modal.find("form:first"));
 		}
 
 		if (data.deadline) {
@@ -134,7 +131,7 @@ var NRS = (function(NRS, $, undefined) {
 				var convertedAccountId = $modal.find("input[name=converted_account_id]").val();
 				if (!convertedAccountId || (!/^\d+$/.test(convertedAccountId) && !/^NXT\-[A-Z0-9]+\-[A-Z0-9]+\-[A-Z0-9]+\-[A-Z0-9]+/i.test(convertedAccountId))) {
 					$modal.find(".error_message").html("Invalid account ID.").show();
-					NRS.unlockForm($modal, $btn);
+					Lm.UnlockForm($modal, $btn);
 					return;
 				} else {
 					data.recipient = convertedAccountId;
@@ -145,45 +142,46 @@ var NRS = (function(NRS, $, undefined) {
 			}
 		}
 
-		if ("secretPhrase" in data && !data.secretPhrase.length && !NRS.rememberPassword) {
+		if ("secretPhrase" in data && !data.secretPhrase.length && !Lm.RememberPassword) {
 			$modal.find(".error_message").html("Secret phrase is a required field.").show();
-			NRS.unlockForm($modal, $btn);
+			Lm.UnlockForm($modal, $btn);
 			return;
 		}
 
-		if (!NRS.showedFormWarning) {
-			if ("amountNXT" in data && NRS.settings["amount_warning"] && NRS.settings["amount_warning"] != "0") {
-				if (new BigInteger(NRS.convertToNQT(data.amountNXT)).compareTo(new BigInteger(NRS.settings["amount_warning"])) > 0) {
-					NRS.showedFormWarning = true;
-					$modal.find(".error_message").html("You amount is higher than " + NRS.formatAmount(NRS.settings["amount_warning"]) + " NXT. Are you sure you want to continue? Click the submit button again to confirm.").show();
-					NRS.unlockForm($modal, $btn);
+		if (!Lm.ShowedFormWarning) {
+			if ("amountNXT" in data && Lm.Settings["amount_warning"] && Lm.Settings["amount_warning"] != "0") {
+				if (new BigInteger(Lm.ConvertToNQT(data.amountNXT)).compareTo(new BigInteger(Lm.Settings["amount_warning"])) > 0) {
+					Lm.ShowedFormWarning = true;
+					$modal.find(".error_message").html("You amount is higher than " + Lm.FormatAmount(Lm.Settings["amount_warning"]) + " NXT. Are you sure you want to continue? Click the submit button again to confirm.").show();
+					Lm.UnlockForm($modal, $btn);
 					return;
 				}
 			}
 
-			if ("feeNXT" in data && NRS.settings["fee_warning"] && NRS.settings["fee_warning"] != "0") {
-				if (new BigInteger(NRS.convertToNQT(data.feeNXT)).compareTo(new BigInteger(NRS.settings["fee_warning"])) > 0) {
-					NRS.showedFormWarning = true;
-					$modal.find(".error_message").html("You fee is higher than " + NRS.formatAmount(NRS.settings["fee_warning"]) + " NXT. Are you sure you want to continue? Click the submit button again to confirm.").show();
-					NRS.unlockForm($modal, $btn);
+			if ("feeNXT" in data && Lm.Settings["fee_warning"] && Lm.Settings["fee_warning"] != "0") {
+				if (new BigInteger(Lm.ConvertToNQT(data.feeNXT)).compareTo(new BigInteger(Lm.Settings["fee_warning"])) > 0) {
+					Lm.ShowedFormWarning = true;
+					$modal.find(".error_message").html("You fee is higher than " + Lm.FormatAmount(Lm.Settings["fee_warning"]) +
+						" NXT. Are you sure you want to continue? Click the submit button again to confirm.").show();
+					Lm.UnlockForm($modal, $btn);
 					return;
 				}
 			}
 		}
 
-		NRS.sendRequest(requestType, data, function(response) {
+		Lm.SendRequest(requestType, data, function(response) {
 			if (response.errorCode) {
-				if (NRS.forms.errorMessages[requestType] && NRS.forms.errorMessages[requestType][response.errorCode]) {
-					$modal.find(".error_message").html(NRS.forms.errorMessages[requestType][response.errorCode].escapeHTML()).show();
-				} else if (NRS.forms.errorMessages[originalRequestType] && NRS.forms.errorMessages[originalRequestType][response.errorCode]) {
-					$modal.find(".error_message").html(NRS.forms.errorMessages[originalRequestType][response.errorCode].escapeHTML()).show();
+				if (Lm.Forms.ErrorMessages[requestType] && Lm.Forms.ErrorMessages[requestType][response.errorCode]) {
+					$modal.find(".error_message").html(Lm.Forms.ErrorMessages[requestType][response.errorCode].escapeHTML()).show();
+				} else if (Lm.Forms.ErrorMessages[originalRequestType] && Lm.Forms.ErrorMessages[originalRequestType][response.errorCode]) {
+					$modal.find(".error_message").html(Lm.Forms.ErrorMessages[originalRequestType][response.errorCode].escapeHTML()).show();
 				} else {
 					$modal.find(".error_message").html(response.errorDescription ? response.errorDescription.escapeHTML() : "Unknown error occured.").show();
 				}
-				NRS.unlockForm($modal, $btn);
+				Lm.UnlockForm($modal, $btn);
 			} else if (response.fullHash) {
 				//should we add a fake transaction to the recent transactions?? or just wait until the next block comes!??
-				NRS.unlockForm($modal, $btn);
+				Lm.UnlockForm($modal, $btn);
 
 				if (!$modal.hasClass("modal-no-hide")) {
 					$modal.modal("hide");
@@ -195,13 +193,13 @@ var NRS = (function(NRS, $, undefined) {
 					});
 				}
 
-				var formCompleteFunction = NRS["forms"][originalRequestType + "Complete"];
+				var formCompleteFunction = Lm["forms"][originalRequestType + "Complete"];
 
 				if (typeof formCompleteFunction == "function") {
 					data.requestType = requestType;
 
 					if (response.transaction) {
-						NRS.addUnconfirmedTransaction(response.transaction, function(alreadyProcessed) {
+						Lm.AddUnconfirmedTransaction(response.transaction, function(alreadyProcessed) {
 							response.alreadyProcessed = alreadyProcessed;
 							formCompleteFunction(response, data);
 						});
@@ -210,23 +208,23 @@ var NRS = (function(NRS, $, undefined) {
 						formCompleteFunction(response, data);
 					}
 				} else {
-					NRS.addUnconfirmedTransaction(response.transaction);
+					Lm.AddUnconfirmedTransaction(response.transaction);
 				}
 
-				if (NRS.accountInfo && !NRS.accountInfo.publicKey) {
+				if (Lm.AccountInfo && !Lm.AccountInfo.publicKey) {
 					$("#dashboard_message").hide();
 				}
 			} else {
 				var sentToFunction = false;
 
 				if (!errorMessage) {
-					var formCompleteFunction = NRS["forms"][originalRequestType + "Complete"];
+					var formCompleteFunction = Lm["forms"][originalRequestType + "Complete"];
 
 					if (typeof formCompleteFunction == 'function') {
 						sentToFunction = true;
 						data.requestType = requestType;
 
-						NRS.unlockForm($modal, $btn);
+						Lm.UnlockForm($modal, $btn);
 
 						if (!$modal.hasClass("modal-no-hide")) {
 							$modal.modal("hide");
@@ -238,7 +236,7 @@ var NRS = (function(NRS, $, undefined) {
 				}
 
 				if (!sentToFunction) {
-					NRS.unlockForm($modal, $btn, true);
+					Lm.UnlockForm($modal, $btn, true);
 
 					$.growl(errorMessage.escapeHTML(), {
 						type: 'danger'
@@ -248,7 +246,7 @@ var NRS = (function(NRS, $, undefined) {
 		});
 	}
 
-	NRS.unlockForm = function($modal, $btn, hide) {
+	function UnlockForm($modal, $btn, hide) {
 		$modal.find("button").prop("disabled", false);
 		if ($btn) {
 			$btn.button("reset");
@@ -259,5 +257,18 @@ var NRS = (function(NRS, $, undefined) {
 		}
 	}
 
-	return NRS;
-}(NRS || {}, jQuery));
+
+	$(".modal form input").keydown(function(e) {
+		return Lm.ModalFormKeydown(e, $(this));
+	});
+
+	$(".modal button.btn-primary:not([data-dismiss=modal])").click(function() {
+		Lm.SubmitForm($(this).closest(".modal"), $(this));
+	});
+
+
+	Lm.ModalFormKeydown = ModalFormKeydown;
+	Lm.SubmitForm = SubmitForm;
+	Lm.UnlockForm = UnlockForm;
+	return Lm;
+}(Lm || {}, jQuery));

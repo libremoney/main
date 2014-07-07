@@ -126,7 +126,6 @@ $(function() {
 	$(".wrapper").resize(function() {
 		_fix();
 	});
-
 });
 
 /*END DEMO*/
@@ -199,9 +198,8 @@ $(function() {
 		});
 
 	};
-
-
 }(jQuery));
+
 
 /*
  * TODO LIST CUSTOM PLUGIN
@@ -210,7 +208,6 @@ $(function() {
  */
 (function($) {
 	"use strict";
-
 	$.fn.todolist = function(options) {
 		// Render options
 		var settings = $.extend({
@@ -234,8 +231,8 @@ $(function() {
 			});
 		});
 	};
-
 }(jQuery));
+
 
 /* CENTER ELEMENTS */
 (function($) {
@@ -254,6 +251,7 @@ $(function() {
 		return this;
 	}
 }(jQuery));
+
 
 /*
  * jQuery resize event - v1.1 - 3/14/2010
@@ -337,6 +335,7 @@ $(function() {
 		}, e[b])
 	}
 })(jQuery, this);
+
 
 /*!
  * iCheck v1.0.1, http://git.io/arlzeA

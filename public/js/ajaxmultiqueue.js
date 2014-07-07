@@ -34,9 +34,9 @@
 			current = (current + 1) % number;
 
 			function doRequest(next) {
-				if (ajaxOpts.currentPage && ajaxOpts.currentPage != NRS.currentPage) {
+				if (ajaxOpts.currentPage && ajaxOpts.currentPage != Lm.CurrentPage) {
 					next();
-				} else if (ajaxOpts.currentSubPage && ajaxOpts.currentSubPage != NRS.currentSubPage) {
+				} else if (ajaxOpts.currentSubPage && ajaxOpts.currentSubPage != Lm.CurrentSubPage) {
 					next();
 				} else {
 					jqXHR = $.ajax(ajaxOpts);

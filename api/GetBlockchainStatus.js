@@ -8,26 +8,25 @@ import nxt.util.Convert;
 
 function Main(req, res) {
 	//static final GetBlockchainStatus instance = new GetBlockchainStatus();
-	res.send('This is not implemented');
-	/*
-	private GetBlockchainStatus() {}
 
-	JSONStreamAware processRequest(HttpServletRequest req) {
-		JSONObject response = new JSONObject();
-		response.put("version", Nxt.VERSION);
-		response.put("time", Convert.getEpochTime());
-		Block lastBlock = Nxt.getBlockchain().getLastBlock();
-		response.put("lastBlock", lastBlock.getStringId());
-		response.put("cumulativeDifficulty", lastBlock.getCumulativeDifficulty().toString());
-		response.put("numberOfBlocks", lastBlock.getHeight() + 1);
-		BlockchainProcessor blockchainProcessor = Nxt.getBlockchainProcessor();
-		Peer lastBlockchainFeeder = blockchainProcessor.getLastBlockchainFeeder();
-		response.put("lastBlockchainFeeder", lastBlockchainFeeder == null ? null : lastBlockchainFeeder.getAnnouncedAddress());
-		response.put("lastBlockchainFeederHeight", blockchainProcessor.getLastBlockchainFeederHeight());
-		response.put("isScanning", blockchainProcessor.isScanning());
-		return response;
-	}
-	*/
+	//var lastBlock = Lm.GetBlockchain().GetLastBlock();
+	//var blockchainProcessor = Lm.GetBlockchainProcessor();
+	//var lastBlockchainFeeder = blockchainProcessor.GetLastBlockchainFeeder();
+	response = {
+		version: "0",
+		time: "0", //Convert.getEpochTime()
+		lastBlock: "", //lastBlock.GetStringId()
+		cumulativeDifficulty: "", //lastBlock.GetCumulativeDifficulty().ToString()
+		numberOfBlocks: 1, //lastBlock.GetHeight() + 1
+		lastBlockchainFeeder: "", //lastBlockchainFeeder == null ? null : lastBlockchainFeeder.getAnnouncedAddress()
+		lastBlockchainFeederHeight: "", //blockchainProcessor.getLastBlockchainFeederHeight()
+		IsScanning: "" //blockchainProcessor.IsScanning()
+	};
+
+	//console.log(response);
+	res.send(response);
+	//res.send('{"version": "0"}');
+	//res.send('This is not implemented');
 }
 
 module.exports = Main;

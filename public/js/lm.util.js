@@ -1,4 +1,4 @@
-var NRS = (function(NRS, $, undefined) {
+var Lm = (function(Lm, $, undefined) {
 	var LOCALE_DATE_FORMATS = {
 		"ar-SA": "dd/MM/yy",
 		"bg-BG": "dd.M.yyyy",
@@ -216,7 +216,8 @@ var NRS = (function(NRS, $, undefined) {
 
 	var LOCALE_DATE_FORMAT = LOCALE_DATE_FORMATS[LANG] || 'dd/MM/yyyy';
 
-	NRS.formatVolume = function(volume) {
+
+	function FormatVolume(volume) {
 		var sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
 		if (volume == 0) return '0 B';
 		var i = parseInt(Math.floor(Math.log(volume) / Math.log(1024)));
@@ -240,7 +241,7 @@ var NRS = (function(NRS, $, undefined) {
 		return formattedVolume + " " + size;
 	}
 
-	NRS.formatWeight = function(weight) {
+	function FormatWeight(weight) {
 		var digits = [],
 			formattedWeight = "",
 			i;
@@ -257,21 +258,19 @@ var NRS = (function(NRS, $, undefined) {
 		return formattedWeight.escapeHTML();
 	}
 
-	NRS.formatOrderPricePerWholeQNT = function(price, decimals) {
-		price = NRS.calculateOrderPricePerWholeQNT(price, decimals, true);
-
-		return NRS.format(price);
+	function FormatOrderPricePerWholeQNT(price, decimals) {
+		price = Lm.CalculateOrderPricePerWholeQNT(price, decimals, true);
+		return Lm.Format(price);
 	}
 
-	NRS.calculateOrderPricePerWholeQNT = function(price, decimals, returnAsObject) {
+	function CalculateOrderPricePerWholeQNT(price, decimals, returnAsObject) {
 		if (typeof price != "object") {
 			price = new BigInteger(String(price));
 		}
-
-		return NRS.convertToNXT(price.multiply(new BigInteger("" + Math.pow(10, decimals))), returnAsObject);
+		return Lm.ConvertToLm(price.multiply(new BigInteger("" + Math.pow(10, decimals))), returnAsObject);
 	}
 
-	NRS.calculatePricePerWholeQNT = function(price, decimals) {
+	function CalculatePricePerWholeQNT(price, decimals) {
 		price = String(price);
 
 		if (decimals) {
@@ -288,7 +287,7 @@ var NRS = (function(NRS, $, undefined) {
 		}
 	}
 
-	NRS.calculateOrderTotalNQT = function(quantityQNT, priceNQT) {
+	function CalculateOrderTotalNQT(quantityQNT, priceNQT) {
 		if (typeof quantityQNT != "object") {
 			quantityQNT = new BigInteger(String(quantityQNT));
 		}
@@ -302,7 +301,7 @@ var NRS = (function(NRS, $, undefined) {
 		return orderTotal.toString();
 	}
 
-	NRS.calculateOrderTotal = function(quantityQNT, priceNQT) {
+	function CalculateOrderTotal(quantityQNT, priceNQT) {
 		if (typeof quantityQNT != "object") {
 			quantityQNT = new BigInteger(String(quantityQNT));
 		}
@@ -311,19 +310,17 @@ var NRS = (function(NRS, $, undefined) {
 			priceNQT = new BigInteger(String(priceNQT));
 		}
 
-		return NRS.convertToNXT(quantityQNT.multiply(priceNQT));
+		return Lm.ConvertToLm(quantityQNT.multiply(priceNQT));
 	}
 
-	NRS.calculatePercentage = function(a, b) {
+	function CalculatePercentage(a, b) {
 		a = new Big(String(a));
 		b = new Big(String(b));
-
 		var result = a.div(b).times(new Big("100")).toFixed(2);
-
 		return result.toString();
 	}
 
-	NRS.convertToNXT = function(amount, returnAsObject) {
+	function ConvertToLm(amount, returnAsObject) {
 		var negative = "";
 		var afterComma = "";
 
@@ -363,7 +360,7 @@ var NRS = (function(NRS, $, undefined) {
 		}
 	}
 
-	NRS.amountToPrecision = function(amount, decimals) {
+	function AmountToPrecision(amount, decimals) {
 		amount = String(amount);
 
 		var parts = amount.split(".");
@@ -385,7 +382,7 @@ var NRS = (function(NRS, $, undefined) {
 		}
 	}
 
-	NRS.convertToNQT = function(currency) {
+	function ConvertToNQT(currency) {
 		currency = String(currency);
 
 		var parts = currency.split(".");
@@ -426,7 +423,7 @@ var NRS = (function(NRS, $, undefined) {
 		return result;
 	}
 
-	NRS.convertToQNTf = function(quantity, decimals, returnAsObject) {
+	function ConvertToQNTf(quantity, decimals, returnAsObject) {
 		quantity = String(quantity);
 
 		if (quantity.length < decimals) {
@@ -462,7 +459,7 @@ var NRS = (function(NRS, $, undefined) {
 		}
 	}
 
-	NRS.convertToQNT = function(quantity, decimals) {
+	function ConvertToQNT(quantity, decimals) {
 		quantity = String(quantity);
 
 		var parts = quantity.split(".");
@@ -499,7 +496,7 @@ var NRS = (function(NRS, $, undefined) {
 		return qnt.replace(/^0+/, "");
 	}
 
-	NRS.format = function(params, no_escaping) {
+	function Format(params, no_escaping) {
 		var amount = params.amount;
 
 		var digits = amount.split("").reverse();
@@ -521,11 +518,11 @@ var NRS = (function(NRS, $, undefined) {
 		return output;
 	}
 
-	NRS.formatQuantity = function(quantity, decimals, no_escaping) {
-		return NRS.format(NRS.convertToQNTf(quantity, decimals, true), no_escaping);
+	function FormatQuantity(quantity, decimals, no_escaping) {
+		return Lm.Format(Lm.ConvertToQNTf(quantity, decimals, true), no_escaping);
 	}
 
-	NRS.formatAmount = function(amount, round, no_escaping) {
+	function FormatAmount(amount, round, no_escaping) {
 
 		if (typeof amount == "undefined") {
 			return "0";
@@ -538,7 +535,7 @@ var NRS = (function(NRS, $, undefined) {
 		var formattedAmount = "";
 
 		if (typeof amount == "object") {
-			var params = NRS.convertToNXT(amount, true);
+			var params = Lm.ConvertToLm(amount, true);
 
 			negative = params.negative;
 			amount = params.amount;
@@ -564,14 +561,14 @@ var NRS = (function(NRS, $, undefined) {
 			}
 		}
 
-		return NRS.format({
+		return Lm.Format({
 			"negative": negative,
 			"amount": amount,
 			"afterComma": afterComma
 		}, no_escaping);
 	}
 
-	NRS.formatTimestamp = function(timestamp, date_only) {
+	function FormatTimestamp(timestamp, date_only) {
 		var date = new Date(Date.UTC(2013, 10, 24, 12, 0, 0, 0) + timestamp * 1000);
 
 		if (!isNaN(date) && typeof(date.getFullYear) == 'function') {
@@ -615,7 +612,7 @@ var NRS = (function(NRS, $, undefined) {
 		}
 	}
 
-	NRS.formatTime = function(timestamp) {
+	function FormatTime(timestamp) {
 		var date = new Date(Date.UTC(2013, 10, 24, 12, 0, 0, 0) + timestamp * 1000);
 
 		if (!isNaN(date) && typeof(date.getFullYear) == 'function') {
@@ -642,7 +639,7 @@ var NRS = (function(NRS, $, undefined) {
 		}
 	}
 
-	NRS.isPrivateIP = function(ip) {
+	function IsPrivateIP(ip) {
 		if (!/^\d+\.\d+\.\d+\.\d+$/.test(ip)) {
 			return false;
 		}
@@ -653,7 +650,7 @@ var NRS = (function(NRS, $, undefined) {
 		return false;
 	}
 
-	NRS.convertToHex16 = function(str) {
+	function ConvertToHex16(str) {
 		var hex, i;
 		var result = "";
 		for (i = 0; i < str.length; i++) {
@@ -664,7 +661,7 @@ var NRS = (function(NRS, $, undefined) {
 		return result;
 	}
 
-	NRS.convertFromHex16 = function(hex) {
+	function ConvertFromHex16(hex) {
 		var j;
 		var hexes = hex.match(/.{1,4}/g) || [];
 		var back = "";
@@ -675,7 +672,7 @@ var NRS = (function(NRS, $, undefined) {
 		return back;
 	}
 
-	NRS.convertFromHex8 = function(hex) {
+	function ConvertFromHex8(hex) {
 		var hex = hex.toString(); //force conversion
 		var str = '';
 		for (var i = 0; i < hex.length; i += 2)
@@ -683,7 +680,7 @@ var NRS = (function(NRS, $, undefined) {
 		return str;
 	}
 
-	NRS.convertToHex8 = function(str) {
+	function ConvertToHex8(str) {
 		var hex = '';
 		for (var i = 0; i < str.length; i++) {
 			hex += '' + str.charCodeAt(i).toString(16);
@@ -691,15 +688,15 @@ var NRS = (function(NRS, $, undefined) {
 		return hex;
 	}
 
-	NRS.generatePublicKey = function(secretPhrase) {
-		return nxtCrypto.getPublicKey(converters.stringToHexString(secretPhrase));
+	function GeneratePublicKey(secretPhrase) {
+		return lmCrypto.GetPublicKey(converters.stringToHexString(secretPhrase));
 	}
 
-	NRS.generateAccountId = function(secretPhrase) {
-		return nxtCrypto.getAccountId(secretPhrase);
+	function GenerateAccountId(secretPhrase) {
+		return lmCrypto.GetAccountId(secretPhrase);
 	}
 
-	NRS.getFormData = function($form) {
+	function GetFormData($form) {
 		var serialized = $form.serializeArray();
 		var data = {};
 
@@ -710,7 +707,7 @@ var NRS = (function(NRS, $, undefined) {
 		return data;
 	}
 
-	NRS.getAccountTitle = function(object, acc) {
+	function GetAccountTitle(object, acc) {
 		var type = typeof object;
 
 		if (type == "string" || type == "number") {
@@ -718,43 +715,43 @@ var NRS = (function(NRS, $, undefined) {
 			object = null;
 		}
 
-		if (acc in NRS.contacts) {
-			return NRS.contacts[acc].name.escapeHTML();
-		} else if (acc == NRS.account || acc == NRS.accountRS) {
+		if (acc in Lm.Contacts) {
+			return Lm.Contacts[acc].name.escapeHTML();
+		} else if (acc == Lm.Account || acc == Lm.AccountRS) {
 			return "You";
 		} else if (!object) {
 			return String(acc).escapeHTML();
 		} else {
-			return NRS.getAccountFormatted(object, acc);
+			return Lm.GetAccountFormatted(object, acc);
 		}
 	}
 
-	NRS.getAccountFormatted = function(object, acc) {
+	function GetAccountFormatted(object, acc) {
 		var type = typeof object;
 
 		if (type == "string" || type == "number") {
 			return String(object).escapeHTML();
-		} else if (NRS.settings["reed_solomon"]) {
+		} else if (Lm.Settings["reed_solomon"]) {
 			return String(object[acc + "RS"]).escapeHTML();
 		} else {
 			return String(object[acc]).escapeHTML();
 		}
 	}
 
-	NRS.setupClipboardFunctionality = function() {
+	function SetupClipboardFunctionality() {
 		var elements = "#asset_id_dropdown .dropdown-menu a, #account_id_dropdown .dropdown-menu a";
 
-		if (NRS.isLocalHost) {
+		if (Lm.IsLocalHost) {
 			$("#account_id_dropdown li.remote_only, #asset_info_dropdown li.remote_only").remove();
 		}
 
 		var $el = $(elements);
 
-		if (NRS.inApp) {
+		if (Lm.InApp) {
 			$el.on("click", function() {
 				parent.postMessage({
 					"type": "copy",
-					"text": NRS.getClipboardText($(this).data("type"))
+					"text": Lm.GetClipboardText($(this).data("type"))
 				}, "*");
 
 				$.growl("Copied to the clipboard successfully.", {
@@ -767,7 +764,7 @@ var NRS = (function(NRS, $, undefined) {
 			});
 
 			clipboard.on("dataRequested", function(client, args) {
-				client.setText(NRS.getClipboardText($(this).data("type")));
+				client.setText(Lm.GetClipboardText($(this).data("type")));
 			});
 
 			if ($el.hasClass("dropdown-toggle")) {
@@ -797,19 +794,19 @@ var NRS = (function(NRS, $, undefined) {
 		}
 	}
 
-	NRS.getClipboardText = function(type) {
+	function GetClipboardText(type) {
 		switch (type) {
 			case "account_id":
-				return NRS.account;
+				return Lm.Account;
 				break;
 			case "account_rs":
-				return NRS.accountRS;
+				return Lm.AccountRS;
 				break;
 			case "message_link":
-				return document.URL.replace(/#.*$/, "") + "#message:" + NRS.account;
+				return document.URL.replace(/#.*$/, "") + "#message:" + Lm.Account;
 				break;
 			case "send_link":
-				return document.URL.replace(/#.*$/, "") + "#send:" + NRS.account;
+				return document.URL.replace(/#.*$/, "") + "#send:" + Lm.Account;
 				break;
 			case "asset_id":
 				return $("#asset_id").text();
@@ -823,7 +820,7 @@ var NRS = (function(NRS, $, undefined) {
 		}
 	}
 
-	NRS.dataLoadFinished = function($table, fadeIn) {
+	function DataLoadFinished($table, fadeIn) {
 		var $parent = $table.parent();
 
 		if (fadeIn) {
@@ -858,7 +855,7 @@ var NRS = (function(NRS, $, undefined) {
 		}
 	}
 
-	NRS.createInfoTable = function(data, fixed) {
+	function CreateInfoTable(data, fixed) {
 		var rows = "";
 
 		/*
@@ -898,14 +895,14 @@ var NRS = (function(NRS, $, undefined) {
 				value = String(value).escapeHTML();
 			} else if (key == "Quantity" && $.isArray(value)) {
 				if ($.isArray(value)) {
-					value = NRS.formatQuantity(value[0], value[1]);
+					value = Lm.FormatQuantity(value[0], value[1]);
 				} else {
-					value = NRS.formatQuantity(value, 0);
+					value = Lm.FormatQuantity(value, 0);
 				}
 			} else if (key == "Price" || key == "Total" || key == "Amount" || key == "Fee") {
-				value = NRS.formatAmount(new BigInteger(value)) + " NXT";
+				value = Lm.FormatAmount(new BigInteger(value)) + " NXT";
 			} else if (key == "Sender" || key == "Recipient" || key == "Account") {
-				value = "<a href='#' data-user='" + String(value).escapeHTML() + "'>" + NRS.getAccountTitle(value) + "</a>";
+				value = "<a href='#' data-user='" + String(value).escapeHTML() + "'>" + Lm.GetAccountTitle(value) + "</a>";
 			} else {
 				value = String(value).escapeHTML().nl2br();
 			}
@@ -916,7 +913,7 @@ var NRS = (function(NRS, $, undefined) {
 		return rows;
 	}
 
-	NRS.getSelectedText = function() {
+	function GetSelectedText() {
 		var t = "";
 		if (window.getSelection) {
 			t = window.getSelection().toString();
@@ -928,8 +925,8 @@ var NRS = (function(NRS, $, undefined) {
 		return t;
 	}
 
-	NRS.formatStyledAmount = function(amount, round) {
-		var amount = NRS.formatAmount(amount, round);
+	function FormatStyledAmount(amount, round) {
+		var amount = Lm.FormatAmount(amount, round);
 
 		amount = amount.split(".");
 		if (amount.length == 2) {
@@ -941,5 +938,41 @@ var NRS = (function(NRS, $, undefined) {
 		return amount;
 	}
 
-	return NRS;
-}(NRS || {}, jQuery));
+
+	Lm.AmountToPrecision = AmountToPrecision;
+	Lm.CalculateOrderTotal = CalculateOrderTotal;
+	Lm.CalculateOrderTotalNQT = CalculateOrderTotalNQT;
+	Lm.CalculateOrderPricePerWholeQNT = CalculateOrderPricePerWholeQNT;
+	Lm.CalculatePercentage = CalculatePercentage;
+	Lm.CalculatePricePerWholeQNT = CalculatePricePerWholeQNT;
+	Lm.ConvertFromHex8 = ConvertFromHex8;
+	Lm.ConvertFromHex16 = ConvertFromHex16;
+	Lm.ConvertToHex8 = ConvertToHex8;
+	Lm.ConvertToHex16 = ConvertToHex16;
+	Lm.ConvertToLm = ConvertToLm;
+	Lm.ConvertToNQT = ConvertToNQT;
+	Lm.ConvertToNXT = ConvertToLm;
+	Lm.ConvertToQNT = ConvertToQNT;
+	Lm.ConvertToQNTf = ConvertToQNTf;
+	Lm.CreateInfoTable = CreateInfoTable;
+	Lm.DataLoadFinished = DataLoadFinished;
+	Lm.Format = Format;
+	Lm.FormatAmount = FormatAmount;
+	Lm.FormatOrderPricePerWholeQNT = FormatOrderPricePerWholeQNT;
+	Lm.FormatQuantity = FormatQuantity;
+	Lm.FormatStyledAmount = FormatStyledAmount;
+	Lm.FormatTime = FormatTime;
+	Lm.FormatTimestamp = FormatTimestamp;
+	Lm.FormatVolume = FormatVolume;
+	Lm.FormatWeight = FormatWeight;
+	Lm.GetAccountFormatted = GetAccountFormatted;
+	Lm.GetAccountTitle = GetAccountTitle;
+	Lm.GetClipboardText = GetClipboardText;
+	Lm.GetFormData = GetFormData;
+	Lm.GetSelectedText = GetSelectedText;
+	Lm.GenerateAccountId = GenerateAccountId;
+	Lm.GeneratePublicKey = GeneratePublicKey;
+	Lm.IsPrivateIP = IsPrivateIP;
+	Lm.SetupClipboardFunctionality = SetupClipboardFunctionality;
+	return Lm;
+}(Lm || {}, jQuery));

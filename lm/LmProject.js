@@ -1,5 +1,9 @@
-
-function LmProject(Name, Description, Author, State, Sum1, Sum2, AnnounceTime, StartTime, BeginTime, EndTime) {
+/*
+State: 0 - Announce; 1 - Start founding; 2 - WorkBegin; 3 - WorkSuccess
+*/
+function LmProject(Community, ProjGroup, Name, Description, Author, State, Sum1, Sum2, AnnounceTime, StartTime, BeginTime, EndTime) {
+	this.Community = Community;
+	this.ProjGroup = ProjGroup;
 	this.Name = Name;
 	this.Description = Description;
 	this.Author = Author;

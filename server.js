@@ -98,6 +98,8 @@ function Start(App, Port, StartOk) {
 	App.get("/api/getPeers", Api.GetPeers);
 	App.get("/api/getPoll", Api.GetPoll);
 	App.get("/api/getPollIds", Api.GetPollIds);
+	App.get("/api/getProjectList", Api.GetProjectList);
+	App.get("/api/getProjectListHtml", Api.GetProjectListHtml);
 	App.get("/api/getState", Api.GetState);
 	App.get("/api/getTime", Api.GetTime);
 	App.get("/api/getTrades", Api.GetTrades);

@@ -1,7 +1,5 @@
 /**!
- * LibreMoney main page 0.0.1
- * Author: Prof1983 <prof1983@yandex.ru>
- * License: CC0
+ * LibreMoney main page
  */
 
 Templ = require(__dirname + "/templ");
@@ -38,40 +36,8 @@ function BodyMain() {
 }
 
 function Main(req, res) {
-	res.send('<!DOCTYPE html>' + '<html>' + Templ.Head('Home') + Body() + '</html>');
-
-	/*
-	res.write('<!DOCTYPE html>');
-	res.write('<html>');
-	res.write('<head>');
-	res.write('<meta charset="utf-8" />');
-	res.write('<title>LibreMoney</title>');
-	res.write('<style>');
-	res.write("@import url('./css/main.css');");
-	res.write('</style>');
-	res.write('</head>');
-	res.write('<body>');
-	res.write('<style>');
-	res.write('</style>');
-	res.write('<main class="myMain1">');
-	res.write('<h1>LibreMoney</h1>');
-	res.write('<p>Сайт в разработке.</p>');
-	res.write('<a href="index.html">');
-	res.write('<img alt="Сайт в разработке" src="./img/work-128.png" />');
-	res.write('</a>');
-	res.write('<br/><a href="start">Start</a>');
-	res.write('</main>');
-	res.write('<footer class="myFooter1">');
-	res.write('&copy; LibreMoney 2014');
-	res.write('</footer>');
-	res.write('<center>');
-	res.write('Version: 0.0.1');
-	res.write('<br/>');
-	res.write('</center>');
-	res.write('</body>');
-	res.write('</html>');
-	res.end();
-	*/
+	res.send('<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=index.html"></head></html>');
+	//res.send('<!DOCTYPE html>' + '<html>' + Templ.Head('Home') + Body() + '</html>');
 }
 
 module.exports = Main;

@@ -1,7 +1,8 @@
-var NRS = (function(NRS, $, undefined) {
-	NRS.multiQueue = null;
+var Lm = (function(Lm, $, undefined) {
+	Lm.MultiQueue = null;
 
-	NRS.sendOutsideRequest = function(url, data, callback, async) {
+
+	function SendOutsideRequest(url, data, callback, async) {
 		if ($.isFunction(data)) {
 			async = callback;
 			callback = data;
@@ -37,7 +38,7 @@ var NRS = (function(NRS, $, undefined) {
 		});
 	}
 
-	NRS.sendRequest = function(requestType, data, callback, async) {
+	function SendRequest(requestType, data, callback, async) {
 		if (requestType == undefined) {
 			return;
 		}
@@ -58,16 +59,16 @@ var NRS = (function(NRS, $, undefined) {
 			}
 		});
 
-		//convert NXT to NQT...
+		//convert Lm to MilliLm...
 		try {
-			var nxtFields = ["feeNXT", "amountNXT"];
+			var nxtFields = ["feeLm", "amountLm"];
 
 			for (var i = 0; i < nxtFields.length; i++) {
 				var nxtField = nxtFields[i];
-				var field = nxtField.replace("NXT", "");
+				var field = nxtField.replace("Lm", "");
 
 				if (nxtField in data) {
-					data[field + "NQT"] = NRS.convertToNQT(data[nxtField]);
+					data[field + "MilliLm"] = Lm.ConvertToMilliLm(data[nxtField]);
 					delete data[nxtField];
 				}
 			}
@@ -84,7 +85,7 @@ var NRS = (function(NRS, $, undefined) {
 
 		//gets account id from secret phrase client side, used only for login.
 		if (requestType == "getAccountId") {
-			var accountId = NRS.generateAccountId(data.secretPhrase, true);
+			var accountId = Lm.GenerateAccountId(data.secretPhrase, true);
 
 			if (callback) {
 				callback({
@@ -96,8 +97,8 @@ var NRS = (function(NRS, $, undefined) {
 
 		//check to see if secretPhrase supplied matches logged in account, if not - show error.
 		if ("secretPhrase" in data) {
-			var accountId = NRS.generateAccountId(NRS.rememberPassword ? sessionStorage.getItem("secret") : data.secretPhrase);
-			if (accountId != NRS.account) {
+			var accountId = Lm.GenerateAccountId(Lm.RememberPassword ? sessionStorage.getItem("secret") : data.secretPhrase);
+			if (accountId != Lm.Account) {
 				if (callback) {
 					callback({
 						"errorCode": 1,
@@ -107,16 +108,16 @@ var NRS = (function(NRS, $, undefined) {
 				return;
 			} else {
 				//ok, accountId matches..continue with the real request.
-				NRS.processAjaxRequest(requestType, data, callback, async);
+				Lm.ProcessAjaxRequest(requestType, data, callback, async);
 			}
 		} else {
-			NRS.processAjaxRequest(requestType, data, callback, async);
+			Lm.ProcessAjaxRequest(requestType, data, callback, async);
 		}
 	}
 
-	NRS.processAjaxRequest = function(requestType, data, callback, async) {
-		if (!NRS.multiQueue) {
-			NRS.multiQueue = $.ajaxMultiQueue(8);
+	function ProcessAjaxRequest(requestType, data, callback, async) {
+		if (!Lm.MultiQueue) {
+			Lm.MultiQueue = $.ajaxMultiQueue(8);
 		}
 
 		if (data["_extra"]) {
@@ -131,7 +132,7 @@ var NRS = (function(NRS, $, undefined) {
 		//means it is a page request, not a global request.. Page requests can be aborted.
 		if (requestType.slice(-1) == "+") {
 			requestType = requestType.slice(0, -1);
-			currentPage = NRS.currentPage;
+			currentPage = Lm.CurrentPage;
 		} else {
 			//not really necessary... we can just use the above code..
 			var plusCharacter = requestType.indexOf("+");
@@ -139,29 +140,20 @@ var NRS = (function(NRS, $, undefined) {
 			if (plusCharacter > 0) {
 				var subType = requestType.substr(plusCharacter);
 				requestType = requestType.substr(0, plusCharacter);
-				currentPage = NRS.currentPage;
+				currentPage = Lm.CurrentPage;
 			}
 		}
 
-		if (currentPage && NRS.currentSubPage) {
-			currentSubPage = NRS.currentSubPage;
+		if (currentPage && Lm.CurrentSubPage) {
+			currentSubPage = Lm.CurrentSubPage;
 		}
 
 		var type = ("secretPhrase" in data ? "POST" : "GET");
-		var url = NRS.server + "/api?requestType=" + requestType;
-
-		if (type == "GET") {
-			if (typeof data == "string") {
-				data += "&random=" + Math.random();
-			} else {
-				data.random = Math.random();
-			}
-		}
-
+		var url = Lm.Server + "/api/" + requestType + "?random=" + Math.random();
 		var secretPhrase = "";
-
-		if (!NRS.isLocalHost && type == "POST" && requestType != "startForging" && requestType != "stopForging") {
-			if (NRS.rememberPassword) {
+		
+		if (!Lm.IsLocalHost && type == "POST" && requestType != "startForging" && requestType != "stopForging") {
+			if (Lm.RememberPassword) {
 				secretPhrase = sessionStorage.getItem("secret");
 			} else {
 				secretPhrase = data.secretPhrase;
@@ -169,20 +161,20 @@ var NRS = (function(NRS, $, undefined) {
 
 			delete data.secretPhrase;
 
-			if (NRS.accountInfo && NRS.accountInfo.publicKey) {
-				data.publicKey = NRS.accountInfo.publicKey;
+			if (Lm.AccountInfo && Lm.AccountInfo.publicKey) {
+				data.publicKey = Lm.AccountInfo.publicKey;
 			} else {
-				data.publicKey = NRS.generatePublicKey(secretPhrase);
-				NRS.accountInfo.publicKey = data.publicKey;
+				data.publicKey = Lm.GeneratePublicKey(secretPhrase);
+				Lm.AccountInfo.publicKey = data.publicKey;
 			}
-		} else if (type == "POST" && NRS.rememberPassword) {
+		} else if (type == "POST" && Lm.RememberPassword) {
 			data.secretPhrase = sessionStorage.getItem("secret");
 		}
 
 		$.support.cors = true;
 
 		if (type == "GET") {
-			var ajaxCall = NRS.multiQueue.queue;
+			var ajaxCall = Lm.MultiQueue.queue;
 		} else {
 			var ajaxCall = $.ajax;
 		}
@@ -204,113 +196,124 @@ var NRS = (function(NRS, $, undefined) {
 			currentSubPage: currentSubPage,
 			shouldRetry: (type == "GET" ? 2 : undefined),
 			data: data
-		}).done(function(response, status, xhr) {
-			if (NRS.console) {
-				NRS.addToConsole(this.url, this.type, this.data, response);
-			}
+		})
+		.done(function(response, status, xhr) {
+			ProcessAjaxRequest_OnAjaxDone(response, status, xhr, data, secretPhrase, callback, extra);
+		})
+		.fail(function(xhr, textStatus, error){
+			ProcessAjaxRequest_OnAjaxFail(xhr, textStatus, error, callback);
+		});
+	}
 
-			if (typeof data == "object" && "recipient" in data) {
-				if (/^NXT\-/i.test(data.recipient)) {
-					data.recipientRS = data.recipient;
+	function ProcessAjaxRequest_OnAjaxDone(response, status, xhr, data, secretPhrase, callback, extra) {
+		if (Lm.Console) {
+			Lm.AddToConsole(this.url, this.type, this.data, response);
+		}
 
-					var address = new NxtAddress();
+		if (typeof data == "object" && "recipient" in data) {
+			if (/^NXT\-/i.test(data.recipient)) {
+				data.recipientRS = data.recipient;
 
-					if (address.set(data.recipient)) {
-						data.recipient = address.account_id();
-					}
-				} else {
-					var address = new NxtAddress();
+				var address = new NxtAddress();
 
-					if (address.set(data.recipient)) {
-						data.recipientRS = address.toString();
-					}
+				if (address.set(data.recipient)) {
+					data.recipient = address.account_id();
+				}
+			} else {
+				var address = new NxtAddress();
+
+				if (address.set(data.recipient)) {
+					data.recipientRS = address.toString();
 				}
 			}
+		}
 
-			if (secretPhrase && response.unsignedTransactionBytes && !response.errorCode) {
-				var publicKey = NRS.generatePublicKey(secretPhrase);
-				var signature = nxtCrypto.sign(response.unsignedTransactionBytes, converters.stringToHexString(secretPhrase));
+		if (secretPhrase && response.unsignedTransactionBytes && !response.errorCode) {
+			var publicKey = Lm.GeneratePublicKey(secretPhrase);
+			var signature = nxtCrypto.sign(response.unsignedTransactionBytes, converters.stringToHexString(secretPhrase));
 
-				if (!nxtCrypto.verify(signature, response.unsignedTransactionBytes, publicKey)) {
+			if (!nxtCrypto.verify(signature, response.unsignedTransactionBytes, publicKey)) {
+				if (callback) {
+					callback({
+						"errorCode": 1,
+						"errorDescription": "Could not verify signature (client side)."
+					}, data);
+				} else {
+					$.growl("Could not verify signature.", {
+						"type": "danger"
+					});
+				}
+				return;
+			} else {
+				var payload = response.unsignedTransactionBytes.substr(0, 192) + signature + response.unsignedTransactionBytes.substr(320);
+
+				if (!Lm.VerifyTransactionBytes(payload, requestType, data)) {
 					if (callback) {
 						callback({
 							"errorCode": 1,
-							"errorDescription": "Could not verify signature (client side)."
+							"errorDescription": "Could not verify transaction bytes (server side)."
 						}, data);
 					} else {
-						$.growl("Could not verify signature.", {
+						$.growl("Could not verify transaction bytes.", {
 							"type": "danger"
 						});
 					}
 					return;
 				} else {
-					var payload = response.unsignedTransactionBytes.substr(0, 192) + signature + response.unsignedTransactionBytes.substr(320);
-
-					if (!NRS.verifyTransactionBytes(payload, requestType, data)) {
-						if (callback) {
-							callback({
-								"errorCode": 1,
-								"errorDescription": "Could not verify transaction bytes (server side)."
-							}, data);
-						} else {
-							$.growl("Could not verify transaction bytes.", {
-								"type": "danger"
-							});
+					if (callback) {
+						if (extra) {
+							data["_extra"] = extra;
 						}
-						return;
+
+						Lm.BroadcastTransactionBytes(payload, callback, response, data);
 					} else {
-						if (callback) {
-							if (extra) {
-								data["_extra"] = extra;
-							}
-
-							NRS.broadcastTransactionBytes(payload, callback, response, data);
-						} else {
-							NRS.broadcastTransactionBytes(payload);
-						}
+						Lm.BroadcastTransactionBytes(payload);
 					}
 				}
-			} else {
-				if (response.errorCode && !response.errorDescription) {
-					response.errorDescription = (response.errorMessage ? response.errorMessage : "Unknown error occured.");
-				}
-
-				if (callback) {
-					if (extra) {
-						data["_extra"] = extra;
-					}
-					callback(response, data);
-				}
 			}
-		}).fail(function(xhr, textStatus, error) {
-			if (NRS.console) {
-				NRS.addToConsole(this.url, this.type, this.data, error, true);
+		} else {
+			if (response.errorCode && !response.errorDescription) {
+				response.errorDescription = (response.errorMessage ? response.errorMessage : "Unknown error occured.");
 			}
 
-			if ((error == "error" || textStatus == "error") && (xhr.status == 404 || xhr.status == 0)) {
-				if (type == "POST") {
-					$.growl("Could not connect.", {
-						"type": "danger",
-						"offset": 10
-					});
+			if (callback) {
+				if (extra) {
+					data["_extra"] = extra;
 				}
+				callback(response, data);
 			}
-
-			if (error == "abort") {
-				return;
-			} else if (callback) {
-				if (error == "timeout") {
-					error = "The request timed out. Warning: This does not mean the request did not go through. You should wait a couple of blocks and see if your request has been processed.";
-				}
-				callback({
-					"errorCode": -1,
-					"errorDescription": error
-				}, {});
-			}
-		});
+		}
 	}
 
-	NRS.verifyTransactionBytes = function(transactionBytes, requestType, data) {
+	function ProcessAjaxRequest_OnAjaxFail(xhr, textStatus, error, callback) {
+		if (Lm.Console) {
+			Lm.AddToConsole(this.url, this.type, this.data, error, true);
+		}
+
+		if ((error == "error" || textStatus == "error") && (xhr.status == 404 || xhr.status == 0)) {
+			if (type == "POST") {
+				$.growl("Could not connect.", {
+					"type": "danger",
+					"offset": 10
+				});
+			}
+		}
+
+		if (error == "abort") {
+			return;
+		} else if (callback) {
+			if (error == "timeout") {
+				error = "The request timed out. Warning: This does not mean the request did not go through. "+
+					"You should wait a couple of blocks and see if your request has been processed.";
+			}
+			callback({
+				"errorCode": -1,
+				"errorDescription": error
+			}, {});
+		}
+	}
+
+	function VerifyTransactionBytes(transactionBytes, requestType, data) {
 		var transaction = {};
 
 		var byteArray = converters.hexStringToByteArray(transactionBytes);
@@ -329,7 +332,8 @@ var NRS = (function(NRS, $, undefined) {
 		if (transaction.referencedTransactionFullHash == "0") {
 			transaction.referencedTransactionFullHash = null;
 		} else {
-			transaction.referencedTransactionId = converters.byteArrayToBigInteger([refHash[7], refHash[6], refHash[5], refHash[4], refHash[3], refHash[2], refHash[1], refHash[0]], 0);
+			transaction.referencedTransactionId = converters.byteArrayToBigInteger([refHash[7], refHash[6], refHash[5], refHash[4],
+				refHash[3], refHash[2], refHash[1], refHash[0]], 0);
 		}
 
 		if (!("amountNQT" in data)) {
@@ -342,7 +346,7 @@ var NRS = (function(NRS, $, undefined) {
 			data.recipientRS = "NXT-MRCC-2YLS-8M54-3CMAJ";
 		}
 
-		if (transaction.senderPublicKey != NRS.accountInfo.publicKey) {
+		if (transaction.senderPublicKey != Lm.AccountInfo.publicKey) {
 			return false;
 		}
 
@@ -454,7 +458,9 @@ var NRS = (function(NRS, $, undefined) {
 
 				transaction.optionsAreBinary = String(byteArray[pos]);
 
-				if (transaction.name !== data.name || transaction.description !== data.description || transaction.minNumberOfOptions !== data.minNumberOfOptions || transaction.maxNumberOfOptions !== data.maxNumberOfOptions || transaction.optionsAreBinary !== data.optionsAreBinary) {
+				if (transaction.name !== data.name || transaction.description !== data.description ||
+						transaction.minNumberOfOptions !== data.minNumberOfOptions || transaction.maxNumberOfOptions !== data.maxNumberOfOptions ||
+						transaction.optionsAreBinary !== data.optionsAreBinary) {
 					return false;
 				}
 
@@ -675,7 +681,8 @@ var NRS = (function(NRS, $, undefined) {
 
 				transaction.priceNQT = String(converters.byteArrayToBigInteger(byteArray, pos));
 
-				if (transaction.name !== data.name || transaction.description !== data.description || transaction.tags !== data.tags || transaction.quantity !== data.quantity || transaction.priceNQT !== data.priceNQT) {
+				if (transaction.name !== data.name || transaction.description !== data.description || transaction.tags !== data.tags ||
+						transaction.quantity !== data.quantity || transaction.priceNQT !== data.priceNQT) {
 					return false;
 				}
 
@@ -756,7 +763,9 @@ var NRS = (function(NRS, $, undefined) {
 				transaction.noteNonce = converters.byteArrayToString(byteArray, pos, 32);
 				//XoredData note = new XoredData(noteBytes, noteNonceBytes);
 
-				if (transaction.goodsId !== data.goodsId || transaction.quantity !== data.quantity || transaction.priceNQT !== data.priceNQT || transaction.deliveryDeadline !== data.deliveryDeadline || transaction.note !== data.note || transaction.noteNonce !== data.noteNonce) {
+				if (transaction.goodsId !== data.goodsId || transaction.quantity !== data.quantity ||
+						transaction.priceNQT !== data.priceNQT || transaction.deliveryDeadline !== data.deliveryDeadline ||
+						transaction.note !== data.note || transaction.noteNonce !== data.noteNonce) {
 					return false;
 				}
 
@@ -785,7 +794,8 @@ var NRS = (function(NRS, $, undefined) {
 
 				transaction.discountNQT = String(converters.byteArrayToBigInteger(byteArray, pos));
 
-				if (transaction.goodsId !== data.goodsId || transaction.goods !== data.goods || transaction.goodsNonce !== data.goodsNonce || transaction.discountNQT !== data.discountNQT) {
+				if (transaction.goodsId !== data.goodsId || transaction.goods !== data.goods ||
+						transaction.goodsNonce !== data.goodsNonce || transaction.discountNQT !== data.discountNQT) {
 					return false;
 				}
 
@@ -810,7 +820,8 @@ var NRS = (function(NRS, $, undefined) {
 				transaction.noteNonce = converters.byteArrayToString(byteArray, pos, 32);
 				//XoredData note = new XoredData(noteBytes, noteNonceBytes);
 
-				if (transaction.purchaseId !== data.purchaseId || transaction.note !== data.note || transaction.noteNonce !== data.noteNonce) {
+				if (transaction.purchaseId !== data.purchaseId || transaction.note !== data.note ||
+						transaction.noteNonce !== data.noteNonce) {
 					return false;
 				}
 
@@ -839,7 +850,8 @@ var NRS = (function(NRS, $, undefined) {
 				transaction.noteNonce = converters.byteArrayToString(byteArray, pos, 32);
 				//XoredData note = new XoredData(noteBytes, noteNonceBytes);
 
-				if (transaction.purchaseId !== data.purchaseId || transaction.refundNQT !== data.refundNQT || transaction.note !== data.note || transaction.noteNonce !== data.noteNonce) {
+				if (transaction.purchaseId !== data.purchaseId || transaction.refundNQT !== data.refundNQT ||
+						transaction.note !== data.note || transaction.noteNonce !== data.noteNonce) {
 					return false;
 				}
 
@@ -863,9 +875,9 @@ var NRS = (function(NRS, $, undefined) {
 		return true;
 	}
 
-	NRS.broadcastTransactionBytes = function(transactionData, callback, original_response, original_data) {
+	function BroadcastTransactionBytes(transactionData, callback, original_response, original_data) {
 		$.ajax({
-			url: NRS.server + "/api?requestType=broadcastTransaction",
+			url: Lm.Server + "/api?requestType=broadcastTransaction",
 			crossDomain: true,
 			dataType: "json",
 			type: "POST",
@@ -875,8 +887,8 @@ var NRS = (function(NRS, $, undefined) {
 				"transactionBytes": transactionData
 			}
 		}).done(function(response, status, xhr) {
-			if (NRS.console) {
-				NRS.addToConsole(this.url, this.type, this.data, response);
+			if (Lm.Console) {
+				Lm.AddToConsole(this.url, this.type, this.data, response);
 			}
 
 			if (callback) {
@@ -898,13 +910,15 @@ var NRS = (function(NRS, $, undefined) {
 				}
 			}
 		}).fail(function(xhr, textStatus, error) {
-			if (NRS.console) {
-				NRS.addToConsole(this.url, this.type, this.data, error, true);
+			if (Lm.Console) {
+				Lm.AddToConsole(this.url, this.type, this.data, error, true);
 			}
 
 			if (callback) {
 				if (error == "timeout") {
-					error = "The request timed out. Warning: This does not mean the request did not go through. You should a few blocks and see if your request has been processed before trying to submit it again.";
+					error = "The request timed out. Warning: This does not mean the request did "+
+						"not go through. You should a few blocks and see if your request has been "+
+						"processed before trying to submit it again.";
 				}
 				callback({
 					"errorCode": -1,
@@ -914,5 +928,11 @@ var NRS = (function(NRS, $, undefined) {
 		});
 	}
 
-	return NRS;
-}(NRS || {}, jQuery));
+
+	Lm.BroadcastTransactionBytes = BroadcastTransactionBytes;
+	Lm.ProcessAjaxRequest = ProcessAjaxRequest;
+	Lm.SendOutsideRequest = SendOutsideRequest;
+	Lm.SendRequest = SendRequest;
+	Lm.VerifyTransactionBytes = VerifyTransactionBytes;
+	return Lm;
+}(Lm || {}, jQuery));

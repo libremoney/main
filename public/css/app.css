@@ -3130,6 +3130,15 @@ nrs_update_hashes {
 	display:none;
 }
 
+#log {
+  position:fixed;
+  bottom:0px;
+  right:23px;
+  background-color: #999;
+  max-height: 200;
+  width: 80%;
+}
+
 #show_console {
 	position:fixed;
 	bottom:0px;
