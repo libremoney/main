@@ -1,7 +1,5 @@
 /**!
- * LibreMoney server 0.0.1
- * Author: Prof1983 <prof1983@yandex.ru>
- * License: CC0
+ * LibreMoney server
  */
 
 var express = require('express');

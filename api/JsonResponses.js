@@ -3,222 +3,302 @@ import nxt.Constants;
 import nxt.util.JSON;
 */
 
-var INCORRECT_ALIAS = incorrect("alias");
-var INCORRECT_ALIAS_LENGTH = incorrect("alias", "(length must be in [1.." + Constants.MAX_ALIAS_LENGTH + "] range)");
-var INCORRECT_ALIAS_NAME = incorrect("alias", "(must contain only digits and latin letters)");
-var INCORRECT_URI_LENGTH = incorrect("uri", "(length must be not longer than " + Constants.MAX_ALIAS_URI_LENGTH + " characters)");
-var MISSING_SECRET_PHRASE = missing("secretPhrase");
-var INCORRECT_PUBLIC_KEY = incorrect("publicKey");
-var MISSING_ALIAS_NAME = missing("aliasName");
-var MISSING_ALIAS_OR_ALIAS_NAME = missing("alias", "aliasName");
-var MISSING_FEE = missing("feeNQT");
-var MISSING_DEADLINE = missing("deadline");
-var INCORRECT_DEADLINE = incorrect("deadline");
-var INCORRECT_FEE = incorrect("fee");
-var MISSING_TRANSACTION_BYTES = missing("transactionBytes");
-var INCORRECT_TRANSACTION_BYTES = incorrect("transactionBytes");
-var MISSING_ORDER = missing("order");
-var INCORRECT_ORDER = incorrect("order");
-var UNKNOWN_ORDER = unknown("order");
-var MISSING_HALLMARK = missing("hallmark");
-var INCORRECT_HALLMARK = incorrect("hallmark");
-var MISSING_WEBSITE = missing("website");
-var INCORRECT_WEBSITE = incorrect("website");
-var MISSING_TOKEN = missing("token");
-var INCORRECT_TOKEN = incorrect("token");
-var MISSING_ACCOUNT = missing("account");
-var INCORRECT_ACCOUNT = incorrect("account");
-var MISSING_TIMESTAMP = missing("timestamp");
-var INCORRECT_TIMESTAMP = incorrect("timestamp");
-var UNKNOWN_ACCOUNT = unknown("account");
-var UNKNOWN_ALIAS = unknown("alias");
-var MISSING_ASSET = missing("asset");
-var UNKNOWN_ASSET = unknown("asset");
-var INCORRECT_ASSET = incorrect("asset");
-var MISSING_ASSET_NAME = missing("assetName");
-var MISSING_BLOCK = missing("block");
-var UNKNOWN_BLOCK = unknown("block");
-var INCORRECT_BLOCK = incorrect("block");
-var MISSING_NUMBER_OF_CONFIRMATIONS = missing("numberOfConfirmations");
-var INCORRECT_NUMBER_OF_CONFIRMATIONS = incorrect("numberOfConfirmations");
-var MISSING_PEER = missing("peer");
-var UNKNOWN_PEER = unknown("peer");
-var MISSING_TRANSACTION = missing("transaction");
-var UNKNOWN_TRANSACTION = unknown("transaction");
-var INCORRECT_TRANSACTION = incorrect("transaction");
-var INCORRECT_ASSET_ISSUANCE_FEE = incorrect("fee", "(must be not less than 1'000 NXT)");
-var INCORRECT_ASSET_DESCRIPTION = incorrect("description", "(length must not exceed " + Constants.MAX_ASSET_DESCRIPTION_LENGTH + " characters)");
-var INCORRECT_ASSET_NAME = incorrect("name", "(must contain only digits and latin letters)");
-var INCORRECT_ASSET_NAME_LENGTH = incorrect("name", "(length must be in [" + Constants.MIN_ASSET_NAME_LENGTH + ".." + Constants.MAX_ASSET_NAME_LENGTH + "] range)");
-var INCORRECT_ASSET_TRANSFER_COMMENT = incorrect("comment", "(length must not exceed " + Constants.MAX_ASSET_TRANSFER_COMMENT_LENGTH + " characters)");
-var MISSING_NAME = missing("name");
-var MISSING_QUANTITY = missing("quantityQNT");
-var INCORRECT_QUANTITY = incorrect("quantity");
-var INCORRECT_ASSET_QUANTITY = incorrect("quantity", "(must be in [1..1'000'000'000] range)");
-var INCORRECT_DECIMALS = incorrect("decimals");
-var MISSING_HOST = missing("host");
-var MISSING_DATE = missing("date");
-var MISSING_WEIGHT = missing("weight");
-var INCORRECT_HOST = incorrect("host", "(the length exceeds 100 chars limit)");
-var INCORRECT_WEIGHT = incorrect("weight");
-var INCORRECT_DATE = incorrect("date");
-var MISSING_PRICE = missing("priceNQT");
-var INCORRECT_PRICE = incorrect("price");
-var INCORRECT_REFERENCED_TRANSACTION = incorrect("referencedTransactionFullHash");
-var MISSING_MESSAGE = missing("message");
-var MISSING_RECIPIENT = missing("recipient");
-var INCORRECT_RECIPIENT = incorrect("recipient");
-var INCORRECT_ARBITRARY_MESSAGE = incorrect("message", "(length must be not longer than " + Constants.MAX_ARBITRARY_MESSAGE_LENGTH + " bytes)");
-var MISSING_AMOUNT = missing("amountNQT");
-var INCORRECT_AMOUNT = incorrect("amount");
-var MISSING_DESCRIPTION = missing("description");
-var MISSING_MINNUMBEROFOPTIONS = missing("minNumberOfOptions");
-var MISSING_MAXNUMBEROFOPTIONS = missing("maxNumberOfOptions");
-var MISSING_OPTIONSAREBINARY = missing("optionsAreBinary");
-var MISSING_POLL = missing("poll");
-var INCORRECT_POLL_NAME_LENGTH = incorrect("name", "(length must be not longer than " + Constants.MAX_POLL_NAME_LENGTH + " characters)");
-var INCORRECT_POLL_DESCRIPTION_LENGTH = incorrect("description", "(length must be not longer than " + Constants.MAX_POLL_DESCRIPTION_LENGTH + " characters)");
-var INCORRECT_POLL_OPTION_LENGTH = incorrect("option", "(length must be not longer than " + Constants.MAX_POLL_OPTION_LENGTH + " characters)");
-var INCORRECT_MINNUMBEROFOPTIONS = incorrect("minNumberOfOptions");
-var INCORRECT_MAXNUMBEROFOPTIONS = incorrect("maxNumberOfOptions");
-var INCORRECT_OPTIONSAREBINARY = incorrect("optionsAreBinary");
-var INCORRECT_POLL = incorrect("poll");
-var INCORRECT_VOTE = incorrect("vote");
-var UNKNOWN_POLL = unknown("poll");
-var INCORRECT_ACCOUNT_NAME_LENGTH = incorrect("name", "(length must be less than " + Constants.MAX_ACCOUNT_NAME_LENGTH + " characters)");
-var INCORRECT_ACCOUNT_DESCRIPTION_LENGTH = incorrect("description", "(length must be less than " + Constants.MAX_ACCOUNT_DESCRIPTION_LENGTH + " characters)");
-var MISSING_PERIOD = missing("period");
-var INCORRECT_PERIOD = incorrect("period", "(period must be at least 1440 blocks)");
-var INCORRECT_UNSIGNED_BYTES = incorrect("unsignedTransactionBytes");
-var MISSING_UNSIGNED_BYTES = missing("unsignedTransactionBytes");
-var MISSING_SIGNATURE_HASH = missing("signatureHash");
-var MISSING_SECRET_PHRASE_OR_PUBLIC_KEY = missing("secretPhrase", "publicKey");
+var LmConstants = require(__dirname + '/../lm/LmConstants');
 
-/*
-public static final JSONStreamAware NOT_ENOUGH_FUNDS;
-static {
-	JSONObject response = new JSONObject();
-	response.put("errorCode", 6);
-	response.put("errorDescription", "Not enough funds");
-	NOT_ENOUGH_FUNDS = JSON.prepare(response);
-}
 
-public static final JSONStreamAware NOT_ENOUGH_ASSETS;
-static {
-	JSONObject response = new JSONObject();
-	response.put("errorCode", 6);
-	response.put("errorDescription", "Not enough assets");
-	NOT_ENOUGH_ASSETS = JSON.prepare(response);
-}
-
-public static final JSONStreamAware ERROR_NOT_ALLOWED;
-static {
-	JSONObject response = new JSONObject();
-	response.put("errorCode", 7);
-	response.put("errorDescription", "Not allowed");
-	ERROR_NOT_ALLOWED = JSON.prepare(response);
-}
-
-public static final JSONStreamAware ERROR_INCORRECT_REQUEST;
-static {
-	JSONObject response  = new JSONObject();
-	response.put("errorCode", 1);
-	response.put("errorDescription", "Incorrect request");
-	ERROR_INCORRECT_REQUEST = JSON.prepare(response);
-}
-
-public static final JSONStreamAware NOT_FORGING;
-static {
-	JSONObject response = new JSONObject();
-	response.put("errorCode", 5);
-	response.put("errorDescription", "Account is not forging");
-	NOT_FORGING = JSON.prepare(response);
-}
-
-public static final JSONStreamAware POST_REQUIRED;
-static {
-	JSONObject response = new JSONObject();
-	response.put("errorCode", 1);
-	response.put("errorDescription", "This request is only accepted using POST!");
-	POST_REQUIRED = JSON.prepare(response);
-}
-
-public static final JSONStreamAware FEATURE_NOT_AVAILABLE;
-static {
-	JSONObject response = new JSONObject();
-	response.put("errorCode", 9);
-	response.put("errorDescription", "Feature not available");
-	FEATURE_NOT_AVAILABLE = JSON.prepare(response);
-}
-
-private static JSONStreamAware missing(String... paramNames) {
-	JSONObject response = new JSONObject();
-	response.put("errorCode", 3);
-	if (paramNames.length == 1) {
-		response.put("errorDescription", "\"" + paramNames[0] + "\"" + " not specified");
+function missing(paramName1, paramName2) {
+	if (!paramName2) {
+		return {
+			errorCode: 3,
+			errorDescription: "\"" + paramName1 + "\"" + " not specified"
+		}
 	} else {
-		response.put("errorDescription", "At least one of " + Arrays.toString(paramNames) + " must be specified");
+		return {
+			errorCode: 3,
+			errorDescription: "At least one of " + paramName1 + " " + paramName2 + " must be specified"
+		}
 	}
-	return JSON.prepare(response);
 }
 
-private static JSONStreamAware incorrect(String paramName) {
-	return incorrect(paramName, null);
+function incorrect(paramName, details) {
+	if (!details) {
+		return {
+			errorCode: 4,
+			errorDescription: "Incorrect \"" + paramName + "\""
+		}
+	} else {
+		return {
+			errorCode: 4,
+			errorDescription: "Incorrect \"" + paramName + "\" " + details
+		}
+	}
 }
 
-private static JSONStreamAware incorrect(String paramName, String details) {
-	JSONObject response = new JSONObject();
-	response.put("errorCode", 4);
-	response.put("errorDescription", "Incorrect \"" + paramName + (details != null ? "\" " + details : "\""));
-	return JSON.prepare(response);
+function unknown(objectName) {
+	return {
+		errorCode: 5,
+		errorDescription: "Unknown " + objectName
+	}
 }
-
-private static JSONStreamAware unknown(String objectName) {
-	JSONObject response = new JSONObject();
-	response.put("errorCode", 5);
-	response.put("errorDescription", "Unknown " + objectName);
-	return JSON.prepare(response);
-}
-*/
 
 /*
-exports.INCORRECT_ALIAS = incorrect("alias");
-exports.INCORRECT_ALIAS_LENGTH = incorrect("alias", "(length must be in [1.." + Constants.MAX_ALIAS_LENGTH + "] range)");
-exports.INCORRECT_ALIAS_NAME = incorrect("alias", "(must contain only digits and latin letters)");
-exports.INCORRECT_URI_LENGTH = incorrect("uri", "(length must be not longer than " + Constants.MAX_ALIAS_URI_LENGTH + " characters)");
-exports.MISSING_SECRET_PHRASE = missing("secretPhrase");
-exports.INCORRECT_PUBLIC_KEY = incorrect("publicKey");
-exports.MISSING_ALIAS_NAME = missing("aliasName");
-exports.MISSING_ALIAS_OR_ALIAS_NAME = missing("alias", "aliasName");
-exports.MISSING_FEE = missing("feeNQT");
-exports.MISSING_DEADLINE = missing("deadline");
-exports.INCORRECT_DEADLINE = incorrect("deadline");
-exports.INCORRECT_FEE = incorrect("fee");
-exports.MISSING_TRANSACTION_BYTES = missing("transactionBytes");
-exports.INCORRECT_TRANSACTION_BYTES = incorrect("transactionBytes");
-exports.MISSING_ORDER = missing("order");
-exports.INCORRECT_ORDER = incorrect("order");
-exports.UNKNOWN_ORDER = unknown("order");
-exports.MISSING_HALLMARK = missing("hallmark");
-exports.INCORRECT_HALLMARK = incorrect("hallmark");
-exports.MISSING_WEBSITE = missing("website");
-exports.INCORRECT_WEBSITE = incorrect("website");
-exports.MISSING_TOKEN = missing("token");
-exports.INCORRECT_TOKEN = incorrect("token");
-exports.MISSING_ACCOUNT = missing("account");
-exports.INCORRECT_ACCOUNT = incorrect("account");
-exports.MISSING_TIMESTAMP = missing("timestamp");
-exports.INCORRECT_TIMESTAMP = incorrect("timestamp");
-exports.UNKNOWN_ACCOUNT = unknown("account");
-exports.UNKNOWN_ALIAS = unknown("alias");
-exports.MISSING_ASSET = missing("asset");
-exports.UNKNOWN_ASSET = unknown("asset");
+var IncorrectAccount = incorrect("account");
+var IncorrectAccountDescriptionLength = incorrect("description", "(length must be less than " + Constants.MAX_ACCOUNT_DESCRIPTION_LENGTH + " characters)");
+var IncorrectAccountNameLength = incorrect("name", "(length must be less than " + Constants.MAX_ACCOUNT_NAME_LENGTH + " characters)");
+var IncorrectAlias = incorrect("alias");
+var IncorrectAliasLength = incorrect("alias", "(length must be in [1.." + Constants.MAX_ALIAS_LENGTH + "] range)");
+var IncorrectAliasName = incorrect("alias", "(must contain only digits and latin letters)");
+var IncorrectAmount = incorrect("amount");
+var IncorrectArbitraryMessage = incorrect("message", "(length must be not longer than " + Constants.MAX_ARBITRARY_MESSAGE_LENGTH + " bytes)");
+var IncorrectAsset = incorrect("asset");
+var IncorrectAssetDescription = incorrect("description", "(length must not exceed " + Constants.MAX_ASSET_DESCRIPTION_LENGTH + " characters)");
+var IncorrectAssetIssuanceFee = incorrect("fee", "(must be not less than 1'000 NXT)");
+var IncorrectAssetName = incorrect("name", "(must contain only digits and latin letters)");
+var IncorrectAssetNameLength = incorrect("name", "(length must be in [" + Constants.MIN_ASSET_NAME_LENGTH + ".." + Constants.MAX_ASSET_NAME_LENGTH + "] range)");
+var IncorrectAssetTransferComment = incorrect("comment", "(length must not exceed " + Constants.MAX_ASSET_TRANSFER_COMMENT_LENGTH + " characters)");
+var IncorrectAssetQuantity = incorrect("quantity", "(must be in [1..1'000'000'000] range)");
+var IncorrectBlock = incorrect("block");
+var IncorrectDate = incorrect("date");
+var IncorrectDeadline = incorrect("deadline");
+var IncorrectDecimals = incorrect("decimals");
+var IncorrectFee = incorrect("fee");
+var IncorrectHallmark = incorrect("hallmark");
+var IncorrectHost = incorrect("host", "(the length exceeds 100 chars limit)");
+var IncorrectNumberOfConfirmations = incorrect("numberOfConfirmations");
+var IncorrectMaxNumberOfOptions = incorrect("maxNumberOfOptions");
+var IncorrectMinNumberOfOptions = incorrect("minNumberOfOptions");
+var IncorrectOptionsAreBinary = incorrect("optionsAreBinary");
+var IncorrectOrder = incorrect("order");
+var IncorrectPeriod = incorrect("period", "(period must be at least 1440 blocks)");
+var IncorrectPoll = incorrect("poll");
+var IncorrectPollNameLength = incorrect("name", "(length must be not longer than " + Constants.MAX_POLL_NAME_LENGTH + " characters)");
+var IncorrectPollDescriptionLength = incorrect("description", "(length must be not longer than " + Constants.MAX_POLL_DESCRIPTION_LENGTH + " characters)");
+var IncorrectPollOptionLength = incorrect("option", "(length must be not longer than " + Constants.MAX_POLL_OPTION_LENGTH + " characters)");
+var IncorrectPrice = incorrect("price");
+var IncorrectPublicKey = incorrect("publicKey");
+var IncorrectRecipient = incorrect("recipient");
+var IncorrectReferencedTransaction = incorrect("referencedTransactionFullHash");
+var IncorrectUriLength = incorrect("uri", "(length must be not longer than " + Constants.MAX_ALIAS_URI_LENGTH + " characters)");
+var IncorrectTimestamp = incorrect("timestamp");
+var IncorrectToken = incorrect("token");
+var IncorrectTransactionBytes = incorrect("transactionBytes");
+var IncorrectWebsite = incorrect("website");
+var IncorrectTransaction = incorrect("transaction");
+var IncorrectQuantity = incorrect("quantity");
+var IncorrectVote = incorrect("vote");
+var IncorrectWeight = incorrect("weight");
+var IncorrectUnsignedBytes = incorrect("unsignedTransactionBytes");
+var MissingAccount = missing("account");
+var MissingAliasName = missing("aliasName");
+var MissingAliasOrAliasName = missing("alias", "aliasName");
+var MissingAmount = missing("amountNQT");
+var MissingAsset = missing("asset");
+var MissingAssetName = missing("assetName");
+var MissingBlock = missing("block");
+var MissingDate = missing("date");
+var MissingDeadline = missing("deadline");
+var MissingDescription = missing("description");
+var MissingFee = missing("feeNQT");
+var MissingHallmark = missing("hallmark");
+var MissingHost = missing("host");
+var MissingMessage = missing("message");
+var MissingMaxNumberOfOptions = missing("maxNumberOfOptions");
+var MissingMinNumberOfOptions = missing("minNumberOfOptions");
+var MissingName = missing("name");
+var MissingNumberOfConfirmations = missing("numberOfConfirmations");
+var MissingOptionsAreBinary = missing("optionsAreBinary");
+var MissingOrder = missing("order");
+var MissingPeer = missing("peer");
+var MissingPeriod = missing("period");
+var MissingPoll = missing("poll");
+var MissingPrice = missing("priceNQT");
+var MissingQuantity = missing("quantityQNT");
+var MissingRecipient = missing("recipient");
+var MissingSecretPhrase = missing("secretPhrase");
+var MissingSecretPhraseOrPublicKey = missing("secretPhrase", "publicKey");
+var MissingSignatureHash = missing("signatureHash");
+var MissingTimestamp = missing("timestamp");
+var MissingToken = missing("token");
+var MissingTransaction = missing("transaction");
+var MissingTransactionBytes = missing("transactionBytes");
+var MissingWebsite = missing("website");
+var MissingWeight = missing("weight");
+var MissingUnsignedBytes = missing("unsignedTransactionBytes");
+var UnknownAccount = unknown("account");
+var UnknownAlias = unknown("alias");
+var UnknownAsset = unknown("asset");
+var UnknownBlock = unknown("block");
+var UnknownOrder = unknown("order");
+var UnknownPeer = unknown("peer");
+var UnknownPoll = unknown("poll");
+var UnknownTransaction = unknown("transaction");
 */
-exports.INCORRECT_ASSET = INCORRECT_ASSET;
+
+var NOT_ENOUGH_FUNDS = {
+	errorCode: 6,
+	errorDescription: "Not enough funds"
+}
+
+var NOT_ENOUGH_ASSETS = {
+	errorCode: 6,
+	errorDescription: "Not enough assets"
+}
+
+var ERROR_NOT_ALLOWED = {
+	errorCode: 7,
+	errorDescription: "Not allowed"
+}
+
+var ERROR_INCORRECT_REQUEST = {
+	errorCode: 1,
+	errorDescription: "Incorrect request"
+}
+
+var NOT_FORGING = {
+	errorCode: 5,
+	errorDescription: "Account is not forging"
+}
+
+var POST_REQUIRED = {
+	errorCode: 1,
+	errorDescription: "This request is only accepted using POST!"
+}
+
+var FEATURE_NOT_AVAILABLE = {
+	errorCode: 9,
+	errorDescription: "Feature not available"
+}
+
+
+exports.IncorrectAccount = incorrect("account");
+exports.IncorrectAccountDescriptionLength = incorrect("description", "(length must be less than " + LmConstants.MaxAccountDescriptionLength + " characters)");
+exports.IncorrectAccountNameLength = incorrect("name", "(length must be less than " + LmConstants.MaxAccountNameLength + " characters)");
+exports.IncorrectAlias = incorrect("alias");
+exports.IncorrectAliasLength = incorrect("alias", "(length must be in [1.." + LmConstants.MaxAliasLength + "] range)");
+exports.IncorrectAliasName = incorrect("alias", "(must contain only digits and latin letters)");
+exports.IncorrectAmount = incorrect("amount");
+exports.IncorrectArbitraryMessage = incorrect("message", "(length must be not longer than " + LmConstants.MaxArbitraryMessageLength + " bytes)");
+exports.IncorrectAsset = incorrect("asset");
+exports.IncorrectAssetDescription = incorrect("description", "(length must not exceed " + LmConstants.MaxAssetDescriptionLength + " characters)");
+exports.IncorrectAssetIssuanceFee = incorrect("fee", "(must be not less than 1'000 NXT)");
+exports.IncorrectAssetName = incorrect("name", "(must contain only digits and latin letters)");
+exports.IncorrectAssetNameLength = incorrect("name", "(length must be in [" + LmConstants.MinAssetNameLength + ".." + LmConstants.MaxAssetNameLength + "] range)");
+exports.IncorrectAssetTransferComment = incorrect("comment", "(length must not exceed " + LmConstants.MaxAssetTransferCommentLength + " characters)");
+exports.IncorrectAssetQuantity = incorrect("quantity", "(must be in [1..1'000'000'000] range)");
+exports.IncorrectBlock = incorrect("block");
+exports.IncorrectDate = incorrect("date");
+exports.IncorrectDeadline = incorrect("deadline");
+exports.IncorrectDecimals = incorrect("decimals");
+exports.IncorrectFee = incorrect("fee");
+exports.IncorrectHallmark = incorrect("hallmark");
+exports.IncorrectHost = incorrect("host", "(the length exceeds 100 chars limit)");
+exports.IncorrectNumberOfConfirmations = incorrect("numberOfConfirmations");
+exports.IncorrectMaxNumberOfOptions = incorrect("maxNumberOfOptions");
+exports.IncorrectMinNumberOfOptions = incorrect("minNumberOfOptions");
+exports.IncorrectOptionsAreBinary = incorrect("optionsAreBinary");
+exports.IncorrectOrder = incorrect("order");
+exports.IncorrectPeriod = incorrect("period", "(period must be at least 1440 blocks)");
+exports.IncorrectPoll = incorrect("poll");
+exports.IncorrectPollNameLength = incorrect("name", "(length must be not longer than " + LmConstants.MaxPollNameLength + " characters)");
+exports.IncorrectPollDescriptionLength = incorrect("description", "(length must be not longer than " + LmConstants.MaxPollDescriptionLength + " characters)");
+exports.IncorrectPollOptionLength = incorrect("option", "(length must be not longer than " + LmConstants.MaxPollOptionLength + " characters)");
+exports.IncorrectPrice = incorrect("price");
+exports.IncorrectPublicKey = incorrect("publicKey");
+exports.IncorrectRecipient = incorrect("recipient");
+exports.IncorrectReferencedTransaction = incorrect("referencedTransactionFullHash");
+exports.IncorrectUriLength = incorrect("uri", "(length must be not longer than " + LmConstants.MaxAliasUriLength + " characters)");
+exports.IncorrectTimestamp = incorrect("timestamp");
+exports.IncorrectToken = incorrect("token");
+exports.IncorrectTransaction = incorrect("transaction");
+exports.IncorrectTransactionBytes = incorrect("transactionBytes");
+exports.IncorrectWebsite = incorrect("website");
+exports.IncorrectQuantity = incorrect("quantity");
+exports.IncorrectVote = incorrect("vote");
+exports.IncorrectWeight = incorrect("weight");
+exports.IncorrectUnsignedBytes = incorrect("unsignedTransactionBytes");
+exports.MissingAccount = missing("account");
+exports.MissingAliasName = missing("aliasName");
+exports.MissingAliasOrAliasName = missing("alias", "aliasName");
+exports.MissingAmount = missing("amountNQT");
+exports.MissingAsset = missing("asset");
+exports.MissingAssetName = missing("assetName");
+exports.MissingBlock = missing("block");
+exports.MissingDate = missing("date");
+exports.MissingDeadline = missing("deadline");
+exports.MissingDescription = missing("description");
+exports.MissingFee = missing("feeNQT");
+exports.MissingHallmark = missing("hallmark");
+exports.MissingHost = missing("host");
+exports.MissingMessage = missing("message");
+exports.MissingMaxNumberOfOptions = missing("maxNumberOfOptions");
+exports.MissingMinNumberOfOptions = missing("minNumberOfOptions");
+exports.MissingName = missing("name");
+exports.MissingNumberOfConfirmations = missing("numberOfConfirmations");
+exports.MissingOptionsAreBinary = missing("optionsAreBinary");
+exports.MissingOrder = missing("order");
+exports.MissingPeer = missing("peer");
+exports.MissingPeriod = missing("period");
+exports.MissingPoll = missing("poll");
+exports.MissingPrice = missing("priceNQT");
+exports.MissingQuantity = missing("quantityQNT");
+exports.MissingRecipient = missing("recipient");
+exports.MissingSecretPhrase = missing("secretPhrase");
+exports.MissingSecretPhraseOrPublicKey = missing("secretPhrase", "publicKey");
+exports.MissingSignatureHash = missing("signatureHash");
+exports.MissingTimestamp = missing("timestamp");
+exports.MissingToken = missing("token");
+exports.MissingTransaction = missing("transaction");
+exports.MissingTransactionBytes = missing("transactionBytes");
+exports.MissingWebsite = missing("website");
+exports.MissingWeight = missing("weight");
+exports.MissingUnsignedBytes = missing("unsignedTransactionBytes");
+exports.UnknownAccount = unknown("account");
+exports.UnknownAlias = unknown("alias");
+exports.UnknownAsset = unknown("asset");
+exports.UnknownBlock = unknown("block");
+exports.UnknownOrder = unknown("order");
+exports.UnknownPeer = unknown("peer");
+exports.UnknownPoll = unknown("poll");
+exports.UnknownTransaction = unknown("transaction");
+
+/*
+exports.INCORRECT_ACCOUNT = exports.IncorrectAccount;
+exports.INCORRECT_ALIAS = exports.IncorrectAlias;
+exports.INCORRECT_ALIAS_LENGTH = exports.IncorrectAliasLength;
+exports.INCORRECT_ALIAS_NAME = exports.IncorrectAliasName;
+exports.INCORRECT_ASSET = exports.IncorrectAsset;
+exports.INCORRECT_BLOCK = exports.IncorrectBlock;
+exports.INCORRECT_DEADLINE = exports.IncorrectDeadline;
+exports.INCORRECT_FEE = exports.IncorrectFee;
+exports.INCORRECT_HALLMARK = exports.IncorrectHallmark;
+exports.INCORRECT_ORDER = exports.IncorrectOrder;
+exports.INCORRECT_PUBLIC_KEY = exports.IncorrectPublicKey;
+exports.INCORRECT_TIMESTAMP = exports.IncorrectTimestamp;
+exports.INCORRECT_TOKEN = exports.IncorrectToken;
+exports.INCORRECT_TRANSACTION_BYTES = exports.IncorrectTransactionBytes;
+exports.INCORRECT_URI_LENGTH = exports.IncorrectUriLength;
+exports.INCORRECT_WEBSITE = exports.IncorrectWebsite;
+exports.MISSING_ACCOUNT = exports.MissingAccount;
+exports.MISSING_ALIAS_NAME = exports.MissingAliasName;
+exports.MISSING_ALIAS_OR_ALIAS_NAME = MISSING_ALIAS_OR_ALIAS_NAME;
+exports.MISSING_ASSET = MISSING_ASSET;
 exports.MISSING_ASSET_NAME = MISSING_ASSET_NAME;
 exports.MISSING_BLOCK = MISSING_BLOCK;
+exports.MISSING_DEADLINE = MISSING_DEADLINE;
+exports.MISSING_FEE = MISSING_FEE;
+exports.MISSING_HALLMARK = MISSING_HALLMARK;
+exports.MISSING_ORDER = MISSING_ORDER;
+exports.MISSING_SECRET_PHRASE = MISSING_SECRET_PHRASE;
+exports.MISSING_TIMESTAMP = MISSING_TIMESTAMP;
+exports.MISSING_TOKEN = MISSING_TOKEN;
+exports.MISSING_TRANSACTION_BYTES = MISSING_TRANSACTION_BYTES;
+exports.MISSING_WEBSITE = MISSING_WEBSITE;
+exports.UNKNOWN_ACCOUNT = UNKNOWN_ACCOUNT;
+exports.UNKNOWN_ALIAS = UNKNOWN_ALIAS;
+exports.UNKNOWN_ASSET = UNKNOWN_ASSET;
 exports.UNKNOWN_BLOCK = UNKNOWN_BLOCK;
-exports.INCORRECT_BLOCK = INCORRECT_BLOCK;
+exports.UNKNOWN_ORDER = UNKNOWN_ORDER;
+
 exports.MISSING_NUMBER_OF_CONFIRMATIONS = MISSING_NUMBER_OF_CONFIRMATIONS;
 exports.INCORRECT_NUMBER_OF_CONFIRMATIONS = INCORRECT_NUMBER_OF_CONFIRMATIONS;
 exports.MISSING_PEER = MISSING_PEER;
@@ -273,3 +353,4 @@ exports.INCORRECT_UNSIGNED_BYTES = INCORRECT_UNSIGNED_BYTES;
 exports.MISSING_UNSIGNED_BYTES = MISSING_UNSIGNED_BYTES;
 exports.MISSING_SIGNATURE_HASH = MISSING_SIGNATURE_HASH;
 exports.MISSING_SECRET_PHRASE_OR_PUBLIC_KEY = MISSING_SECRET_PHRASE_OR_PUBLIC_KEY;
+*/

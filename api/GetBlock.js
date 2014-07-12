@@ -7,7 +7,7 @@ import static nxt.http.JSONResponses.MISSING_BLOCK;
 import static nxt.http.JSONResponses.UNKNOWN_BLOCK;
 */
 
-JsonData = require(__dirname + '/JsonData');
+var JsonData = require(__dirname + '/JsonData');
 
 function Main(req, res) {
 	//static final GetBlock instance = new GetBlock();

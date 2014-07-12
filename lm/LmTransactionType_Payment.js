@@ -1,6 +1,6 @@
 
-LmConstants = require(__dirname + '/LmConstants');
-LmTrType = require(__dirname + '/LmTransactionType');
+var LmConstants = require(__dirname + '/LmConstants');
+var LmTrType = require(__dirname + '/LmTransactionType');
 
 
 var Ordinary;

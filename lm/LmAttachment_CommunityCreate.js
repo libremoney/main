@@ -1,5 +1,5 @@
 
-LmAttachment = require(__dirname + '/LmAttachment');
+var LmAttachment = require(__dirname + '/LmAttachment');
 
 
 function CreateCommunityCreateAttachment(Name, Description) {

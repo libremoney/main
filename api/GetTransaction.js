@@ -1,14 +1,32 @@
 /*
 import nxt.Nxt;
 import nxt.Transaction;
-import nxt.util.Convert;
-import static nxt.http.JSONResponses.INCORRECT_TRANSACTION;
-import static nxt.http.JSONResponses.MISSING_TRANSACTION;
-import static nxt.http.JSONResponses.UNKNOWN_TRANSACTION;
 */
 
+var LmUtil = require(__dirname + '/../util/Convert');
+var JsonData = require(__dirname + '/JsonData');
+
+
 function Main(req, res) {
-	res.send('This is not implemented');
+	var transactionIdString = req.query.transaction;
+	var transactionFullHash = req.query.fullHash;
+	//if (transactionIdString == null && transactionFullHash == null) {
+	//	return MISSING_TRANSACTION;
+	//}
+
+	var transaction = Lm.Transactions[1];
+
+	res.send(JsonData.Transaction(transaction));
+	/*
+	res.send({
+		transaction: {
+			type: 0,
+			transaction: 'test'
+		},
+		input: ''
+	});
+	*/
+	//res.send('This is not implemented');
 	/*
 	static final GetTransaction instance = new GetTransaction();
 
@@ -20,6 +38,7 @@ function Main(req, res) {
 
 		String transactionIdString = Convert.emptyToNull(req.getParameter("transaction"));
 		String transactionFullHash = Convert.emptyToNull(req.getParameter("fullHash"));
+	11
 		if (transactionIdString == null && transactionFullHash == null) {
 			return MISSING_TRANSACTION;
 		}

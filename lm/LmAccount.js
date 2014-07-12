@@ -1,27 +1,36 @@
 /*
-import nxt.crypto.Crypto;
 import nxt.util.Convert;
 import nxt.util.Listener;
 import nxt.util.Listeners;
 import nxt.util.Logger;
 */
 
-function Account() {
+var Lm = require(__dirname + '/Lm');
+var LmAccounts = require(__dirname + '/LmAccounts');
+var Crypto = require(__dirname + '/../crypto/Crypto');
+var Logger = require(__dirname + '/../util/Logger');
+
+
+function Account(id) {
+	var obj = {};
 
 	/*
 	public static enum Event {
 		BALANCE, UNCONFIRMED_BALANCE, ASSET_BALANCE, UNCONFIRMED_ASSET_BALANCE,
 		LEASE_SCHEDULED, LEASE_STARTED, LEASE_ENDED
 	}
+	*/
 
+	/*
 	static class DoubleSpendingException extends RuntimeException {
 		DoubleSpendingException(String message) {
 			super(message);
 		}
 	}
+	*/
 
+	/*
 	static {
-
 		Nxt.getBlockchainProcessor().addListener(new Listener<Block>() {
 			@Override
 			public void notify(Block block) {
@@ -76,20 +85,10 @@ function Account() {
 				}
 			}
 		}, BlockchainProcessor.Event.BLOCK_POPPED);
-
 	}
+	*/
 
-	private static final int maxTrackedBalanceConfirmations = 2881;
-	private static final ConcurrentMap<Long, Account> accounts = new ConcurrentHashMap<>();
-	private static final Collection<Account> allAccounts = Collections.unmodifiableCollection(accounts.values());
-	private static final ConcurrentMap<Long, Account> leasingAccounts = new ConcurrentHashMap<>();
-
-	private static final Listeners<Account,Event> listeners = new Listeners<>();
-
-	private static final Listeners<AccountAsset,Event> assetListeners = new Listeners<>();
-
-	private static final Listeners<AccountLease,Event> leaseListeners = new Listeners<>();
-
+	/*
 	public static boolean addListener(Listener<Account> listener, Event eventType) {
 		return listeners.addListener(listener, eventType);
 	}
@@ -113,110 +112,78 @@ function Account() {
 	public static boolean removeLeaseListener(Listener<AccountLease> listener, Event eventType) {
 		return leaseListeners.removeListener(listener, eventType);
 	}
+	*/
 
-	public static Collection<Account> getAllAccounts() {
-		return allAccounts;
+	function GetAllAccounts() {
+		return LmAccounts.GetAllAccounts();
 	}
 
-	public static Account getAccount(Long id) {
-		return accounts.get(id);
+	function GetAccount(value) {
+		return LmAccounts.GetAccount(value);
 	}
 
-	public static Account getAccount(byte[] publicKey) {
-		return accounts.get(getId(publicKey));
+	/*
+	function GetId(publicKey) {
+		return LmAccounts.GetId(publicKey);
+	}
+	*/
+
+	function AddOrGetAccount(id) {
+		return LmAccounts.AddOrGetAccount(id);
 	}
 
-	public static Long getId(byte[] publicKey) {
-		byte[] publicKeyHash = Crypto.sha256().digest(publicKey);
-		return Convert.fullHashToId(publicKeyHash);
+	function Clear() {
+		return LmAccounts.Clear();
 	}
 
-	static Account addOrGetAccount(Long id) {
-		Account oldAccount = accounts.get(id);
-		if (oldAccount == null) {
-			Account account = new Account(id);
-			oldAccount = accounts.putIfAbsent(id, account);
-			return oldAccount != null ? oldAccount : account;
-		} else {
-			return oldAccount;
-		}
+
+
+
+	function GetId() {
+		return this.id;
 	}
 
-	static void clear() {
-		accounts.clear();
-		leasingAccounts.clear();
+	function GetName() {
+		return this.name;
 	}
 
-	private final Long id;
-	private final int height;
-	private volatile byte[] publicKey;
-	private volatile int keyHeight;
-	private long balanceNQT;
-	private long unconfirmedBalanceNQT;
-	private long forgedBalanceNQT;
-	private final List<GuaranteedBalance> guaranteedBalances = new ArrayList<>();
-
-	private volatile int currentLeasingHeightFrom;
-	private volatile int currentLeasingHeightTo;
-	private volatile Long currentLesseeId;
-	private volatile int nextLeasingHeightFrom;
-	private volatile int nextLeasingHeightTo;
-	private volatile Long nextLesseeId;
-	private Set<Long> lessorIds = Collections.newSetFromMap(new ConcurrentHashMap<Long,Boolean>());
-
-	private final Map<Long, Long> assetBalances = new HashMap<>();
-	private final Map<Long, Long> unconfirmedAssetBalances = new HashMap<>();
-
-	private volatile String name;
-	private volatile String description;
-
-	private Account(Long id) {
-		if (! id.equals(Crypto.rsDecode(Crypto.rsEncode(id)))) {
-			Logger.logMessage("CRITICAL ERROR: Reed-Solomon encoding fails for " + id);
-		}
-		this.id = id;
-		this.height = Nxt.getBlockchain().getLastBlock().getHeight();
-		currentLeasingHeightFrom = Integer.MAX_VALUE;
+	function GetDescription() {
+		return this.description;
 	}
 
-	public Long getId() {
-		return id;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	void setAccountInfo(String name, String description) {
+	function SetAccountInfo(name, description) {
+		throw new Error('Not implementted');
+		/*
 		this.name = Convert.emptyToNull(name.trim());
 		this.description = Convert.emptyToNull(description.trim());
+		*/
 	}
 
-	public synchronized byte[] getPublicKey() {
+	function GetPublicKey() {
+		throw new Error('Not implementted');
+		/*
 		if (this.keyHeight == -1) {
 			return null;
 		}
 		return publicKey;
+		*/
 	}
 
-	public synchronized long getBalanceNQT() {
-		return balanceNQT;
+	function GetBalanceMilliLm() {
+		return this.balanceMilliLm;
 	}
 
-	public synchronized long getUnconfirmedBalanceNQT() {
-		return unconfirmedBalanceNQT;
+	function GetUnconfirmedBalanceMilliLm() {
+		return this.unconfirmedBalanceMilliLm;
 	}
 
-	public synchronized long getForgedBalanceNQT() {
-		return forgedBalanceNQT;
+	function GetForgedBalanceMilliLm() {
+		return this.forgedBalanceMilliLm;
 	}
 
-	public long getEffectiveBalanceNXT() {
-
+	function GetEffectiveBalanceLm() {
+		throw new Error('Not implementted');
+		/*
 		Block lastBlock = Nxt.getBlockchain().getLastBlock();
 
 		if (lastBlock.getHeight() >= Constants.TRANSPARENT_FORGING_BLOCK_6
@@ -247,18 +214,23 @@ function Account() {
 		}
 
 		return getLessorsGuaranteedBalanceNQT() / Constants.ONE_NXT;
-
+		*/
 	}
 
-	private long getLessorsGuaranteedBalanceNQT() {
+	function GetLessorsGuaranteedBalanceMilliLm() {
+		throw new Error('Not implementted');
+		/*
 		long lessorsGuaranteedBalanceNQT = 0;
 		for (Long accountId : lessorIds) {
 			lessorsGuaranteedBalanceNQT += Account.getAccount(accountId).getGuaranteedBalanceNQT(1440);
 		}
 		return lessorsGuaranteedBalanceNQT;
+		*/
 	}
 
-	public synchronized long getGuaranteedBalanceNQT(final int numberOfConfirmations) {
+	function GetGuaranteedBalanceMilliLm(numberOfConfirmations) {
+		throw new Error('Not implementted');
+		/*
 		if (numberOfConfirmations >= Nxt.getBlockchain().getLastBlock().getHeight()) {
 			return 0;
 		}
@@ -283,50 +255,61 @@ function Account() {
 			i--;
 		}
 		return result.ignore || result.balance < 0 ? 0 : result.balance;
-
+		*/
 	}
 
-	public synchronized Long getUnconfirmedAssetBalanceQNT(Long assetId) {
-		return unconfirmedAssetBalances.get(assetId);
+	function GetUnconfirmedAssetBalanceQNT(assetId) {
+		return this.unconfirmedAssetBalances[assetId];
 	}
 
-	public Map<Long, Long> getAssetBalancesQNT() {
+	function GetAssetBalancesQNT() {
+		throw new Error('Not implementted');
+		/*
 		return Collections.unmodifiableMap(assetBalances);
+		*/
 	}
 
-	public Map<Long, Long> getUnconfirmedAssetBalancesQNT() {
+	function GetUnconfirmedAssetBalancesQNT() {
+		throw new Error('Not implementted');
+		/*
 		return Collections.unmodifiableMap(unconfirmedAssetBalances);
+		*/
 	}
 
-	public Long getCurrentLesseeId() {
-		return currentLesseeId;
+	function GetCurrentLesseeId() {
+		return this.currentLesseeId;
 	}
 
-	public Long getNextLesseeId() {
-		return nextLesseeId;
+	function GetNextLesseeId() {
+		return this.nextLesseeId;
 	}
 
-	public int getCurrentLeasingHeightFrom() {
-		return currentLeasingHeightFrom;
+	function GetCurrentLeasingHeightFrom() {
+		return this.CurrentLeasingHeightFrom;
 	}
 
-	public int getCurrentLeasingHeightTo() {
-		return currentLeasingHeightTo;
+	function GetCurrentLeasingHeightTo() {
+		return this.currentLeasingHeightTo;
 	}
 
-	public int getNextLeasingHeightFrom() {
-		return nextLeasingHeightFrom;
+	function GetNextLeasingHeightFrom() {
+		return this.nextLeasingHeightFrom;
 	}
 
-	public int getNextLeasingHeightTo() {
-		return nextLeasingHeightTo;
+	function GetNextLeasingHeightTo() {
+		return this.nextLeasingHeightTo;
 	}
 
-	public Set<Long> getLessorIds() {
+	function GetLessorIds() {
+		throw new Error('Not implementted');
+		/*
 		return Collections.unmodifiableSet(lessorIds);
+		*/
 	}
 
-	void leaseEffectiveBalance(Long lesseeId, short period) {
+	function LeaseEffectiveBalance(lesseeId, period) {
+		throw new Error('Not implementted');
+		/*
 		Account lessee = Account.getAccount(lesseeId);
 		if (lessee != null && lessee.getPublicKey() != null) {
 			Block lastBlock = Nxt.getBlockchain().getLastBlock();
@@ -355,13 +338,16 @@ function Account() {
 
 			}
 		}
+		*/
 	}
 
 	// returns true iff:
 	// this.publicKey is set to null (in which case this.publicKey also gets set to key)
 	// or
 	// this.publicKey is already set to an array equal to key
-	synchronized boolean setOrVerify(byte[] key, int height) {
+	function SetOrVerify(key, height) {
+		throw new Error('Not implementted');
+		/*
 		if (this.publicKey == null) {
 			this.publicKey = key;
 			this.keyHeight = -1;
@@ -385,9 +371,12 @@ function Account() {
 		Logger.logMessage("Invalid key for account " + Convert.toUnsignedLong(id) + " at height " + height
 				+ ", was already set to a different one at height " + keyHeight);
 		return false;
+		*/
 	}
 
-	synchronized void apply(byte[] key, int height) {
+	function Apply(key, height) {
+		throw new Error('Not implementted');
+		/*
 		if (! setOrVerify(key, this.height)) {
 			throw new IllegalStateException("Generator public key mismatch");
 		}
@@ -398,9 +387,12 @@ function Account() {
 		if (this.keyHeight == -1 || this.keyHeight > height) {
 			this.keyHeight = height;
 		}
+		*/
 	}
 
-	synchronized void undo(int height) {
+	function Undo(height) {
+		throw new Error('Not implementted');
+		/*
 		if (this.keyHeight >= height) {
 			Logger.logDebugMessage("Unsetting key for account " + Convert.toUnsignedLong(id) + " at height " + height
 					+ ", was previously set at height " + keyHeight);
@@ -411,13 +403,19 @@ function Account() {
 			Logger.logDebugMessage("Removing account " + Convert.toUnsignedLong(id) + " which was created in the popped off block");
 			accounts.remove(this.getId());
 		}
+		*/
 	}
 
-	synchronized long getAssetBalanceQNT(Long assetId) {
+	function GetAssetBalanceQNT(assetId) {
+		throw new Error('Not implementted');
+		/*
 		return Convert.nullToZero(assetBalances.get(assetId));
+		*/
 	}
 
-	void addToAssetBalanceQNT(Long assetId, long quantityQNT) {
+	function AddToAssetBalanceQNT(assetId, quantityQNT) {
+		throw new Error('Not implementted');
+		/*
 		synchronized (this) {
 			Long assetBalance = assetBalances.get(assetId);
             assetBalance = assetBalance == null ? quantityQNT : Convert.safeAdd(assetBalance, quantityQNT);
@@ -428,9 +426,12 @@ function Account() {
 		}
 		listeners.notify(this, Event.ASSET_BALANCE);
 		assetListeners.notify(new AccountAsset(id, assetId, assetBalances.get(assetId)), Event.ASSET_BALANCE);
+		*/
 	}
 
-	void addToUnconfirmedAssetBalanceQNT(Long assetId, long quantityQNT) {
+	function AddToUnconfirmedAssetBalanceQNT(assetId, quantityQNT) {
+		throw new Error('Not implementted');
+		/*
 		synchronized (this) {
 			Long unconfirmedAssetBalance = unconfirmedAssetBalances.get(assetId);
             unconfirmedAssetBalance = unconfirmedAssetBalance == null ? quantityQNT : Convert.safeAdd(unconfirmedAssetBalance, quantityQNT);
@@ -441,9 +442,12 @@ function Account() {
 		}
 		listeners.notify(this, Event.UNCONFIRMED_ASSET_BALANCE);
 		assetListeners.notify(new AccountAsset(id, assetId, unconfirmedAssetBalances.get(assetId)), Event.UNCONFIRMED_ASSET_BALANCE);
+		*/
 	}
 
-	void addToAssetAndUnconfirmedAssetBalanceQNT(Long assetId, long quantityQNT) {
+	function AddToAssetAndUnconfirmedAssetBalanceQNT(assetId, quantityQNT) {
+		throw new Error('Not implementted');
+		/*
 		synchronized (this) {
 			Long assetBalance = assetBalances.get(assetId);
             assetBalance = assetBalance == null ? quantityQNT : Convert.safeAdd(assetBalance, quantityQNT);
@@ -463,9 +467,12 @@ function Account() {
 		listeners.notify(this, Event.UNCONFIRMED_ASSET_BALANCE);
 		assetListeners.notify(new AccountAsset(id, assetId, assetBalances.get(assetId)), Event.ASSET_BALANCE);
 		assetListeners.notify(new AccountAsset(id, assetId, unconfirmedAssetBalances.get(assetId)), Event.UNCONFIRMED_ASSET_BALANCE);
+		*/
 	}
 
-	void addToBalanceNQT(long amountNQT) {
+	function AddToBalanceMilliLm(amountNQT) {
+		throw new Error('Not implementted');
+		/*
 		synchronized (this) {
 			this.balanceNQT = Convert.safeAdd(this.balanceNQT, amountNQT);
 			addToGuaranteedBalanceNQT(amountNQT);
@@ -473,9 +480,12 @@ function Account() {
 		if (amountNQT != 0) {
 			listeners.notify(this, Event.BALANCE);
 		}
+		*/
 	}
 
-	void addToUnconfirmedBalanceNQT(long amountNQT) {
+	function AddToUnconfirmedBalanceMilliLm(amountNQT) {
+		throw new Error('Not implementted');
+		/*
 		if (amountNQT == 0) {
 			return;
 		}
@@ -483,9 +493,12 @@ function Account() {
 			this.unconfirmedBalanceNQT = Convert.safeAdd(this.unconfirmedBalanceNQT, amountNQT);
 		}
 		listeners.notify(this, Event.UNCONFIRMED_BALANCE);
+		*/
 	}
 
-	void addToBalanceAndUnconfirmedBalanceNQT(long amountNQT) {
+	function AddToBalanceAndUnconfirmedBalanceMilliLm(amountNQT) {
+		throw new Error('Not implementted');
+		/*
 		synchronized (this) {
 			this.balanceNQT = Convert.safeAdd(this.balanceNQT, amountNQT);
 			this.unconfirmedBalanceNQT = Convert.safeAdd(this.unconfirmedBalanceNQT, amountNQT);
@@ -495,15 +508,21 @@ function Account() {
 			listeners.notify(this, Event.BALANCE);
 			listeners.notify(this, Event.UNCONFIRMED_BALANCE);
 		}
+		*/
 	}
 
-	void addToForgedBalanceNQT(long amountNQT) {
+	function AddToForgedBalanceMilliLm(amountNQT) {
+		throw new Error('Not implementted');
+		/*
 		synchronized(this) {
 			this.forgedBalanceNQT = Convert.safeAdd(this.forgedBalanceNQT, amountNQT);
 		}
+		*/
 	}
 
-	private synchronized void addToGuaranteedBalanceNQT(long amountNQT) {
+	function AddToGuaranteedBalanceMilliLm(amountNQT) {
+		throw new Error('Not implementted');
+		/*
 		int blockchainHeight = Nxt.getBlockchain().getLastBlock().getHeight();
 		GuaranteedBalance last = null;
 		if (guaranteedBalances.size() > 0 && (last = guaranteedBalances.get(guaranteedBalances.size() - 1)).height > blockchainHeight) {
@@ -554,9 +573,12 @@ function Account() {
 			// should have been handled in the block popped off case
 			throw new IllegalStateException("last guaranteed balance height exceeds blockchain height");
 		}
+		*/
 	}
 
-	private void checkBalance() {
+	function CheckBalance() {
+		throw new Error('Not implementted');
+		/*
 		if (id.equals(Genesis.CREATOR_ID)) {
 			return;
 		}
@@ -569,8 +591,10 @@ function Account() {
 		if (unconfirmedBalanceNQT > balanceNQT) {
             throw new DoubleSpendingException("Unconfirmed balance exceeds balance for account " + Convert.toUnsignedLong(id));
 		}
+		*/
 	}
 
+	/*
 	private static class GuaranteedBalance implements Comparable<GuaranteedBalance> {
 
 		final int height;
@@ -599,6 +623,95 @@ function Account() {
 		}
 	}
 	*/
+
+
+	/*
+	id = 0;
+	if (id != Crypto.RsDecode(Crypto.RsEncode(id))) {
+		Logger.LogMessage("CRITICAL ERROR: Reed-Solomon encoding fails for " + id);
+	}
+	obj.id = id;
+	obj.height = Lm.GetBlockchain().GetLastBlock().GetHeight();
+	obj.currentLeasingHeightFrom = Integer.MAX_VALUE;
+	*/
+
+	/*
+	var publicKey;
+	var keyHeight;
+	var balanceMilliLm; //balanceNQT;
+	var unconfirmedBalanceMilliLm; //unconfirmedBalanceNQT;
+	var forgedBalanceMilliLm; //forgedBalanceNQT;
+	//private final List<GuaranteedBalance> guaranteedBalances = new ArrayList<>();
+
+	var currentLeasingHeightFrom;
+	var currentLeasingHeightTo;
+	var currentLesseeId;
+	var nextLeasingHeightFrom;
+	var nextLeasingHeightTo;
+	var nextLesseeId;
+	//private Set<Long> lessorIds = Collections.newSetFromMap(new ConcurrentHashMap<Long,Boolean>());
+
+	private final Map<Long, Long> assetBalances = new HashMap<>();
+	private final Map<Long, Long> unconfirmedAssetBalances = new HashMap<>();
+
+	var name;
+	var description;
+	*/
+
+	/*
+	obj.publicKey = publicKey;
+	obj.keyHeight = keyHeight;
+	obj.balanceMilliLm = balanceMilliLm;
+	obj.unconfirmedBalanceMilliLm = unconfirmedBalanceMilliLm;
+	obj.forgedBalanceMilliLm = forgedBalanceMilliLm;
+	//obj.guaranteedBalances = guaranteedBalances;
+
+	obj.currentLeasingHeightTo = currentLeasingHeightTo;
+	obj.currentLesseeId = currentLesseeId;
+	obj.nextLeasingHeightFrom = nextLeasingHeightFrom;
+	obj.nextLeasingHeightTo = nextLeasingHeightTo;
+	obj.nextLesseeId = nextLesseeId;
+	//obj.lessorIds = lessorIds;
+
+	obj.assetBalances = assetBalances;
+	obj.unconfirmedAssetBalances = unconfirmedAssetBalances;
+	*/
+
+	obj.GetId = GetId;
+	obj.GetName = GetName;
+	obj.GetDescription = GetDescription;
+	obj.GetPublicKey = GetPublicKey;
+	obj.GetBalanceMilliLm = GetBalanceMilliLm;
+	obj.GetUnconfirmedBalanceMilliLm = GetUnconfirmedBalanceMilliLm;
+	obj.GetForgedBalanceMilliLm = GetForgedBalanceMilliLm;
+	obj.GetEffectiveBalanceLm = GetEffectiveBalanceLm;
+	obj.GetLessorsGuaranteedBalanceMilliLm = GetLessorsGuaranteedBalanceMilliLm;
+	obj.GetGuaranteedBalanceMilliLm = GetGuaranteedBalanceMilliLm;
+	obj.GetUnconfirmedAssetBalanceQNT = GetUnconfirmedAssetBalanceQNT;
+	obj.GetAssetBalancesQNT = GetAssetBalancesQNT;
+	obj.GetUnconfirmedAssetBalancesQNT = GetUnconfirmedAssetBalancesQNT;
+	obj.GetCurrentLesseeId = GetCurrentLesseeId;
+	obj.GetNextLesseeId = GetNextLesseeId;
+	obj.GetCurrentLeasingHeightFrom = GetCurrentLeasingHeightFrom;
+	obj.GetCurrentLeasingHeightTo = GetCurrentLeasingHeightTo;
+	obj.GetNextLeasingHeightFrom = GetNextLeasingHeightFrom;
+	obj.GetNextLeasingHeightTo = GetNextLeasingHeightTo;
+	obj.GetLessorIds = GetLessorIds;
+	obj.LeaseEffectiveBalance = LeaseEffectiveBalance;
+	obj.SetOrVerify = SetOrVerify;
+	obj.Apply = Apply;
+	obj.Undo = Undo;
+	obj.GetAssetBalanceQNT = GetAssetBalanceQNT;
+	obj.AddToAssetBalanceQNT = AddToAssetBalanceQNT;
+	obj.AddToUnconfirmedAssetBalanceQNT = AddToUnconfirmedAssetBalanceQNT;
+	obj.AddToAssetAndUnconfirmedAssetBalanceQNT = AddToAssetAndUnconfirmedAssetBalanceQNT;
+	obj.AddToBalanceMilliLm = AddToBalanceMilliLm;
+	obj.AddToUnconfirmedBalanceMilliLm = AddToUnconfirmedBalanceMilliLm;
+	obj.AddToBalanceAndUnconfirmedBalanceMilliLm = AddToBalanceAndUnconfirmedBalanceMilliLm;
+	obj.AddToForgedBalanceMilliLm = AddToForgedBalanceMilliLm;
+	obj.AddToGuaranteedBalanceMilliLm = AddToGuaranteedBalanceMilliLm;
+	obj.CheckBalance = CheckBalance;
+	return obj;
 }
 
 module.exports = Account;

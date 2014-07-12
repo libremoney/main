@@ -1,5 +1,5 @@
 
-LmAttachment = require(__dirname + '/LmAttachment');
+var LmAttachment = require(__dirname + '/LmAttachment');
 
 
 // Mentor = Invite = Transaction sender

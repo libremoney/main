@@ -54,6 +54,15 @@ var Lm = (function(Lm, $, undefined) {
 		}
 	}
 
+	function AlertObj(obj) {
+		var str = "";
+		var k;
+		for (k in obj) {
+			str += k+": "+ obj[k]+"\r\n";
+		}
+		alert(str);
+	}
+
 	function CheckAssetDifferences(current_balances, previous_balances) {
 		var current_balances_ = {};
 		var previous_balances_ = {};
@@ -469,8 +478,6 @@ var Lm = (function(Lm, $, undefined) {
 	}
 
 	function Init() {
-		Lm.AddToLog(Lm.DebugLevelEnum.Comment, 'Lm.Init - begin');
-
 		if (location.port && location.port != "6876") {
 			$(".testnet_only").hide();
 		} else {
@@ -542,8 +549,6 @@ var Lm = (function(Lm, $, undefined) {
 				Lm.PositionAssetSidebar();
 			}
 		});
-
-		Lm.AddToLog(Lm.DebugLevelEnum.Comment, 'Lm.Init - end');
 	}
 
 	function PageLoaded(Callback) {
@@ -646,6 +651,10 @@ var Lm = (function(Lm, $, undefined) {
 		$(document.documentElement).scrollTop(0);
 
 		$("#" + page + "_page").show();
+
+		// Prof1983
+		if (page == 'transactions')
+			Lm.Pages.Transactions();
 
 		$(".content-header h1").find(".loading_dots").remove();
 
@@ -788,6 +797,7 @@ var Lm = (function(Lm, $, undefined) {
 
 
 	Lm.AddToLog = AddToLog;
+	Lm.AlertObj = AlertObj;
 	Lm.CheckAssetDifferences = CheckAssetDifferences;
 	Lm.CheckLocationHash = CheckLocationHash;
 	Lm.CreateDatabase = CreateDatabase;

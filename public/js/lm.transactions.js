@@ -416,51 +416,55 @@ var Lm = (function(Lm, $, undefined) {
 		}
 
 		Lm.SendRequest("getAccountTransactionIds+", params, function(response) {
-			if (response.transactionIds && response.transactionIds.length) {
-				var transactions = {};
-				var nr_transactions = 0;
+			TransactionsPage_Refresh(response, rows);
+		});
+	}
 
-				var transactionIds = response.transactionIds.reverse().slice(0, 100);
+	function TransactionsPage_Refresh(response, rows) {
+		if (response.transactionIds && response.transactionIds.length) {
+			var transactions = {};
+			var nr_transactions = 0;
 
-				for (var i = 0; i < transactionIds.length; i++) {
-					Lm.SendRequest("getTransaction+", {
-						"transaction": transactionIds[i]
-					}, function(transaction, input) {
-						if (Lm.CurrentPage != "transactions") {
-							transactions = {};
-							return;
-						}
+			var transactionIds = response.transactionIds.reverse().slice(0, 100);
 
-						transaction.transaction = input.transaction;
-						transaction.confirmed = true;
-
-						transactions[input.transaction] = transaction;
-						nr_transactions++;
-
-						if (nr_transactions == transactionIds.length) {
-							for (var i = 0; i < nr_transactions; i++) {
-								var transaction = transactions[transactionIds[i]];
-								rows += Lm.GetTransactionRowHtml(transaction);
-							}
-
-							$("#transactions_table tbody").empty().append(rows);
-							Lm.DataLoadFinished($("#transactions_table"));
-
-							Lm.PageLoaded();
-						}
-					});
-
+			for (var i = 0; i < transactionIds.length; i++) {
+				Lm.SendRequest("getTransaction+", {
+					"transaction": transactionIds[i]
+				}, function(transaction, input) {
 					if (Lm.CurrentPage != "transactions") {
 						transactions = {};
 						return;
 					}
+
+					transaction.transaction = input.transaction;
+					transaction.confirmed = true;
+
+					transactions[input.transaction] = transaction;
+					nr_transactions++;
+
+					if (nr_transactions == transactionIds.length) {
+						for (var i = 0; i < nr_transactions; i++) {
+							var transaction = transactions[transactionIds[i]];
+							rows += Lm.GetTransactionRowHtml(transaction);
+						}
+
+						$("#transactions_table tbody").empty().append(rows);
+						Lm.DataLoadFinished($("#transactions_table"));
+
+						Lm.PageLoaded();
+					}
+				});
+
+				if (Lm.CurrentPage != "transactions") {
+					transactions = {};
+					return;
 				}
-			} else {
-				$("#transactions_table tbody").empty().append(rows);
-				Lm.DataLoadFinished($("#transactions_table"));
-				Lm.PageLoaded();
 			}
-		});
+		} else {
+			$("#transactions_table tbody").empty().append(rows);
+			Lm.DataLoadFinished($("#transactions_table"));
+			Lm.PageLoaded();
+		}
 	}
 
 	function IncomingTransactions(transactions) {
@@ -600,7 +604,7 @@ var Lm = (function(Lm, $, undefined) {
 			"</td></tr>";
 	}
 
-	function TransactionsPageTypeLiClick(e, th) {
+	function TransactionsPageTypeLi_OnClick(e, th) {
 		e.preventDefault();
 
 		var type = th.data("type");
@@ -626,7 +630,7 @@ var Lm = (function(Lm, $, undefined) {
 
 
 	$("#transactions_page_type li a").click(function(e) {
-		Lm.TransactionsPageTypeLiClick(e, $(this));
+		TransactionsPageTypeLi_OnClick(e, $(this));
 	});
 
 
@@ -643,6 +647,5 @@ var Lm = (function(Lm, $, undefined) {
 	Lm.Pages.Transactions = TransactionsPage;
 	Lm.Pages.UnconfirmedTransactions = UnconfirmedTransactionsPage;
 	Lm.GetTransactionRowHtml = GetTransactionRowHtml;
-	Lm.TransactionsPageTypeLiClick = TransactionsPageTypeLiClick;
 	return Lm;
 }(Lm || {}, jQuery));

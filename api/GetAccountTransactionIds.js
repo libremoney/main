@@ -9,9 +9,16 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
 */
 
+var ParameterParser = require(__dirname + '/ParameterParser');
+
+
 function Main(req, res) {
 	//static final GetAccountTransactionIds instance = new GetAccountTransactionIds();
-	res.send('This is not implemented');
+	var account = ParameterParser.GetAccount(req);
+	res.send({
+		transactionIds: [1]
+	});
+	//res.send('This is not implemented');
 	/*
 	private GetAccountTransactionIds() {
 		super("account", "timestamp", "type", "subtype");

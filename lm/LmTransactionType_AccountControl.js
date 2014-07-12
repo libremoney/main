@@ -1,5 +1,5 @@
 
-LmTrType = require(__dirname + '/LmTransactionType');
+var LmTrType = require(__dirname + '/LmTransactionType');
 
 function TransactionType_AccountControl() {
 

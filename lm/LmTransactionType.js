@@ -1,6 +1,7 @@
 
-LmTrTypePayment = require(__dirname + '/LmTransactionType_Payment');
-LmTrTypeUser = require(__dirname + '/LmTransactionType_User');
+var LmTrTypePayment = require(__dirname + '/LmTransactionType_Payment');
+var LmTrTypeUser = require(__dirname + '/LmTransactionType_User');
+var LmTrTypeColoredCoins = require(__dirname + '/LmTransactionType_ColoredCoins');
 
 
 // return TransactionType

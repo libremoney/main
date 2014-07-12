@@ -17,6 +17,7 @@ import nxt.util.Convert;
 */
 
 function Alias(Alias) {
+	throw new Error('Not implementted');
 	/*
 	JSONObject json = new JSONObject();
 	json.put("account", Convert.toUnsignedLong(alias.getAccount().getId()));
@@ -30,6 +31,7 @@ function Alias(Alias) {
 }
 
 function AccountBalance(Account) {
+	throw new Error('Not implementted');
 	/*
 	JSONObject json = new JSONObject();
 	if (account == null) {
@@ -52,6 +54,7 @@ function AccountBalance(Account) {
 }
 
 function Asset(Asset) {
+	throw new Error('Not implementted');
 	/*
 	JSONObject json = new JSONObject();
 	json.put("account", Convert.toUnsignedLong(asset.getAccountId()));
@@ -68,6 +71,7 @@ function Asset(Asset) {
 
 // Order = Order.Ask
 function AskOrder(Order) {
+	throw new Error('Not implementted');
 	/*
 	JSONObject json = order(order);
 	json.put("type", "ask");
@@ -77,6 +81,7 @@ function AskOrder(Order) {
 
 // Order = Order.Bid
 function BidOrder(Order) {
+	throw new Error('Not implementted');
 	/*
 	JSONObject json = order(order);
 	json.put("type", "bid");
@@ -85,6 +90,7 @@ function BidOrder(Order) {
 }
 
 function Order(Order) {
+	throw new Error('Not implementted');
 	/*
 	JSONObject json = new JSONObject();
 	json.put("order", Convert.toUnsignedLong(order.getId()));
@@ -99,6 +105,7 @@ function Order(Order) {
 }
 
 function Block(Block) {
+	throw new Error('Not implementted');
 	/*
 	JSONObject json = new JSONObject();
 	json.put("height", block.getHeight());
@@ -133,6 +140,7 @@ function Block(Block) {
 }
 
 function Hallmark(Hallmark) {
+	throw new Error('Not implementted');
 	/*
 	JSONObject json = new JSONObject();
 	Long accountId = Account.getId(hallmark.getPublicKey());
@@ -148,6 +156,7 @@ function Hallmark(Hallmark) {
 }
 
 function Token(Token) {
+	throw new Error('Not implementted');
 	/*
 	JSONObject json = new JSONObject();
 	Long accountId = Account.getId(token.getPublicKey());
@@ -160,6 +169,7 @@ function Token(Token) {
 }
 
 function Peer(Peer) {
+	throw new Error('Not implementted');
 	/*
 	JSONObject json = new JSONObject();
 	json.put("state", peer.getState().ordinal());
@@ -180,6 +190,7 @@ function Peer(Peer) {
 }
 
 function Poll(Poll) {
+	throw new Error('Not implementted');
 	/*
 	JSONObject json = new JSONObject();
 	json.put("name", poll.getName());
@@ -200,6 +211,7 @@ function Poll(Poll) {
 }
 
 function Trade(Trade) {
+	throw new Error('Not implementted');
 	/*
 	JSONObject json = new JSONObject();
 	json.put("timestamp", trade.getTimestamp());
@@ -214,17 +226,27 @@ function Trade(Trade) {
 }
 
 function UnconfirmedTransaction(Transaction) {
+	var obj = {};
+	obj.type = 0; //transaction.getType().getType();
+	obj.subtype = 0; //transaction.getType().getSubtype();
+	obj.timestamp = 0; //transaction.getTimestamp();
+	obj.deadline = 0; //transaction.getDeadline();
+	obj.senderPublicKey = 0; //Convert.toHexString(transaction.getSenderPublicKey());
+	obj.recipient = 0; //Convert.toUnsignedLong(transaction.getRecipientId());
+	obj.recipientRS = 0; //Convert.rsAccount(transaction.getRecipientId());
+	obj.amountNQT = 0; //String.valueOf(transaction.getAmountNQT());
+	obj.feeNQT = 0; //String.valueOf(transaction.getFeeNQT());
+	obj.referencedTransactionFullHash = 0; //transaction.getReferencedTransactionFullHash());
+	obj.signature = ''; //Convert.toHexString(signature));
+	obj.signatureHash = ''; //Convert.toHexString(Crypto.sha256().digest(signature)));
+	obj.fullHash = 0; //transaction.getFullHash());
+	obj.transaction = 0; //transaction.getStringId());
+	obj.attachment = 0; //attachment(transaction.getAttachment()));
+	obj.sender = 0; //Convert.toUnsignedLong(transaction.getSenderId()));
+	obj.senderRS = 0; //Convert.rsAccount(transaction.getSenderId()));
+	obj.height = 0; //transaction.getHeight());
+	return obj;
 	/*
-	JSONObject json = new JSONObject();
-	json.put("type", transaction.getType().getType());
-	json.put("subtype", transaction.getType().getSubtype());
-	json.put("timestamp", transaction.getTimestamp());
-	json.put("deadline", transaction.getDeadline());
-	json.put("senderPublicKey", Convert.toHexString(transaction.getSenderPublicKey()));
-	json.put("recipient", Convert.toUnsignedLong(transaction.getRecipientId()));
-	json.put("recipientRS", Convert.rsAccount(transaction.getRecipientId()));
-	json.put("amountNQT", String.valueOf(transaction.getAmountNQT()));
-	json.put("feeNQT", String.valueOf(transaction.getFeeNQT()));
 	if (transaction.getReferencedTransactionFullHash() != null) {
 		json.put("referencedTransactionFullHash", transaction.getReferencedTransactionFullHash());
 	}
@@ -246,17 +268,16 @@ function UnconfirmedTransaction(Transaction) {
 }
 
 function Transaction(Transaction) {
-	/*
-	JSONObject json = unconfirmedTransaction(transaction);
-	json.put("block", Convert.toUnsignedLong(transaction.getBlockId()));
-	json.put("confirmations", Nxt.getBlockchain().getLastBlock().getHeight() - transaction.getHeight());
-	json.put("blockTimestamp", transaction.getBlockTimestamp());
-	return json;
-	*/
+	var obj = UnconfirmedTransaction(Transaction);
+	obj.block = 1; //Convert.toUnsignedLong(transaction.getBlockId());
+	obj.confirmations = 0; //Nxt.getBlockchain().getLastBlock().getHeight() - transaction.getHeight();
+	obj.blockTimestamp = 0; //transaction.getBlockTimestamp();
+	return obj;
 }
 
 // ugly, hopefully temporary
 function Attachment(Attachment) {
+	throw new Error('Not implementted');
 	/*
 	JSONObject json = attachment.getJSONObject();
 	Long quantityQNT = (Long) json.remove("quantityQNT");

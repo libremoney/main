@@ -4,166 +4,32 @@ import nxt.Asset;
 import nxt.Constants;
 import nxt.crypto.Crypto;
 import nxt.util.Convert;
-import static nxt.http.JSONResponses.INCORRECT_ACCOUNT;
-import static nxt.http.JSONResponses.INCORRECT_AMOUNT;
-import static nxt.http.JSONResponses.INCORRECT_ASSET;
-import static nxt.http.JSONResponses.INCORRECT_FEE;
-import static nxt.http.JSONResponses.INCORRECT_ORDER;
-import static nxt.http.JSONResponses.INCORRECT_PRICE;
-import static nxt.http.JSONResponses.INCORRECT_PUBLIC_KEY;
-import static nxt.http.JSONResponses.INCORRECT_QUANTITY;
-import static nxt.http.JSONResponses.INCORRECT_RECIPIENT;
-import static nxt.http.JSONResponses.INCORRECT_TIMESTAMP;
-import static nxt.http.JSONResponses.MISSING_ACCOUNT;
-import static nxt.http.JSONResponses.MISSING_AMOUNT;
-import static nxt.http.JSONResponses.MISSING_ASSET;
-import static nxt.http.JSONResponses.MISSING_FEE;
-import static nxt.http.JSONResponses.MISSING_ORDER;
-import static nxt.http.JSONResponses.MISSING_PRICE;
-import static nxt.http.JSONResponses.MISSING_QUANTITY;
-import static nxt.http.JSONResponses.MISSING_RECIPIENT;
-import static nxt.http.JSONResponses.MISSING_SECRET_PHRASE_OR_PUBLIC_KEY;
-import static nxt.http.JSONResponses.UNKNOWN_ACCOUNT;
-import static nxt.http.JSONResponses.UNKNOWN_ASSET;
 */
 
-/*
-static long getAmountNQT(HttpServletRequest req) throws ParameterException {
-	String amountValueNQT = Convert.emptyToNull(req.getParameter("amountNQT"));
-	if (amountValueNQT == null) {
-		throw new ParameterException(MISSING_AMOUNT);
-	}
-	long amountNQT;
-	try {
-		amountNQT = Long.parseLong(amountValueNQT);
-	} catch (RuntimeException e) {
-		throw new ParameterException(INCORRECT_AMOUNT);
-	}
-	if (amountNQT <= 0 || amountNQT >= Constants.MAX_BALANCE_NQT) {
-		throw new ParameterException(INCORRECT_AMOUNT);
-	}
-	return amountNQT;
-}
+var JsonResponses = require(__dirname + '/JsonResponses');
+var Convert = require(__dirname + '/../util/Convert');
 
-static long getFeeNQT(HttpServletRequest req) throws ParameterException {
-	String feeValueNQT = Convert.emptyToNull(req.getParameter("feeNQT"));
-	if (feeValueNQT == null) {
-		throw new ParameterException(MISSING_FEE);
-	}
-	long feeNQT;
-	try {
-		feeNQT = Long.parseLong(feeValueNQT);
-	} catch (RuntimeException e) {
-		throw new ParameterException(INCORRECT_FEE);
-	}
-	if (feeNQT <= 0 || feeNQT >= Constants.MAX_BALANCE_NQT) {
-		throw new ParameterException(INCORRECT_FEE);
-	}
-	return feeNQT;
-}
 
-static long getPriceNQT(HttpServletRequest req) throws ParameterException {
-	String priceValueNQT = Convert.emptyToNull(req.getParameter("priceNQT"));
-	if (priceValueNQT == null) {
-		throw new ParameterException(MISSING_PRICE);
-	}
-	long priceNQT;
-	try {
-		priceNQT = Long.parseLong(priceValueNQT);
-	} catch (RuntimeException e) {
-		throw new ParameterException(INCORRECT_PRICE);
-	}
-	if (priceNQT <= 0 || priceNQT > Constants.MAX_BALANCE_NQT) {
-		throw new ParameterException(INCORRECT_PRICE);
-	}
-	return priceNQT;
-}
-
-static Asset getAsset(HttpServletRequest req) throws ParameterException {
-	String assetValue = Convert.emptyToNull(req.getParameter("asset"));
-	if (assetValue == null) {
-		throw new ParameterException(MISSING_ASSET);
-	}
-	Asset asset;
-	try {
-		Long assetId = Convert.parseUnsignedLong(assetValue);
-		asset = Asset.getAsset(assetId);
-	} catch (RuntimeException e) {
-		throw new ParameterException(INCORRECT_ASSET);
-	}
-	if (asset == null) {
-		throw new ParameterException(UNKNOWN_ASSET);
-	}
-	return asset;
-}
-
-static long getQuantityQNT(HttpServletRequest req) throws ParameterException {
-	String quantityValueQNT = Convert.emptyToNull(req.getParameter("quantityQNT"));
-	if (quantityValueQNT == null) {
-		throw new ParameterException(MISSING_QUANTITY);
-	}
-	long quantityQNT;
-	try {
-		quantityQNT = Long.parseLong(quantityValueQNT);
-	} catch (RuntimeException e) {
-		throw new ParameterException(INCORRECT_QUANTITY);
-	}
-	if (quantityQNT <= 0 || quantityQNT > Constants.MAX_ASSET_QUANTITY_QNT) {
-		throw new ParameterException(INCORRECT_QUANTITY);
-	}
-	return quantityQNT;
-}
-
-static Long getOrderId(HttpServletRequest req) throws ParameterException {
-	String orderValue = Convert.emptyToNull(req.getParameter("order"));
-	if (orderValue == null) {
-		throw new ParameterException(MISSING_ORDER);
-	}
-	try {
-		return Convert.parseUnsignedLong(orderValue);
-	} catch (RuntimeException e) {
-		throw new ParameterException(INCORRECT_ORDER);
-	}
-}
-
-static Account getSenderAccount(HttpServletRequest req) throws ParameterException {
-	Account account;
-	String secretPhrase = Convert.emptyToNull(req.getParameter("secretPhrase"));
-	String publicKeyString = Convert.emptyToNull(req.getParameter("publicKey"));
-	if (secretPhrase != null) {
-		account = Account.getAccount(Crypto.getPublicKey(secretPhrase));
-	} else if (publicKeyString != null) {
-		try {
-			account = Account.getAccount(Convert.parseHexString(publicKeyString));
-		} catch (RuntimeException e) {
-			throw new ParameterException(INCORRECT_PUBLIC_KEY);
-		}
-	} else {
-		throw new ParameterException(MISSING_SECRET_PHRASE_OR_PUBLIC_KEY);
-	}
-	if (account == null) {
-		throw new ParameterException(UNKNOWN_ACCOUNT);
-	}
-	return account;
-}
-
-static Account getAccount(HttpServletRequest req) throws ParameterException {
-	String accountValue = Convert.emptyToNull(req.getParameter("account"));
+function GetAccount(req) {
+	var accountValue = Convert.EmptyToNull(req.query.account);
 	if (accountValue == null) {
-		throw new ParameterException(MISSING_ACCOUNT);
+		throw new Error(JsonResponses.MissingAccount);
 	}
 	try {
-		Account account = Account.getAccount(Convert.parseAccountId(accountValue));
-		if (account == null) {
-			throw new ParameterException(UNKNOWN_ACCOUNT);
+		console.log('GetAccount:'+accountValue);
+		var account = Account.GetAccount(Convert.ParseAccountId(accountValue));
+		if (account == null || typeof account == 'undefined') {
+			throw new Error(JsonResponces.UnknownAccount);
 		}
 		return account;
-	} catch (RuntimeException e) {
-		throw new ParameterException(INCORRECT_ACCOUNT);
+	} catch (e) {
+		throw new Error(JsonResponces.IncorrectAccount);
 	}
 }
 
-static List<Account> getAccounts(HttpServletRequest req) throws ParameterException {
+function GetAccounts(req) {
+	throw new Error('Not implementted');
+	/*
 	String[] accountValues = req.getParameterValues("account");
 	if (accountValues == null || accountValues.length == 0) {
 		throw new ParameterException(MISSING_ACCOUNT);
@@ -184,26 +50,132 @@ static List<Account> getAccounts(HttpServletRequest req) throws ParameterExcepti
 		}
 	}
 	return result;
+	*/
 }
 
-static int getTimestamp(HttpServletRequest req) throws ParameterException {
-	String timestampValue = Convert.emptyToNull(req.getParameter("timestamp"));
-	if (timestampValue == null) {
-		return 0;
+// GetAmountNQT
+function GetAmountMilliLm(req) {
+	throw new Error('Not implementted');
+	/*
+	String amountValueNQT = Convert.emptyToNull(req.getParameter("amountNQT"));
+	if (amountValueNQT == null) {
+		throw new ParameterException(MISSING_AMOUNT);
 	}
-	int timestamp;
+	long amountNQT;
 	try {
-		timestamp = Integer.parseInt(timestampValue);
-	} catch (NumberFormatException e) {
-		throw new ParameterException(INCORRECT_TIMESTAMP);
+		amountNQT = Long.parseLong(amountValueNQT);
+	} catch (RuntimeException e) {
+		throw new ParameterException(INCORRECT_AMOUNT);
 	}
-	if (timestamp < 0) {
-		throw new ParameterException(INCORRECT_TIMESTAMP);
+	if (amountNQT <= 0 || amountNQT >= Constants.MAX_BALANCE_NQT) {
+		throw new ParameterException(INCORRECT_AMOUNT);
 	}
-	return timestamp;
+	return amountNQT;
+	*/
 }
 
-static Long getRecipientId(HttpServletRequest req) throws ParameterException {
+function GetAsset(req) {
+	throw new Error('Not implementted');
+	/*
+	String assetValue = Convert.emptyToNull(req.getParameter("asset"));
+	if (assetValue == null) {
+		throw new ParameterException(MISSING_ASSET);
+	}
+	Asset asset;
+	try {
+		Long assetId = Convert.parseUnsignedLong(assetValue);
+		asset = Asset.getAsset(assetId);
+	} catch (RuntimeException e) {
+		throw new ParameterException(INCORRECT_ASSET);
+	}
+	if (asset == null) {
+		throw new ParameterException(UNKNOWN_ASSET);
+	}
+	return asset;
+	*/
+}
+
+// GetFeeNQT
+function GetFeeMilliLm(req) {
+	throw new Error('Not implementted');
+	/*
+	String feeValueNQT = Convert.emptyToNull(req.getParameter("feeNQT"));
+	if (feeValueNQT == null) {
+		throw new ParameterException(MISSING_FEE);
+	}
+	long feeNQT;
+	try {
+		feeNQT = Long.parseLong(feeValueNQT);
+	} catch (RuntimeException e) {
+		throw new ParameterException(INCORRECT_FEE);
+	}
+	if (feeNQT <= 0 || feeNQT >= Constants.MAX_BALANCE_NQT) {
+		throw new ParameterException(INCORRECT_FEE);
+	}
+	return feeNQT;
+	*/
+}
+
+function GetOrderId(req) {
+	throw new Error('Not implementted');
+	/*
+	String orderValue = Convert.emptyToNull(req.getParameter("order"));
+	if (orderValue == null) {
+		throw new ParameterException(MISSING_ORDER);
+	}
+	try {
+		return Convert.parseUnsignedLong(orderValue);
+	} catch (RuntimeException e) {
+		throw new ParameterException(INCORRECT_ORDER);
+	}
+	*/
+}
+
+// GetPriceNQT
+function GetPriceMilliLm(req) {
+	throw new Error('Not implementted');
+	/*
+	String priceValueNQT = Convert.emptyToNull(req.getParameter("priceNQT"));
+	if (priceValueNQT == null) {
+		throw new ParameterException(MISSING_PRICE);
+	}
+	long priceNQT;
+	try {
+		priceNQT = Long.parseLong(priceValueNQT);
+	} catch (RuntimeException e) {
+		throw new ParameterException(INCORRECT_PRICE);
+	}
+	if (priceNQT <= 0 || priceNQT > Constants.MAX_BALANCE_NQT) {
+		throw new ParameterException(INCORRECT_PRICE);
+	}
+	return priceNQT;
+	*/
+}
+
+// GetQuantityQNT
+function GetQuantityMilliLm(req) {
+	throw new Error('Not implementted');
+	/*
+	String quantityValueQNT = Convert.emptyToNull(req.getParameter("quantityQNT"));
+	if (quantityValueQNT == null) {
+		throw new ParameterException(MISSING_QUANTITY);
+	}
+	long quantityQNT;
+	try {
+		quantityQNT = Long.parseLong(quantityValueQNT);
+	} catch (RuntimeException e) {
+		throw new ParameterException(INCORRECT_QUANTITY);
+	}
+	if (quantityQNT <= 0 || quantityQNT > Constants.MAX_ASSET_QUANTITY_QNT) {
+		throw new ParameterException(INCORRECT_QUANTITY);
+	}
+	return quantityQNT;
+	*/
+}
+
+function GetRecipientId(req) {
+	throw new Error('Not implementted');
+	/*
 	String recipientValue = Convert.emptyToNull(req.getParameter("recipient"));
 	if (recipientValue == null || "0".equals(recipientValue)) {
 		throw new ParameterException(MISSING_RECIPIENT);
@@ -218,5 +190,62 @@ static Long getRecipientId(HttpServletRequest req) throws ParameterException {
 		throw new ParameterException(INCORRECT_RECIPIENT);
 	}
 	return recipientId;
+	*/
 }
-*/
+
+function GetSenderAccount(req) {
+	throw new Error('Not implementted');
+	/*
+	Account account;
+	String secretPhrase = Convert.emptyToNull(req.getParameter("secretPhrase"));
+	String publicKeyString = Convert.emptyToNull(req.getParameter("publicKey"));
+	if (secretPhrase != null) {
+		account = Account.getAccount(Crypto.getPublicKey(secretPhrase));
+	} else if (publicKeyString != null) {
+		try {
+			account = Account.getAccount(Convert.parseHexString(publicKeyString));
+		} catch (RuntimeException e) {
+			throw new ParameterException(INCORRECT_PUBLIC_KEY);
+		}
+	} else {
+		throw new ParameterException(MISSING_SECRET_PHRASE_OR_PUBLIC_KEY);
+	}
+	if (account == null) {
+		throw new ParameterException(UNKNOWN_ACCOUNT);
+	}
+	return account;
+	*/
+}
+
+function GetTimestamp(req) {
+	throw new Error('Not implementted');
+	/*
+	String timestampValue = Convert.emptyToNull(req.getParameter("timestamp"));
+	if (timestampValue == null) {
+		return 0;
+	}
+	int timestamp;
+	try {
+		timestamp = Integer.parseInt(timestampValue);
+	} catch (NumberFormatException e) {
+		throw new ParameterException(INCORRECT_TIMESTAMP);
+	}
+	if (timestamp < 0) {
+		throw new ParameterException(INCORRECT_TIMESTAMP);
+	}
+	return timestamp;
+	*/
+}
+
+
+exports.GetAccount = GetAccount;
+exports.GetAccounts = GetAccounts;
+exports.GetAmountMilliLm = GetAmountMilliLm;
+exports.GetAsset = GetAsset;
+exports.GetFeeMilliLm = GetFeeMilliLm;
+exports.GetOrderId = GetOrderId;
+exports.GetPriceMilliLm = GetPriceMilliLm;
+exports.GetQuantityMilliLm = GetQuantityMilliLm;
+exports.GetRecipientId = GetRecipientId;
+exports.GetSenderAccount = GetSenderAccount;
+exports.GetTimestamp = GetTimestamp;

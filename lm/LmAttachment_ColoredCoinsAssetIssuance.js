@@ -1,6 +1,6 @@
 
-LmAttachment = require(__dirname + '/LmAttachment');
-LmTrTypeColoredCoins = require(__dirname + '/LmTransactionType_ColoredCoins');
+var LmAttachment = require(__dirname + '/LmAttachment');
+var LmTrTypeColoredCoins = require(__dirname + '/LmTransactionType_ColoredCoins');
 
 
 function CreateColoredCoinsAssetIssuance(Name, Description, QuantityMilliLm, Decimals) {
