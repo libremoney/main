@@ -1,6 +1,0 @@
-{
-	"port" : 1400,
-	"mongoose": {
-		"uri": "mongodb://localhost/libremoney"
-	}
-}
