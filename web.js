@@ -1,39 +1,58 @@
 /**!
- * LibreMoney 0.0.1
- * Author: Prof1983 <prof1983@yandex.ru>
- * License: CC0
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
  */
 
 
 var express = require("express");
 var logfmt = require("logfmt");
+var path = require("path");
 
-var Lm = require("./lm/Lm"); //require(nodepath.join(rootpath, 'lm/Lm'));
-var Logger = require("./lib/logger")(module);
-var Server = require("./server");
-var config = require('./lib/config'); // Используемая конфигурация
-
-
-// ==== Functions ====
-
-// Init LibreMoney core
-function InitLibreMoney(App) {
-	Logger.info("LibreMoney: initializing");
-	Lm.Init(App, InitLibreMoneySuccess);
-}
-
-function InitLibreMoneySuccess() {
-	Logger.info("LibreMoney: initialized");
-}
+var Config = require('./Lm/Config');
+var Core = require("./Lm/Core");
+var Db = require('./Lm/Db');
+var Demo = require('./Lm/Demo');
+var Lang = require('./Locale/Ru');
+var Lm = require("./Lm/Lm");
+var Logger = require("./Lm/Logger").GetLogger(module);
+var Server = require("./Lm/Server");
 
 
 // ==== Main ====
 
 var App = express();
-var Port = Number(process.env.PORT || config.get('port'));
+var Port = Number(process.env.PORT);
 
 App.use(logfmt.requestLogger());
-Server.Start(App, Port, function () {
-	Logger.info('LibreMoney: server started');
+
+Config.Init(__dirname+'/Conf/Main.json', function(err) {
+	if (err) {
+		throw new Error('Error in Config.Init()');
+	}
+	Logger.info('Config initialized');
+	if (!Port)
+		Port = Number(Config.Get('port'));
+	Core.Init(function(err) {
+		if (err) throw 'Error in Core.Init()';
+		Logger.info('Core initialized');
+		Logger.info('Core initialized2');
+		Db.Init(path.join(__dirname, "/Lm/Db/Models"), function (err) {
+			if (err) throw 'Error in Db.Init()';
+			Db.Connect(function (err) {
+				if (err) throw 'Error in Db.Connect()';
+				Server.Init(App, function(err) {
+					if (err) throw 'Error in Server.Init()';
+					Logger.info('Server initialized');
+					Server.Start(App, Port, function (err) {
+						if (err) throw 'Error in Server.Start()';
+						Logger.info('Server started');
+
+						Demo.Init();
+
+					});
+				});
+			});
+		});
+	});
 });
-InitLibreMoney(App);

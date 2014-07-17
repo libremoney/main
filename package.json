@@ -1,6 +1,6 @@
 {
   "name": "LibreMoney",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "description": "LibreMoney project",
   "main": "web.js",
   "private": true,
