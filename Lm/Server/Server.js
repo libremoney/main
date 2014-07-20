@@ -10,13 +10,13 @@ var path = require('path');
 
 var Logger = require(__dirname + "/../Logger").GetLogger(module);
 
-var Api = require(__dirname + "/Api/index");
-var CommunityPage = require(__dirname + "/Pages/community");
-var MainPage = require(__dirname + "/Pages/main");
-var ProjectsPage = require(__dirname + "/Pages/projects");
-var StartPage = require(__dirname + "/Pages/start");
-var UserPage = require(__dirname + "/Pages/user");
-var UsersPage = require(__dirname + "/Pages/users");
+var Api = require(__dirname + "/Api");
+var GroupsPage = require(__dirname + "/Pages/Groups");
+var MainPage = require(__dirname + "/Pages/Main");
+var ProjectsPage = require(__dirname + "/Pages/Projects");
+var StartPage = require(__dirname + "/Pages/Start");
+var UserPage = require(__dirname + "/Pages/User");
+var UsersPage = require(__dirname + "/Pages/Users");
 
 //var routes = require('./routes'); // Файл с роутам
 //var Db = require('./lib/db'); // Файл работы с базой MongoDB
@@ -60,7 +60,7 @@ function Init(app, callback) {
 	InitHello(app);
 	InitStartPage(app);
 
-	app.get('/community', CommunityPage);
+	app.get('/groups', GroupsPage);
 	app.get('/projects', ProjectsPage);
 	app.get('/users', UsersPage);
 	app.get('/user/1', UserPage);
@@ -69,7 +69,7 @@ function Init(app, callback) {
 	app.post('/api/v0/users', Api.PostUsers);
 	app.put('/api/v0/user/:id', Api.PutUser);
 
-	app.use(express.static(__dirname + '/../Public'));
+	app.use(express.static(__dirname + '/../../Public'));
 
 	//routes.Setup(app);
 
@@ -200,6 +200,7 @@ function InitStartPage(app) {
 function Start(app, port, callback) {
 	app.listen(port, function () {
 		console.log('Express server started on port %s', port);
+		if (callback) callback(null);
 	});
 }
 

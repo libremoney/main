@@ -1,8 +1,12 @@
 /**!
- * LibreMoney main page
+ * LibreMoney main page 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
  */
 
-Templ = require(__dirname + "/templ");
+
+var Templ = require(__dirname + "/Templ");
+
 
 function Body() {
 	return '<body>' +
@@ -39,5 +43,6 @@ function Main(req, res) {
 	res.send('<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=index.html"></head></html>');
 	//res.send('<!DOCTYPE html>' + '<html>' + Templ.Head('Home') + Body() + '</html>');
 }
+
 
 module.exports = Main;

@@ -1,3 +1,9 @@
+/**!
+ * LibreMoney 404 page 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 function main(response) {
 	console.log("404 Not foud.");
 	response.writeHead(404, {"Content-Type":"text/html; charset=utf-8"});

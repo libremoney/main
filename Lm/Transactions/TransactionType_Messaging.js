@@ -20,7 +20,7 @@ function TransactionType_Messaging() {
 
 		void LoadAttachment(TransactionImpl transaction, ByteBuffer buffer) throws NxtException.ValidationException {
 			int messageLength = buffer.getInt();
-			if (messageLength > Constants.MAX_ARBITRARY_MESSAGE_LENGTH) {
+			if (messageLength > Constants.MaxArbitraryMessageLength) {
 				throw new NxtException.ValidationException("Invalid arbitrary message length: " + messageLength);
 			}
 			byte[] message = new byte[messageLength];
@@ -39,7 +39,7 @@ function TransactionType_Messaging() {
 
 		void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
 			Attachment.MessagingArbitraryMessage attachment = (Attachment.MessagingArbitraryMessage)transaction.getAttachment();
-			if (transaction.getAmountNQT() != 0 || attachment.getMessage().length > Constants.MAX_ARBITRARY_MESSAGE_LENGTH) {
+			if (transaction.getAmountNQT() != 0 || attachment.getMessage().length > Constants.MaxArbitraryMessageLength) {
 				throw new NxtException.ValidationException("Invalid arbitrary message: " + attachment.getJSONObject());
 			}
 		}
@@ -54,13 +54,13 @@ function TransactionType_Messaging() {
 
 		void LoadAttachment(TransactionImpl transaction, ByteBuffer buffer) throws NxtException.ValidationException {
 			int aliasLength = buffer.get();
-			if (aliasLength > 3 * Constants.MAX_ALIAS_LENGTH) {
+			if (aliasLength > 3 * Constants.MaxAliasLength) {
 				throw new NxtException.ValidationException("Max alias length exceeded");
 			}
 			byte[] alias = new byte[aliasLength];
 			buffer.get(alias);
 			int uriLength = buffer.getShort();
-			if (uriLength > 3 * Constants.MAX_ALIAS_URI_LENGTH) {
+			if (uriLength > 3 * Constants.MaxAliasUriLength) {
 				throw new NxtException.ValidationException("Max alias URI length exceeded");
 			}
 			byte[] uri = new byte[uriLength];
@@ -110,13 +110,13 @@ function TransactionType_Messaging() {
 			Attachment.MessagingAliasAssignment attachment = (Attachment.MessagingAliasAssignment)transaction.getAttachment();
 			if (! Genesis.CREATOR_ID.equals(transaction.getRecipientId()) || transaction.getAmountNQT() != 0
 					|| attachment.getAliasName().length() == 0
-					|| attachment.getAliasName().length() > Constants.MAX_ALIAS_LENGTH
-					|| attachment.getAliasURI().length() > Constants.MAX_ALIAS_URI_LENGTH) {
+					|| attachment.getAliasName().length() > Constants.MaxAliasLength
+					|| attachment.getAliasURI().length() > Constants.MaxAliasUriLength) {
 				throw new NxtException.ValidationException("Invalid alias assignment: " + attachment.getJSONObject());
 			}
 			String normalizedAlias = attachment.getAliasName().toLowerCase();
 			for (int i = 0; i < normalizedAlias.length(); i++) {
-				if (Constants.ALPHABET.indexOf(normalizedAlias.charAt(i)) < 0) {
+				if (Constants.Alphabet.indexOf(normalizedAlias.charAt(i)) < 0) {
 					throw new NxtException.ValidationException("Invalid alias name: " + normalizedAlias);
 				}
 			}
@@ -137,27 +137,27 @@ function TransactionType_Messaging() {
 		void LoadAttachment(TransactionImpl transaction, ByteBuffer buffer) throws NxtException.ValidationException {
 			try {
 				int pollNameBytesLength = buffer.getShort();
-				if (pollNameBytesLength > 3 * Constants.MAX_POLL_NAME_LENGTH) {
+				if (pollNameBytesLength > 3 * Constants.MaxPollNameLength) {
 					throw new NxtException.ValidationException("Invalid poll name length");
 				}
 				byte[] pollNameBytes = new byte[pollNameBytesLength];
 				buffer.get(pollNameBytes);
 				String pollName = (new String(pollNameBytes, "UTF-8")).trim();
 				int pollDescriptionBytesLength = buffer.getShort();
-				if (pollDescriptionBytesLength > 3 * Constants.MAX_POLL_DESCRIPTION_LENGTH) {
+				if (pollDescriptionBytesLength > 3 * Constants.MaxPollDescriptionLength) {
 					throw new NxtException.ValidationException("Invalid poll description length");
 				}
 				byte[] pollDescriptionBytes = new byte[pollDescriptionBytesLength];
 				buffer.get(pollDescriptionBytes);
 				String pollDescription = (new String(pollDescriptionBytes, "UTF-8")).trim();
 				int numberOfOptions = buffer.get();
-				if (numberOfOptions > Constants.MAX_POLL_OPTION_COUNT) {
+				if (numberOfOptions > Constants.MaxPollOptionCount) {
 					throw new NxtException.ValidationException("Invalid number of poll options: " + numberOfOptions);
 				}
 				String[] pollOptions = new String[numberOfOptions];
 				for (int i = 0; i < numberOfOptions; i++) {
 					int pollOptionBytesLength = buffer.getShort();
-					if (pollOptionBytesLength > 3 * Constants.MAX_POLL_OPTION_LENGTH) {
+					if (pollOptionBytesLength > 3 * Constants.MaxPollOptionLength) {
 						throw new NxtException.ValidationException("Error parsing poll options");
 					}
 					byte[] pollOptionBytes = new byte[pollOptionBytesLength];
@@ -202,18 +202,15 @@ function TransactionType_Messaging() {
 		}
 
 		void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
-			if (Nxt.getBlockchain().getLastBlock().getHeight() < Constants.VOTING_SYSTEM_BLOCK) {
-				throw new NotYetEnabledException("Voting System not yet enabled at height " + Nxt.getBlockchain().getLastBlock().getHeight());
-			}
 			Attachment.MessagingPollCreation attachment = (Attachment.MessagingPollCreation)transaction.getAttachment();
 			for (int i = 0; i < attachment.getPollOptions().length; i++) {
-				if (attachment.getPollOptions()[i].length() > Constants.MAX_POLL_OPTION_LENGTH) {
+				if (attachment.getPollOptions()[i].length() > Constants.MaxPollOptionLength) {
 					throw new NxtException.ValidationException("Invalid poll options length: " + attachment.getJSONObject());
 				}
 			}
-			if (attachment.getPollName().length() > Constants.MAX_POLL_NAME_LENGTH
+			if (attachment.getPollName().length() > Constants.MaxPollNameLength
 					|| attachment.getPollDescription().length() > Constants.MAX_POLL_DESCRIPTION_LENGTH
-					|| attachment.getPollOptions().length > Constants.MAX_POLL_OPTION_COUNT
+					|| attachment.getPollOptions().length > Constants.MaxPollOptionCount
 					|| transaction.getAmountNQT() != 0
 					|| ! Genesis.CREATOR_ID.equals(transaction.getRecipientId())) {
 				throw new NxtException.ValidationException("Invalid poll attachment: " + attachment.getJSONObject());
@@ -231,7 +228,7 @@ function TransactionType_Messaging() {
 		void LoadAttachment(TransactionImpl transaction, ByteBuffer buffer) throws NxtException.ValidationException {
 			Long pollId = buffer.getLong();
 			int numberOfOptions = buffer.get();
-			if (numberOfOptions > Constants.MAX_POLL_OPTION_COUNT) {
+			if (numberOfOptions > Constants.MaxPollOptionCount) {
 				throw new NxtException.ValidationException("Error parsing vote casting parameters");
 			}
 			byte[] pollVote = new byte[numberOfOptions];
@@ -264,12 +261,9 @@ function TransactionType_Messaging() {
 		}
 
 		void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
-			if (Nxt.getBlockchain().getLastBlock().getHeight() < Constants.VOTING_SYSTEM_BLOCK) {
-				throw new NotYetEnabledException("Voting System not yet enabled at height " + Nxt.getBlockchain().getLastBlock().getHeight());
-			}
 			Attachment.MessagingVoteCasting attachment = (Attachment.MessagingVoteCasting)transaction.getAttachment();
 			if (attachment.getPollId() == null || attachment.getPollVote() == null
-					|| attachment.getPollVote().length > Constants.MAX_POLL_OPTION_COUNT) {
+					|| attachment.getPollVote().length > Constants.MaxPollOptionCount) {
 				throw new NxtException.ValidationException("Invalid vote casting attachment: " + attachment.getJSONObject());
 			}
 			if (Poll.getPoll(attachment.getPollId()) == null) {
@@ -290,13 +284,13 @@ function TransactionType_Messaging() {
 			try {
 				long minFeePerByte = buffer.getLong();
 				int numberOfUris = buffer.get();
-				if (numberOfUris > Constants.MAX_HUB_ANNOUNCEMENT_URIS) {
+				if (numberOfUris > Constants.MaxHubAnnouncementUris) {
 					throw new NxtException.ValidationException("Invalid number of URIs: " + numberOfUris);
 				}
 				String[] uris = new String[numberOfUris];
 				for (int i = 0; i < uris.length; i++) {
 					int uriBytesLength = buffer.getShort();
-					if (uriBytesLength > 3 * Constants.MAX_HUB_ANNOUNCEMENT_URI_LENGTH) {
+					if (uriBytesLength > 3 * Constants.MaxHubAnnouncementUriLength) {
 						throw new NxtException.ValidationException("Invalid URI length: " + uriBytesLength);
 					}
 					byte[] uriBytes = new byte[uriBytesLength];
@@ -335,19 +329,16 @@ function TransactionType_Messaging() {
 		}
 
 		void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
-			if (Nxt.getBlockchain().getLastBlock().getHeight() < Constants.TRANSPARENT_FORGING_BLOCK_7) {
-				throw new NotYetEnabledException("Hub terminal announcement not yet enabled at height " + Nxt.getBlockchain().getLastBlock().getHeight());
-			}
 			Attachment.MessagingHubAnnouncement attachment = (Attachment.MessagingHubAnnouncement)transaction.getAttachment();
 			if (!Genesis.CREATOR_ID.equals(transaction.getRecipientId())
 					|| transaction.getAmountNQT() != 0
-					|| attachment.getMinFeePerByteNQT() < 0 || attachment.getMinFeePerByteNQT() > Constants.MAX_BALANCE_NQT
-					|| attachment.getUris().length > Constants.MAX_HUB_ANNOUNCEMENT_URIS) {
+					|| attachment.getMinFeePerByteNQT() < 0 || attachment.getMinFeePerByteNQT() > Constants.MaxBalanceMilliLm
+					|| attachment.getUris().length > Constants.MaxHubAnnouncementUris) {
 				// cfb: "0" is allowed to show that another way to determine the min fee should be used
 				throw new NxtException.ValidationException("Invalid hub terminal announcement: " + attachment.getJSONObject());
 			}
 			for (String uri : attachment.getUris()) {
-				if (uri.length() > Constants.MAX_HUB_ANNOUNCEMENT_URI_LENGTH) {
+				if (uri.length() > Constants.MaxHubAnnouncementUriLength) {
 					throw new NxtException.ValidationException("Invalid URI length: " + uri.length());
 				}
 				//TODO: also check URI validity here?
@@ -364,13 +355,13 @@ function TransactionType_Messaging() {
 
 		void LoadAttachment(TransactionImpl transaction, ByteBuffer buffer) throws NxtException.ValidationException {
 			int nameLength = buffer.get();
-			if (nameLength > 3 * Constants.MAX_ACCOUNT_NAME_LENGTH) {
+			if (nameLength > 3 * Constants.MaxAccountNameLength) {
 				throw new NxtException.ValidationException("Max account info name length exceeded");
 			}
 			byte[] name = new byte[nameLength];
 			buffer.get(name);
 			int descriptionLength = buffer.getShort();
-			if (descriptionLength > 3 * Constants.MAX_ACCOUNT_DESCRIPTION_LENGTH) {
+			if (descriptionLength > 3 * Constants.MaxAccountDescriptionLength) {
 				throw new NxtException.ValidationException("Max account info description length exceeded");
 			}
 			byte[] description = new byte[descriptionLength];
@@ -392,8 +383,8 @@ function TransactionType_Messaging() {
 		void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
 			Attachment.MessagingAccountInfo attachment = (Attachment.MessagingAccountInfo)transaction.getAttachment();
 			if (! Genesis.CREATOR_ID.equals(transaction.getRecipientId()) || transaction.getAmountNQT() != 0
-					|| attachment.getName().length() > Constants.MAX_ACCOUNT_NAME_LENGTH
-					|| attachment.getDescription().length() > Constants.MAX_ACCOUNT_DESCRIPTION_LENGTH
+					|| attachment.getName().length() > Constants.MaxAccountNameLength
+					|| attachment.getDescription().length() > Constants.MaxAccountDescriptionLength
 					) {
 				throw new NxtException.ValidationException("Invalid account info issuance: " + attachment.getJSONObject());
 			}

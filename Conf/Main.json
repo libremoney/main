@@ -1,5 +1,6 @@
 {
 	"port" : 1400,
+	"forceValidate": "false",
 	"mongoose": {
 		"uri": "mongodb://localhost/libremoney"
 	}

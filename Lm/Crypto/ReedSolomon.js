@@ -1,5 +1,5 @@
 /*
-Reed Solomon Encoding and Decoding for Nxt
+Reed Solomon Encoding and Decoding for Lm
 
 Version: 1.0, license: Public Domain, coder: NxtChg (admin@nxtchg.com)
 Java Version: ChuckOne (ChuckOne@mail.de).

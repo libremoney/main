@@ -4,7 +4,7 @@
  * CC0 license
  */
 
-var Projects = require(__dirname + "/../Projects");
+var Projects = require(__dirname + "/../../Projects");
 
 
 function Main(req, res) {

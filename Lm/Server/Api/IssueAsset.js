@@ -32,17 +32,17 @@ function Main(req, res) {
 		}
 
 		name = name.trim();
-		if (name.length() < Constants.MIN_ASSET_NAME_LENGTH || name.length() > Constants.MAX_ASSET_NAME_LENGTH) {
+		if (name.length() < Constants.MinAssetNameLength || name.length() > Constants.MaxAssetNameLength) {
 			return INCORRECT_ASSET_NAME_LENGTH;
 		}
 		String normalizedName = name.toLowerCase();
 		for (int i = 0; i < normalizedName.length(); i++) {
-			if (Constants.ALPHABET.indexOf(normalizedName.charAt(i)) < 0) {
+			if (Constants.Alphabet.indexOf(normalizedName.charAt(i)) < 0) {
 				return INCORRECT_ASSET_NAME;
 			}
 		}
 
-		if (description != null && description.length() > Constants.MAX_ASSET_DESCRIPTION_LENGTH) {
+		if (description != null && description.length() > Constants.MaxAssetDescriptionLength) {
 			return INCORRECT_ASSET_DESCRIPTION;
 		}
 
@@ -66,7 +66,7 @@ function Main(req, res) {
 	}
 
 	final long minimumFeeNQT() {
-		return Constants.ASSET_ISSUANCE_FEE_NQT;
+		return Constants.AssetIssuanceFeeMilliLm;
 	}
 	*/
 }

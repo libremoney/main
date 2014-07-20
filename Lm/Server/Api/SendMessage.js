@@ -32,7 +32,7 @@ function Main(req, res) {
 		} catch (RuntimeException e) {
 			return INCORRECT_ARBITRARY_MESSAGE;
 		}
-		if (message.length > Constants.MAX_ARBITRARY_MESSAGE_LENGTH) {
+		if (message.length > Constants.MaxArbitraryMessageLength) {
 			return INCORRECT_ARBITRARY_MESSAGE;
 		}
 

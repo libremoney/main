@@ -30,24 +30,24 @@ function CreateUserCreate() {
 	function DoLoadAttachment_Buf(Transaction, Buffer) {
 		/*
 		int nameLength = buffer.get();
-		if (nameLength > 3 * Constants.MAX_ASSET_NAME_LENGTH) {
-			throw new NxtException.ValidationException("Max asset name length exceeded");
+		if (nameLength > 3 * Constants.MaxUserNameLength) {
+			throw new NxtException.ValidationException("Max user name length exceeded");
 		}
 		byte[] name = new byte[nameLength];
 		buffer.get(name);
 		int descriptionLength = buffer.getShort();
-		if (descriptionLength > 3 * Constants.MAX_ASSET_DESCRIPTION_LENGTH) {
-			throw new NxtException.ValidationException("Max asset description length exceeded");
+		if (descriptionLength > 3 * Constants.MaxUserDescriptionLength) {
+			throw new NxtException.ValidationException("Max user description length exceeded");
 		}
 		byte[] description = new byte[descriptionLength];
 		buffer.get(description);
 		long quantityQNT = buffer.getLong();
 		byte decimals = buffer.get();
 		try {
-			transaction.setAttachment(new Attachment.ColoredCoinsAssetIssuance(new String(name, "UTF-8").intern(),
+		xx	transaction.setAttachment(new Attachment.ColoredCoinsAssetIssuance(new String(name, "UTF-8").intern(),
 					new String(description, "UTF-8").intern(), quantityQNT, decimals));
 		} catch (UnsupportedEncodingException e) {
-			throw new NxtException.ValidationException("Error in asset issuance", e);
+			throw new NxtException.ValidationException("Error in user issuance", e);
 		}
 		*/
 	}
@@ -58,7 +58,7 @@ function CreateUserCreate() {
 		String description = (String)attachmentData.get("description");
 		long quantityQNT = (Long)attachmentData.get("quantityQNT");
 		byte decimals = ((Long)attachmentData.get("decimals")).byteValue();
-		transaction.setAttachment(new Attachment.ColoredCoinsAssetIssuance(name.trim(), description.trim(),
+	xx	transaction.setAttachment(new Attachment.ColoredCoinsAssetIssuance(name.trim(), description.trim(),
 				quantityQNT, decimals));
 		*/
 	}
@@ -69,7 +69,7 @@ function CreateUserCreate() {
 
 	function ApplyAttachment(Transaction, SenderAccount, RecipientAccount) {
 		/*
-		Attachment.ColoredCoinsAssetIssuance attachment = (Attachment.ColoredCoinsAssetIssuance)transaction.getAttachment();
+	xx	Attachment.ColoredCoinsAssetIssuance attachment = (Attachment.ColoredCoinsAssetIssuance)transaction.getAttachment();
 		Long assetId = transaction.getId();
 		Asset.addAsset(assetId, transaction.getSenderId(), attachment.getName(), attachment.getDescription(),
 				attachment.getQuantityQNT(), attachment.getDecimals());
@@ -79,7 +79,7 @@ function CreateUserCreate() {
 
 	function UndoAttachment(Transaction, SenderAccount, RecipientAccount) {
 		/*
-		Attachment.ColoredCoinsAssetIssuance attachment = (Attachment.ColoredCoinsAssetIssuance)transaction.getAttachment();
+	xx	Attachment.ColoredCoinsAssetIssuance attachment = (Attachment.ColoredCoinsAssetIssuance)transaction.getAttachment();
 		Long assetId = transaction.getId();
 		senderAccount.addToAssetAndUnconfirmedAssetBalanceQNT(assetId, -attachment.getQuantityQNT());
 		Asset.removeAsset(assetId);
@@ -92,20 +92,20 @@ function CreateUserCreate() {
 		/*
 		Attachment.ColoredCoinsAssetIssuance attachment = (Attachment.ColoredCoinsAssetIssuance)transaction.getAttachment();
 		if (! Genesis.CREATOR_ID.equals(transaction.getRecipientId()) || transaction.getAmountNQT() != 0
-				|| transaction.getFeeNQT() < Constants.ASSET_ISSUANCE_FEE_NQT
-				|| attachment.getName().length() < Constants.MIN_ASSET_NAME_LENGTH
-				|| attachment.getName().length() > Constants.MAX_ASSET_NAME_LENGTH
-				|| attachment.getDescription().length() > Constants.MAX_ASSET_DESCRIPTION_LENGTH
+				|| transaction.getFeeNQT() < Constants.AssetIssuanceFeeMilliLm
+				|| attachment.getName().length() < Constants.MinAssetNameLength
+				|| attachment.getName().length() > Constants.MaxAssetNameLength
+				|| attachment.getDescription().length() > Constants.MaxAssetDescriptionLength
 				|| attachment.getDecimals() < 0 || attachment.getDecimals() > 8
 				|| attachment.getQuantityQNT() <= 0
-				|| attachment.getQuantityQNT() > Constants.MAX_ASSET_QUANTITY_QNT
+				|| attachment.getQuantityQNT() > Constants.MaxAssetQuantityQnt
 				) {
-			throw new NxtException.ValidationException("Invalid asset issuance: " + attachment.getJSONObject());
+			throw new NxtException.ValidationException("Invalid user issuance: " + attachment.getJSONObject());
 		}
 		String normalizedName = attachment.getName().toLowerCase();
 		for (int i = 0; i < normalizedName.length(); i++) {
-			if (Constants.ALPHABET.indexOf(normalizedName.charAt(i)) < 0) {
-				throw new NxtException.ValidationException("Invalid asset name: " + normalizedName);
+			if (Constants.Alphabet.indexOf(normalizedName.charAt(i)) < 0) {
+				throw new NxtException.ValidationException("Invalid user name: " + normalizedName);
 			}
 		}
 		*/

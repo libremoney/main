@@ -71,7 +71,7 @@ function ProcessRequest(req, user) {
 
 		return response;
 
-	} else if (amountNQT <= 0 || amountNQT > Constants.MAX_BALANCE_NQT) {
+	} else if (amountNQT <= 0 || amountNQT > Constants.MaxBalanceMilliLm) {
 
 		JSONObject response = new JSONObject();
 		response.put("response", "notifyOfIncorrectTransaction");
@@ -83,7 +83,7 @@ function ProcessRequest(req, user) {
 
 		return response;
 
-	} else if (feeNQT < Constants.ONE_NXT || feeNQT > Constants.MAX_BALANCE_NQT) {
+	} else if (feeNQT < Constants.OneLm || feeNQT > Constants.MaxBalanceMilliLm) {
 
 		JSONObject response = new JSONObject();
 		response.put("response", "notifyOfIncorrectTransaction");

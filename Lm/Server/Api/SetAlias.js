@@ -30,19 +30,19 @@ function Main(req, res) {
 		}
 
 		aliasName = aliasName.trim();
-		if (aliasName.length() == 0 || aliasName.length() > Constants.MAX_ALIAS_LENGTH) {
+		if (aliasName.length() == 0 || aliasName.length() > Constants.MaxAliasLength) {
 			return INCORRECT_ALIAS_LENGTH;
 		}
 
 		String normalizedAlias = aliasName.toLowerCase();
 		for (int i = 0; i < normalizedAlias.length(); i++) {
-			if (Constants.ALPHABET.indexOf(normalizedAlias.charAt(i)) < 0) {
+			if (Constants.Alphabet.indexOf(normalizedAlias.charAt(i)) < 0) {
 				return INCORRECT_ALIAS_NAME;
 			}
 		}
 
 		aliasURI = aliasURI.trim();
-		if (aliasURI.length() > Constants.MAX_ALIAS_URI_LENGTH) {
+		if (aliasURI.length() > Constants.MaxAliasUriLength) {
 			return INCORRECT_URI_LENGTH;
 		}
 

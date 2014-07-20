@@ -28,7 +28,7 @@ var Transactions = require(__dirname + '/Transactions');
 var Logger = require(__dirname + '/Logger').GetLogger(module);
 
 
-var version = "0.0.4";
+var version = "0.0.5";
 
 
 function Log(msg) {
@@ -37,6 +37,7 @@ function Log(msg) {
 
 
 function Init(callback) {
+	Accounts.Init();
 	Groups.Init();
 	Projects.Init();
 	Users.Init();
@@ -208,12 +209,6 @@ function Shutdown() {
 	Logger.shutdown();
 	*/
 }
-
-
-Lm.GetBlockchain = GetBlockchain;
-Lm.GetBlockchainProcessor = GetBlockchainProcessor;
-Lm.GetTransactionProcessor = GetTransactionProcessor;
-Lm.Shutdown = Shutdown;
 
 
 exports.Init = Init;

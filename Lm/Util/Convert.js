@@ -1,6 +1,8 @@
-/*
-import nxt.crypto.Crypto;
-*/
+/**!
+ * LibreMoney Convert 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
 var BigInteger = require(__dirname + '/BigInteger');
 var LmConstants = require(__dirname + '/../Constants');
@@ -79,7 +81,7 @@ function EmptyToNull(value) {
 function FromEpochTime(epochTime) {
 	throw new Error('Not implementted');
 	/*
-	return new Date(epochTime * 1000L + LmConstants.EPOCH_BEGINNING - 500L);
+	return new Date(epochTime * 1000L + LmConstants.EpochBeginning - 500L);
 	*/
 }
 
@@ -113,7 +115,7 @@ function FullHashToId(hash) {
 function GetEpochTime() {
 	throw new Error('Not implementted');
 	/*
-	return (int)((System.currentTimeMillis() - LmConstants.EPOCH_BEGINNING + 500) / 1000);
+	return (int)((System.currentTimeMillis() - LmConstants.EpochBeginning + 500) / 1000);
 	*/
 }
 

@@ -35,13 +35,13 @@ function CreateAssetIssuance() {
 	function DoLoadAttachment_Buf(Transaction, Buffer) {
 		/*
 		int nameLength = buffer.get();
-		if (nameLength > 3 * Constants.MAX_ASSET_NAME_LENGTH) {
+		if (nameLength > 3 * Constants.MaxAssetNameLength) {
 			throw new NxtException.ValidationException("Max asset name length exceeded");
 		}
 		byte[] name = new byte[nameLength];
 		buffer.get(name);
 		int descriptionLength = buffer.getShort();
-		if (descriptionLength > 3 * Constants.MAX_ASSET_DESCRIPTION_LENGTH) {
+		if (descriptionLength > 3 * Constants.MaxAssetDescriptionLength) {
 			throw new NxtException.ValidationException("Max asset description length exceeded");
 		}
 		byte[] description = new byte[descriptionLength];
@@ -97,19 +97,19 @@ function CreateAssetIssuance() {
 		/*
 		Attachment.ColoredCoinsAssetIssuance attachment = (Attachment.ColoredCoinsAssetIssuance)transaction.getAttachment();
 		if (! Genesis.CREATOR_ID.equals(transaction.getRecipientId()) || transaction.getAmountNQT() != 0
-				|| transaction.getFeeNQT() < Constants.ASSET_ISSUANCE_FEE_NQT
-				|| attachment.getName().length() < Constants.MIN_ASSET_NAME_LENGTH
-				|| attachment.getName().length() > Constants.MAX_ASSET_NAME_LENGTH
-				|| attachment.getDescription().length() > Constants.MAX_ASSET_DESCRIPTION_LENGTH
+				|| transaction.getFeeNQT() < Constants.AssetIssuanceFeeMilliLm
+				|| attachment.getName().length() < Constants.MinAssetNameLength
+				|| attachment.getName().length() > Constants.MaxAssetNameLength
+				|| attachment.getDescription().length() > Constants.MaxAssetDescriptionLength
 				|| attachment.getDecimals() < 0 || attachment.getDecimals() > 8
 				|| attachment.getQuantityQNT() <= 0
-				|| attachment.getQuantityQNT() > Constants.MAX_ASSET_QUANTITY_QNT
+				|| attachment.getQuantityQNT() > Constants.MaxAssetQuantityQnt
 				) {
 			throw new NxtException.ValidationException("Invalid asset issuance: " + attachment.getJSONObject());
 		}
 		String normalizedName = attachment.getName().toLowerCase();
 		for (int i = 0; i < normalizedName.length(); i++) {
-			if (Constants.ALPHABET.indexOf(normalizedName.charAt(i)) < 0) {
+			if (Constants.Alphabet.indexOf(normalizedName.charAt(i)) < 0) {
 				throw new NxtException.ValidationException("Invalid asset name: " + normalizedName);
 			}
 		}
@@ -144,7 +144,7 @@ function CreateAssetTransfer() {
 		Long assetId = Convert.zeroToNull(buffer.getLong());
 		long quantityQNT = buffer.getLong();
 		int commentLength = buffer.getShort();
-		if (commentLength > 3 * Constants.MAX_ASSET_TRANSFER_COMMENT_LENGTH) {
+		if (commentLength > 3 * Constants.MaxAssetTransferCommentLength) {
 			throw new NxtException.ValidationException("Max asset comment length exceeded");
 		}
 		byte[] comment = new byte[commentLength];
@@ -206,7 +206,7 @@ function CreateAssetTransfer() {
 		/*
 		Attachment.ColoredCoinsAssetTransfer attachment = (Attachment.ColoredCoinsAssetTransfer)transaction.getAttachment();
 		if (transaction.getAmountNQT() != 0
-				|| attachment.getComment().length() > Constants.MAX_ASSET_TRANSFER_COMMENT_LENGTH
+				|| attachment.getComment().length() > Constants.MaxAssetTransferCommentLength
 				|| attachment.getAssetId() == null) {
 			throw new NxtException.ValidationException("Invalid asset transfer amount or comment: " + attachment.getJSONObject());
 		}
@@ -256,7 +256,7 @@ function CreateColoredCoinsOrderPlacement() {
 		/*
 		Attachment.ColoredCoinsOrderPlacement attachment = (Attachment.ColoredCoinsOrderPlacement)transaction.getAttachment();
 		if (! Genesis.CREATOR_ID.equals(transaction.getRecipientId()) || transaction.getAmountNQT() != 0
-				|| attachment.getPriceNQT() <= 0 || attachment.getPriceNQT() > Constants.MAX_BALANCE_NQT
+				|| attachment.getPriceNQT() <= 0 || attachment.getPriceNQT() > Constants.MaxBalanceMilliLm
 				|| attachment.getAssetId() == null) {
 			throw new NxtException.ValidationException("Invalid asset order placement: " + attachment.getJSONObject());
 		}

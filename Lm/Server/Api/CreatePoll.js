@@ -49,11 +49,11 @@ function Main(req, res) {
 			return MISSING_OPTIONSAREBINARY;
 		}
 
-		if (nameValue.length() > Constants.MAX_POLL_NAME_LENGTH) {
+		if (nameValue.length() > Constants.MaxPollNameLength) {
 			return INCORRECT_POLL_NAME_LENGTH;
 		}
 
-		if (descriptionValue.length() > Constants.MAX_POLL_DESCRIPTION_LENGTH) {
+		if (descriptionValue.length() > Constants.MaxPollDescriptionLength) {
 			return INCORRECT_POLL_DESCRIPTION_LENGTH;
 		}
 
@@ -63,7 +63,7 @@ function Main(req, res) {
 			if (optionValue == null) {
 				break;
 			}
-			if (optionValue.length() > Constants.MAX_POLL_OPTION_LENGTH) {
+			if (optionValue.length() > Constants.MaxPollOptionLength) {
 				return INCORRECT_POLL_OPTION_LENGTH;
 			}
 			options.add(optionValue.trim());

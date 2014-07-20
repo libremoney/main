@@ -1,9 +1,15 @@
+/**!
+ * LibreMoney GetTransaction api 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 import nxt.Nxt;
 import nxt.Transaction;
 */
 
-var LmUtil = require(__dirname + '/../Util/Convert');
+var LmUtil = require(__dirname + '/../../Util/Convert');
 var JsonData = require(__dirname + '/JsonData');
 
 

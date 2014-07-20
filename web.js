@@ -14,9 +14,10 @@ var Core = require("./Lm/Core");
 var Db = require('./Lm/Db');
 var Demo = require('./Lm/Demo');
 var Lang = require('./Locale/Ru');
-var Lm = require("./Lm/Lm");
 var Logger = require("./Lm/Logger").GetLogger(module);
 var Server = require("./Lm/Server");
+
+var BlockchainProcessor = require("./Lm/BlockchainProcessor");
 
 
 // ==== Main ====
@@ -36,7 +37,6 @@ Config.Init(__dirname+'/Conf/Main.json', function(err) {
 	Core.Init(function(err) {
 		if (err) throw 'Error in Core.Init()';
 		Logger.info('Core initialized');
-		Logger.info('Core initialized2');
 		Db.Init(path.join(__dirname, "/Lm/Db/Models"), function (err) {
 			if (err) throw 'Error in Db.Init()';
 			Db.Connect(function (err) {
@@ -48,6 +48,7 @@ Config.Init(__dirname+'/Conf/Main.json', function(err) {
 						if (err) throw 'Error in Server.Start()';
 						Logger.info('Server started');
 
+						BlockchainProcessor.Init();
 						Demo.Init();
 
 					});

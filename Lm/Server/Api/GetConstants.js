@@ -18,8 +18,8 @@ function Main(req, res) {
 		JSONObject response = new JSONObject();
 		response.put("genesisBlockId", Convert.toUnsignedLong(Genesis.GENESIS_BLOCK_ID));
 		response.put("genesisAccountId", Convert.toUnsignedLong(Genesis.CREATOR_ID));
-		response.put("maxBlockPayloadLength", Constants.MAX_PAYLOAD_LENGTH);
-		response.put("maxArbitraryMessageLength", Constants.MAX_ARBITRARY_MESSAGE_LENGTH);
+		response.put("maxBlockPayloadLength", Constants.MaxPayloadLength);
+		response.put("maxArbitraryMessageLength", Constants.MaxArbitraryMessageLength);
 
 		JSONArray transactionTypes = new JSONArray();
 		JSONObject transactionType = new JSONObject();

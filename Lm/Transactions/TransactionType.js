@@ -145,9 +145,8 @@ function CreateTransactionType() {
 	function ApplyUnconfirmed(Transaction, SenderAccount) {
 		/*
 		long totalAmountNQT = Convert.safeAdd(transaction.getAmountNQT(), transaction.getFeeNQT());
-		if (transaction.getReferencedTransactionFullHash() != null
-				&& transaction.getTimestamp() > Constants.REFERENCED_TRANSACTION_FULL_HASH_BLOCK_TIMESTAMP) {
-			totalAmountNQT = Convert.safeAdd(totalAmountNQT, Constants.UNCONFIRMED_POOL_DEPOSIT_NQT);
+		if (transaction.getReferencedTransactionFullHash() != null) {
+			totalAmountNQT = Convert.safeAdd(totalAmountNQT, Constants.UnconfirmedPoolDepositMilliLm);
 		}
 		if (senderAccount.getUnconfirmedBalanceNQT() < totalAmountNQT
 				&& ! (transaction.getTimestamp() == 0 && Arrays.equals(senderAccount.getPublicKey(), LmGenesis.CreatorPublicKey))) {
@@ -167,9 +166,8 @@ function CreateTransactionType() {
 	function Apply(Transaction, SenderAccount, RecipientAccount) {
 		/*
 		senderAccount.addToBalanceNQT(- (Convert.safeAdd(transaction.getAmountNQT(), transaction.getFeeNQT())));
-		if (transaction.getReferencedTransactionFullHash() != null
-				&& transaction.getTimestamp() > Constants.REFERENCED_TRANSACTION_FULL_HASH_BLOCK_TIMESTAMP) {
-			senderAccount.addToUnconfirmedBalanceNQT(Constants.UNCONFIRMED_POOL_DEPOSIT_NQT);
+		if (transaction.getReferencedTransactionFullHash() != null) {
+			senderAccount.addToUnconfirmedBalanceNQT(Constants.UnconfirmedPoolDepositMilliLm);
 		}
 		applyAttachment(transaction, senderAccount, recipientAccount);
 		*/
@@ -180,9 +178,8 @@ function CreateTransactionType() {
 	function UndoUnconfirmed(Transaction, SenderAccount) {
 		/*
 		senderAccount.addToUnconfirmedBalanceNQT(Convert.safeAdd(transaction.getAmountNQT(), transaction.getFeeNQT()));
-		if (transaction.getReferencedTransactionFullHash() != null
-				&& transaction.getTimestamp() > Constants.REFERENCED_TRANSACTION_FULL_HASH_BLOCK_TIMESTAMP) {
-			senderAccount.addToUnconfirmedBalanceNQT(Constants.UNCONFIRMED_POOL_DEPOSIT_NQT);
+		if (transaction.getReferencedTransactionFullHash() != null) {
+			senderAccount.addToUnconfirmedBalanceNQT(Constants.UnconfirmedPoolDepositMilliLm);
 		}
 		undoAttachmentUnconfirmed(transaction, senderAccount);
 		*/
@@ -193,9 +190,8 @@ function CreateTransactionType() {
 	function Undo(Transaction, SenderAccount, RecipientAccount) {
 		/*
 		senderAccount.addToBalanceNQT(Convert.safeAdd(transaction.getAmountNQT(), transaction.getFeeNQT()));
-		if (transaction.getReferencedTransactionFullHash() != null
-				&& transaction.getTimestamp() > Constants.REFERENCED_TRANSACTION_FULL_HASH_BLOCK_TIMESTAMP) {
-			senderAccount.addToUnconfirmedBalanceNQT(- Constants.UNCONFIRMED_POOL_DEPOSIT_NQT);
+		if (transaction.getReferencedTransactionFullHash() != null) {
+			senderAccount.addToUnconfirmedBalanceNQT(- Constants.UnconfirmedPoolDepositMilliLm);
 		}
 		undoAttachment(transaction, senderAccount, recipientAccount);
 		*/
@@ -242,7 +238,7 @@ public static final class NotYetEnabledException extends NxtException.Validation
 */
 
 function Init() {
-	LmTrTypeColoredCoins.Init();
+	//LmTrTypeColoredCoins.Init();
 	Payment.Ordinary = LmTrTypePayment.GetOrdinary();
 }
 
@@ -294,7 +290,7 @@ exports.SUBTYPE_PROJECT_ANNOUNCE = 1;
 exports.SUBTYPE_PROJECT_EDIT = 2;
 exports.SUBTYPE_PROJECT_BEGIN = 3;
 
-exports.SUBTYPE_COMMUNITY_CREATE = 0;
+exports.SUBTYPE_GROUP_CREATE = 0;
 
 
 exports.Payment = Payment;

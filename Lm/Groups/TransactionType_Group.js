@@ -2,42 +2,42 @@
 var LmTrType = require(__dirname + '/../Transactions/TransactionType');
 
 
-var CommunityCreateTrType;
+var GroupCreateTrType;
 
 
-function CreateCommunityTrType() {
+function CreateGroupTrType() {
 	var obj = LmTrType.CreateTransactionType();
 
 	function GetType() {
-		return LmTrType.TYPE_COMMUNITY;
+		return LmTrType.TYPE_Group;
 	}
 
 	obj.GetType = GetType;
 	return obj;
 }
 
-function CreateCommunityCreateTrType() {
-	var obj = CreateCommunityTrType();
+function CreateGroupCreateTrType() {
+	var obj = CreateGroupTrType();
 
 	function GetName() {
-		return 'Community.Create';
+		return 'Group.Create';
 	}
 
 	function GetSubtype() {
-		return LmTrType.SUBTYPE_COMMUNITY_CREATE;
+		return LmTrType.SUBTYPE_GROUP_CREATE;
 	}
 
 	function DoLoadAttachment_Buf(Transaction, Buffer) {
 		/*
 		int nameLength = buffer.get();
-		if (nameLength > 3 * Constants.MAX_ASSET_NAME_LENGTH) {
-			throw new NxtException.ValidationException("Max asset name length exceeded");
+		if (nameLength > 3 * Constants.MaxGroupNameLength) {
+			throw new NxtException.ValidationException("Max group name length exceeded");
 		}
 		byte[] name = new byte[nameLength];
 		buffer.get(name);
 		int descriptionLength = buffer.getShort();
-		if (descriptionLength > 3 * Constants.MAX_ASSET_DESCRIPTION_LENGTH) {
-			throw new NxtException.ValidationException("Max asset description length exceeded");
+		if (descriptionLength > 3 * Constants.MaxGroupDescriptionLength) {
+			throw new NxtException.ValidationException("Max group description length exceeded");
 		}
 		byte[] description = new byte[descriptionLength];
 		buffer.get(description);
@@ -47,7 +47,7 @@ function CreateCommunityCreateTrType() {
 			transaction.setAttachment(new Attachment.ColoredCoinsAssetIssuance(new String(name, "UTF-8").intern(),
 					new String(description, "UTF-8").intern(), quantityQNT, decimals));
 		} catch (UnsupportedEncodingException e) {
-			throw new NxtException.ValidationException("Error in asset issuance", e);
+			throw new NxtException.ValidationException("Error in group issuance", e);
 		}
 		*/
 	}
@@ -92,20 +92,20 @@ function CreateCommunityCreateTrType() {
 		/*
 		Attachment.ColoredCoinsAssetIssuance attachment = (Attachment.ColoredCoinsAssetIssuance)transaction.getAttachment();
 		if (! Genesis.CREATOR_ID.equals(transaction.getRecipientId()) || transaction.getAmountNQT() != 0
-				|| transaction.getFeeNQT() < Constants.ASSET_ISSUANCE_FEE_NQT
-				|| attachment.getName().length() < Constants.MIN_ASSET_NAME_LENGTH
-				|| attachment.getName().length() > Constants.MAX_ASSET_NAME_LENGTH
-				|| attachment.getDescription().length() > Constants.MAX_ASSET_DESCRIPTION_LENGTH
+				|| transaction.getFeeNQT() < Constants.AssetIssuanceFeeMilliLm
+				|| attachment.getName().length() < Constants.MinAssetNameLength
+				|| attachment.getName().length() > Constants.MaxAssetNameLength
+				|| attachment.getDescription().length() > Constants.MaxAssetDescriptionLength
 				|| attachment.getDecimals() < 0 || attachment.getDecimals() > 8
 				|| attachment.getQuantityQNT() <= 0
-				|| attachment.getQuantityQNT() > Constants.MAX_ASSET_QUANTITY_QNT
+				|| attachment.getQuantityQNT() > Constants.MaxAssetQuantityQnt
 				) {
-			throw new NxtException.ValidationException("Invalid asset issuance: " + attachment.getJSONObject());
+			throw new NxtException.ValidationException("Invalid group issuance: " + attachment.getJSONObject());
 		}
 		String normalizedName = attachment.getName().toLowerCase();
 		for (int i = 0; i < normalizedName.length(); i++) {
-			if (Constants.ALPHABET.indexOf(normalizedName.charAt(i)) < 0) {
-				throw new NxtException.ValidationException("Invalid asset name: " + normalizedName);
+			if (Constants.Alphabet.indexOf(normalizedName.charAt(i)) < 0) {
+				throw new NxtException.ValidationException("Invalid group name: " + normalizedName);
 			}
 		}
 		*/
@@ -124,11 +124,11 @@ function CreateCommunityCreateTrType() {
 };
 
 
-function GetCommunityCreateTrType() {
-	if (!CommunityCreateTrType)
-		CommunityCreateTrType = CreateCommunityCreateTrType();
-	return CommunityCreateTrType;
+function GetGroupCreateTrType() {
+	if (!GroupCreateTrType)
+		GroupCreateTrType = CreateGroupCreateTrType();
+	return GroupCreateTrType;
 }
 
 
-exports.GetCommunityCreate = GetCommunityCreateTrType;
+exports.GetGroupCreate = GetGroupCreateTrType;

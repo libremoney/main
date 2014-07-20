@@ -129,7 +129,7 @@ function Main(req, res) {
 	}
 
 	long minimumFeeNQT() {
-		return Constants.ONE_NXT;
+		return Constants.OneLm;
 	}
 	*/
 }

@@ -1,7 +1,7 @@
 /**!
- * LibreMoney main page 0.0.1
- * Author: Prof1983 <prof1983@yandex.ru>
- * License: CC0
+ * LibreMoney main page 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
  */
 
 function BodyFooter() {

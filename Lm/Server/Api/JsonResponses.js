@@ -1,5 +1,10 @@
+/**!
+ * LibreMoney JsonResponses 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-var LmConstants = require(__dirname + '/../Constants');
+var LmConstants = require(__dirname + '/../../Constants');
 
 
 function missing(paramName1, paramName2) {

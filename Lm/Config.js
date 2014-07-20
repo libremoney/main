@@ -6,6 +6,7 @@
 
 
 var nconf = require('nconf');
+var Logger = require(__dirname + '/Logger').GetLogger(module);
 
 
 function Get(paramName) {
@@ -13,19 +14,16 @@ function Get(paramName) {
 }
 
 function GetBooleanProperty(name) {
-	throw new Error('Not implementted');
-	/*
-	String value = properties.getProperty(name);
-	if (Boolean.TRUE.toString().equals(value)) {
-		Logger.logMessage(name + " = \"true\"");
+	var value = Get(name);
+	if (value == "true") { //if (true.toString().equals(value)) {
+		Logger.info(name + " = \"true\"");
 		return true;
-	} else if (Boolean.FALSE.toString().equals(value)) {
-		Logger.logMessage(name + " = \"false\"");
+	} else if (value == "false") { //if (Boolean.FALSE.toString().equals(value)) {
+		Logger.info(name + " = \"false\"");
 		return false;
 	}
-	Logger.logMessage(name + " not defined, assuming false");
+	Logger.warn(name + " not defined, assuming false");
 	return false;
-	*/
 }
 
 function GetIntProperty(name) {
@@ -81,12 +79,6 @@ function Init(fileName, callback) {
 	if (callback)
 		callback();
 }
-
-
-Lm.GetIntProperty = GetIntProperty;
-Lm.GetStringProperty = GetStringProperty;
-Lm.GetStringListProperty = GetStringListProperty;
-Lm.GetBooleanProperty = GetBooleanProperty;
 
 
 //module.exports = nconf;

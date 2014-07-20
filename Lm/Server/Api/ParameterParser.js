@@ -1,3 +1,9 @@
+/**!
+ * LibreMoney ParameterParser 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 import nxt.Asset;
 import nxt.Constants;
@@ -5,20 +11,20 @@ import nxt.crypto.Crypto;
 */
 
 var JsonResponses = require(__dirname + '/JsonResponses');
-var Convert = require(__dirname + '/../Util/Convert');
-var LmAccounts = require(__dirname + '/../Accounts');
+var Convert = require(__dirname + '/../../Util/Convert');
+var Accounts = require(__dirname + '/../../Accounts');
+var Logger = require(__dirname + '/../../Logger').GetLogger(module);
 
 
 function GetAccount(req) {
 	var accountValue = Convert.EmptyToNull(req.query.account);
 	if (accountValue == null) {
-		throw new Error(JsonResponses.MissingAccount);
+		return null; //throw new Error(JsonResponses.MissingAccount);
 	}
 	//try {
-		Convert.ParseAccountId(accountValue)
 		var AccId = Convert.ParseAccountId(accountValue);
-		console.log("GetAccount: AccId="+AccId);
-		var account = LmAccounts.GetAccountById(Convert.ParseAccountId(accountValue));
+		Logger.info("GetAccount: AccId="+AccId);
+		var account = Accounts.GetAccountById(Convert.ParseAccountId(accountValue));
 		if (account == null || typeof account == 'undefined') {
 			throw new Error(JsonResponses.UnknownAccount);
 		}
@@ -68,7 +74,7 @@ function GetAmountMilliLm(req) {
 	} catch (RuntimeException e) {
 		throw new ParameterException(INCORRECT_AMOUNT);
 	}
-	if (amountNQT <= 0 || amountNQT >= Constants.MAX_BALANCE_NQT) {
+	if (amountNQT <= 0 || amountNQT >= Constants.MaxBalanceMilliLm) {
 		throw new ParameterException(INCORRECT_AMOUNT);
 	}
 	return amountNQT;
@@ -110,7 +116,7 @@ function GetFeeMilliLm(req) {
 	} catch (RuntimeException e) {
 		throw new ParameterException(INCORRECT_FEE);
 	}
-	if (feeNQT <= 0 || feeNQT >= Constants.MAX_BALANCE_NQT) {
+	if (feeNQT <= 0 || feeNQT >= Constants.MaxBalanceMilliLm) {
 		throw new ParameterException(INCORRECT_FEE);
 	}
 	return feeNQT;
@@ -146,7 +152,7 @@ function GetPriceMilliLm(req) {
 	} catch (RuntimeException e) {
 		throw new ParameterException(INCORRECT_PRICE);
 	}
-	if (priceNQT <= 0 || priceNQT > Constants.MAX_BALANCE_NQT) {
+	if (priceNQT <= 0 || priceNQT > Constants.MaxBalanceMilliLm) {
 		throw new ParameterException(INCORRECT_PRICE);
 	}
 	return priceNQT;
@@ -167,7 +173,7 @@ function GetQuantityMilliLm(req) {
 	} catch (RuntimeException e) {
 		throw new ParameterException(INCORRECT_QUANTITY);
 	}
-	if (quantityQNT <= 0 || quantityQNT > Constants.MAX_ASSET_QUANTITY_QNT) {
+	if (quantityQNT <= 0 || quantityQNT > Constants.MaxAssetQuantityQnt) {
 		throw new ParameterException(INCORRECT_QUANTITY);
 	}
 	return quantityQNT;
@@ -219,23 +225,15 @@ function GetSenderAccount(req) {
 }
 
 function GetTimestamp(req) {
-	throw new Error('Not implementted');
-	/*
-	String timestampValue = Convert.emptyToNull(req.getParameter("timestamp"));
+	var timestampValue = Convert.EmptyToNull(req.query.timestamp);
 	if (timestampValue == null) {
 		return 0;
 	}
-	int timestamp;
-	try {
-		timestamp = Integer.parseInt(timestampValue);
-	} catch (NumberFormatException e) {
-		throw new ParameterException(INCORRECT_TIMESTAMP);
-	}
+	var timestamp = parseInt(timestampValue);
 	if (timestamp < 0) {
-		throw new ParameterException(INCORRECT_TIMESTAMP);
+		throw new Error(JsonResponses.IncorrectTimestamp);
 	}
 	return timestamp;
-	*/
 }
 
 

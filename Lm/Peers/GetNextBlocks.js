@@ -24,7 +24,7 @@ JSONStreamAware processRequest(JSONObject request, Peer peer) {
 	List<? extends Block> blocks = Nxt.getBlockchain().getBlocksAfter(blockId, 1440);
 
 	for (Block block : blocks) {
-		int length = Constants.BLOCK_HEADER_LENGTH + block.getPayloadLength();
+		int length = Constants.BlockHeaderLength + block.getPayloadLength();
 		if (totalLength + length > 1048576) {
 			break;
 		}

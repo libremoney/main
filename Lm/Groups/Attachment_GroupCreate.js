@@ -1,10 +1,10 @@
 
-var Lm = require(__dirname + '/../Lm');
+var Transactions = require(__dirname + '/../Transactions');
 //var LmAttachment = require(__dirname + '/LmAttachment');
 
 
 function GroupCreateAttachment(Name, Description) {
-	var obj = Lm.CreateAttachment();
+	var obj = Transactions.CreateAttachment();
 	obj.Name = Name;
 	obj.Description = Description;
 	return obj;

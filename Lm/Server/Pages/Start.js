@@ -1,4 +1,8 @@
-// LibreMoney start page 0.0.1
+/**!
+ * LibreMoney start page 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
 // ---- Functions ----
 

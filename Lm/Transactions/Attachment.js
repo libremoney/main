@@ -4,7 +4,7 @@ import nxt.util.Convert;
 import nxt.util.Logger;
 */
 
-function CreateAttachment() {
+function Attachment() {
 	obj = {};
 
 
@@ -25,4 +25,4 @@ function CreateAttachment() {
 }
 
 
-exports.Create = CreateAttachment;
+module.exports = Attachment;

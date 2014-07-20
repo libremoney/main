@@ -1,3 +1,9 @@
+/**!
+ * LibreMoney api 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 from nxt/http/API.java
 
@@ -34,7 +40,7 @@ import static nxt.http.JSONResponses.ERROR_NOT_ALLOWED;
 import static nxt.http.JSONResponses.POST_REQUIRED;
 */
 
-var Logger = require(__dirname + '/../Logger').GetLogger(module);
+var Logger = require(__dirname + '/../../Logger').GetLogger(module);
 
 
 function DeleteUser(req, res) {

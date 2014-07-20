@@ -1,6 +1,11 @@
+/**!
+ * LibreMoney Genesis 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-var GENESIS_BLOCK_ID = 0; //2680262203532249785L;
-var CREATOR_ID = 0; //1739068987193023818L;
+var GENESIS_BLOCK_ID = 0; //2391470422895685625;
+var CREATOR_ID = 0;
 
 var CreatorPublicKey = {
 	//18, 89, -20, 33, -45, 26, 48, -119, -115, 124, -47, 96, -97, -128, -39, 102,

@@ -32,8 +32,6 @@ CREATE TABLE IF NOT EXISTS block (
 CREATE UNIQUE INDEX IF NOT EXISTS block_id_idx ON block (id);
 CREATE UNIQUE INDEX IF NOT EXISTS block_height_idx ON block (height);
 CREATE INDEX IF NOT EXISTS block_generator_id_idx ON block (generator_account_id);
-//UPDATE block SET total_amount = total_amount * " + Constants.ONE_NXT + " WHERE height <= " + Constants.NQT_BLOCK;
-//UPDATE block SET total_fee = total_fee * " + Constants.ONE_NXT + " WHERE height <= " + Constants.NQT_BLOCK;
 
 CREATE TABLE IF NOT EXISTS transaction (
 	db_id INT IDENTITY,
@@ -62,8 +60,6 @@ CREATE INDEX IF NOT EXISTS transaction_sender_id_idx ON transaction (sender_acco
 CREATE INDEX IF NOT EXISTS transaction_recipient_id_idx ON transaction (recipient_id);
 CREATE UNIQUE INDEX IF NOT EXISTS transaction_full_hash_idx ON transaction (full_hash);
 UPDATE transaction SET block_timestamp = (SELECT timestamp FROM block WHERE block.id = transaction.block_id);
-//UPDATE transaction SET amount = amount * " + Constants.ONE_NXT + " WHERE height <= " + Constants.NQT_BLOCK;
-//UPDATE transaction SET fee = fee * " + Constants.ONE_NXT + " WHERE height <= " + Constants.NQT_BLOCK;
 
 CREATE TABLE IF NOT EXISTS peer (address VARCHAR PRIMARY KEY);
 INSERT INTO peer (address) VALUES ('node.libremoney.com'), ('node.libremoney.org'), ('node.libremoney.net');

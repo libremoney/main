@@ -211,7 +211,7 @@ function GetWeight() {
 	if (account == null) {
 		return 0;
 	}
-	return (int)(adjustedWeight * (account.getBalanceNQT() / Constants.ONE_NXT) / Constants.MAX_BALANCE_NXT);
+	return (int)(adjustedWeight * (account.getBalanceNQT() / Constants.OneLm) / Constants.MaxBalanceLm);
 	*/
 }
 
@@ -453,7 +453,7 @@ function AnalyzeHallmark(address, hallmarkString) {
 		}
 
 		for (PeerImpl peer : groupedPeers) {
-			peer.adjustedWeight = Constants.MAX_BALANCE_NXT * peer.getHallmarkWeight(mostRecentDate) / totalWeight;
+			peer.adjustedWeight = Constants.MaxBalanceLm * peer.getHallmarkWeight(mostRecentDate) / totalWeight;
 			Peers.notifyListeners(peer, Peers.Event.WEIGHT);
 		}
 

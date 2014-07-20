@@ -23,11 +23,11 @@ function Main(req, res) {
 		String name = Convert.nullToEmpty(req.getParameter("name")).trim();
 		String description = Convert.nullToEmpty(req.getParameter("description")).trim();
 
-		if (name.length() > Constants.MAX_ACCOUNT_NAME_LENGTH) {
+		if (name.length() > Constants.MaxAccountNameLength) {
 			return INCORRECT_ACCOUNT_NAME_LENGTH;
 		}
 
-		if (description.length() > Constants.MAX_ACCOUNT_DESCRIPTION_LENGTH) {
+		if (description.length() > Constants.MaxAccountDescriptionLength) {
 			return INCORRECT_ACCOUNT_DESCRIPTION_LENGTH;
 		}
 

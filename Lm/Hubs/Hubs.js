@@ -34,7 +34,7 @@ function GetHubHits(block) {
 			}
 			for (Map.Entry<Long, Hub> hubEntry : hubs.entrySet()) {
 				Account account = Account.getAccount(hubEntry.getKey());
-				if (account != null && account.getEffectiveBalanceNXT() >= Constants.MIN_HUB_EFFECTIVE_BALANCE
+				if (account != null && account.getEffectiveBalanceNXT() >= Constants.MinHubEffectiveBalance
 						&& account.getPublicKey() != null) {
 					currentHits.add(new Hit(hubEntry.getValue(), Generator.getHitTime(account, block)));
 				}

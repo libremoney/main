@@ -1,9 +1,12 @@
 /**!
- * LibreMoney projects page
+ * LibreMoney projects page 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
  */
 
-Lm = require(__dirname + "/../../Lm");
-Templ = require(__dirname + "/templ");
+
+Projects = require(__dirname + "/../../Projects");
+Templ = require(__dirname + "/Templ");
 
 
 function Body() {
@@ -16,7 +19,7 @@ function Body() {
 function BodyMain() {
 	var S = '';
 
-	Lm.Projects.forEach(function (Project) {
+	Projects.GetAllProjects().forEach(function (Project) {
 		if (Project.State == 0)
 			ps = '<font color="black">Анонс</font>'
 		else if (Project.State == 1)

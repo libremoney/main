@@ -1,3 +1,9 @@
+/**!
+ * LibreMoney TransactionProcessor 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 import nxt.util.Observable;
 import org.json.simple.JSONObject;
@@ -15,7 +21,12 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
 */
 
-var LmTransactionProcessor = {}; // instance
+var Listeners = require(__dirname + '/../Util/Listeners');
+
+var ProcessTransactionsThread = require(__dirname + '/ProcessTransactionsThread');
+var RebroadcastTransactionsThread = require(__dirname + '/RebroadcastTransactionsThread');
+var RemoveUnconfirmedTransactionsThread = require(__dirname + '/RemoveUnconfirmedTransactionsThread');
+
 
 var Event = {
 	REMOVED_UNCONFIRMED_TRANSACTIONS:0,
@@ -24,179 +35,33 @@ var Event = {
 	ADDED_DOUBLESPENDING_TRANSACTIONS:3
 	};
 
-/*
-private static final TransactionProcessorImpl instance = new TransactionProcessorImpl();
-*/
 
-/*
-static TransactionProcessorImpl getInstance() {
-	return instance;
+var unconfirmedTransactions = new Array(); //ConcurrentHashMap<>();
+var allUnconfirmedTransactions = new Array(); //Collections.unmodifiableCollection(unconfirmedTransactions.values());
+var nonBroadcastedTransactions = new Array(); //ConcurrentHashMap<>();
+var transactionListeners = new Listeners();
+
+
+function Init() {
+	ThreadPool.ScheduleThread(ProcessTransactionsThread.Run, 5);
+	ThreadPool.ScheduleThread(RemoveUnconfirmedTransactionsThread.Run, 1);
+	ThreadPool.ScheduleThread(RebroadcastTransactionsThread.Run, 60);
 }
-*/
-
-/*
-private final ConcurrentMap<Long, TransactionImpl> unconfirmedTransactions = new ConcurrentHashMap<>();
-private final Collection<TransactionImpl> allUnconfirmedTransactions = Collections.unmodifiableCollection(unconfirmedTransactions.values());
-private final ConcurrentMap<Long, TransactionImpl> nonBroadcastedTransactions = new ConcurrentHashMap<>();
-private final Listeners<List<Transaction>,Event> transactionListeners = new Listeners<>();
-*/
-
-/*
-private final Runnable removeUnconfirmedTransactionsThread = new Runnable() {
-
-	@Override
-	public void run() {
-
-		try {
-			try {
-
-				int curTime = Convert.getEpochTime();
-				List<Transaction> removedUnconfirmedTransactions = new ArrayList<>();
-
-				synchronized (BlockchainImpl.getInstance()) {
-					Iterator<TransactionImpl> iterator = unconfirmedTransactions.values().iterator();
-					while (iterator.hasNext()) {
-						TransactionImpl transaction = iterator.next();
-						if (transaction.getExpiration() < curTime) {
-							iterator.remove();
-							transaction.undoUnconfirmed();
-							removedUnconfirmedTransactions.add(transaction);
-						}
-					}
-				}
-
-				if (removedUnconfirmedTransactions.size() > 0) {
-					transactionListeners.notify(removedUnconfirmedTransactions, Event.REMOVED_UNCONFIRMED_TRANSACTIONS);
-				}
-
-			} catch (Exception e) {
-				Logger.logDebugMessage("Error removing unconfirmed transactions", e);
-			}
-		} catch (Throwable t) {
-			Logger.logMessage("CRITICAL ERROR. PLEASE REPORT TO THE DEVELOPERS.\n" + t.toString());
-			t.printStackTrace();
-			System.exit(1);
-		}
-
-	}
-
-};
-*/
-
-/*
-private final Runnable rebroadcastTransactionsThread = new Runnable() {
-
-	@Override
-	public void run() {
-
-		try {
-			try {
-				List<Transaction> transactionList = new ArrayList<>();
-				int curTime = Convert.getEpochTime();
-				for (TransactionImpl transaction : nonBroadcastedTransactions.values()) {
-					if (TransactionDb.hasTransaction(transaction.getId()) || transaction.getExpiration() < curTime) {
-						nonBroadcastedTransactions.remove(transaction.getId());
-					} else if (transaction.getTimestamp() < curTime - 30) {
-						transactionList.add(transaction);
-					}
-				}
-
-				if (transactionList.size() > 0) {
-					Peers.sendToSomePeers(transactionList);
-				}
-
-			} catch (Exception e) {
-				Logger.logDebugMessage("Error in transaction re-broadcasting thread", e);
-			}
-		} catch (Throwable t) {
-			Logger.logMessage("CRITICAL ERROR. PLEASE REPORT TO THE DEVELOPERS.\n" + t.toString());
-			t.printStackTrace();
-			System.exit(1);
-		}
-
-	}
-
-};
-*/
-
-/*
-private final Runnable processTransactionsThread = new Runnable() {
-
-	private final JSONStreamAware getUnconfirmedTransactionsRequest;
-	{
-		JSONObject request = new JSONObject();
-		request.put("requestType", "getUnconfirmedTransactions");
-		getUnconfirmedTransactionsRequest = JSON.prepareRequest(request);
-	}
-
-	@Override
-	public void run() {
-		try {
-			try {
-				Peer peer = Peers.getAnyPeer(Peer.State.CONNECTED, true);
-				if (peer == null) {
-					return;
-				}
-				JSONObject response = peer.send(getUnconfirmedTransactionsRequest);
-				if (response == null) {
-					return;
-				}
-				JSONArray transactionsData = (JSONArray)response.get("unconfirmedTransactions");
-				if (transactionsData == null || transactionsData.size() == 0) {
-					return;
-				}
-				try {
-					processPeerTransactions(transactionsData, false);
-				} catch (RuntimeException e) {
-					peer.blacklist(e);
-				}
-			} catch (Exception e) {
-				Logger.logDebugMessage("Error processing unconfirmed transactions from peer", e);
-			}
-		} catch (Throwable t) {
-			Logger.logMessage("CRITICAL ERROR. PLEASE REPORT TO THE DEVELOPERS.\n" + t.toString());
-			t.printStackTrace();
-			System.exit(1);
-		}
-	}
-
-};
-*/
-
-/*
-private TransactionProcessorImpl() {
-	ThreadPool.scheduleThread(processTransactionsThread, 5);
-	ThreadPool.scheduleThread(removeUnconfirmedTransactionsThread, 1);
-	ThreadPool.scheduleThread(rebroadcastTransactionsThread, 60);
-}
-*/
 
 function AddListener(listener, eventType) {
-	throw new Error('Not implemented');
-	/*
-	return transactionListeners.addListener(listener, eventType);
-	*/
+	return transactionListeners.AddListener(listener, eventType);
 }
 
 function GetAllUnconfirmedTransactions() {
-	throw new Error('Not implemented');
-	/*
 	return allUnconfirmedTransactions;
-	*/
 }
 
 function GetUnconfirmedTransaction(transactionId) {
-	throw new Error('Not implemented');
-	/*
-	return unconfirmedTransactions.get(transactionId);
-	*/
+	return unconfirmedTransactions[transactionId]; //get(transactionId);
 }
 
 function RemoveListener(listener, eventType) {
-	throw new Error('Not implemented');
-	/*
-	return transactionListeners.removeListener(listener, eventType);
-	*/
+	return transactionListeners.RemoveListener(listener, eventType);
 }
 
 function NewTransaction(deadline, senderPublicKey, recipientId, amountNQT, feeNQT, referencedTransactionFullHash, attachment) {
@@ -448,11 +313,6 @@ function ProcessTransactions(transactions, sendToPeers) {
 			}
 
 			synchronized (BlockchainImpl.getInstance()) {
-
-				if (Nxt.getBlockchain().getHeight() < Constants.NQT_BLOCK) {
-					break; // not ready to process transactions
-				}
-
 				Long id = transaction.getId();
 				if (TransactionDb.hasTransaction(id) || unconfirmedTransactions.containsKey(id)
 						|| ! transaction.verify()) {

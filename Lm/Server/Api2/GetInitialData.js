@@ -104,7 +104,7 @@ function ProcessRequest(req, user) {
 		recentBlock.put("version", block.getVersion());
 		recentBlock.put("block", block.getStringId());
 		recentBlock.put("baseTarget", BigInteger.valueOf(block.getBaseTarget()).multiply(BigInteger.valueOf(100000))
-				.divide(BigInteger.valueOf(Constants.INITIAL_BASE_TARGET)));
+				.divide(BigInteger.valueOf(Constants.InitialBaseTarget)));
 
 		recentBlocks.add(recentBlock);
 	}

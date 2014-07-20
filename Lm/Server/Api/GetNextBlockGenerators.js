@@ -14,13 +14,7 @@ function Main(req, res) {
 	private GetNextBlockGenerators() {}
 
 	JSONStreamAware processRequest(HttpServletRequest req) {
-
 		Block curBlock = Nxt.getBlockchain().getLastBlock();
-		if (curBlock.getHeight() < Constants.TRANSPARENT_FORGING_BLOCK_7) {
-			return JSONResponses.FEATURE_NOT_AVAILABLE;
-		}
-
-
 		JSONObject response = new JSONObject();
 		response.put("time", Convert.getEpochTime());
 		response.put("lastBlock", Convert.toUnsignedLong(curBlock.getId()));
