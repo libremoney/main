@@ -124,11 +124,12 @@ var Lm = (function(Lm, $, undefined) {
 			$(".hide_secret_phrase").show();
 		}
 
-		if (Lm.Settings["reed_solomon"]) {
-			$("#account_id").html(String(Lm.AccountRS).escapeHTML()).css("font-size", "12px");
-		} else {
-			$("#account_id").html(String(Lm.Account).escapeHTML()).css("font-size", "14px");
-		}
+		//if (Lm.Settings["reed_solomon"]) {
+			$("#account_id").html(String(Lm.AccountRS).escapeHTML()).css("font-size", "11px");
+			$("#account_id2").html(String(Lm.AccountRS).escapeHTML()).css("font-size", "11px");
+		//} else {
+		//	$("#account_id").html(String(Lm.Account).escapeHTML()).css("font-size", "14px");
+		//}
 
 		var passwordNotice = "";
 
@@ -146,36 +147,7 @@ var Lm = (function(Lm, $, undefined) {
 		}
 
 		Lm.GetAccountInfo(true, function() {
-			if (Lm.AccountInfo.currentLeasingHeightFrom) {
-				Lm.IsLeased = (Lm.LastBlockHeight >= Lm.AccountInfo.currentLeasingHeightFrom &&
-					Lm.LastBlockHeight <= Lm.AccountInfo.currentLeasingHeightTo);
-			} else {
-				Lm.IsLeased = false;
-			}
-
-			//forging requires password to be sent to the server, so we don't do it automatically if not localhost
-			if (!Lm.AccountInfo.publicKey || Lm.AccountInfo.EffectiveBalanceLm == 0 || !Lm.IsLocalHost ||
-					Lm.DownloadingBlockchain || Lm.IsLeased) {
-				$("#forging_indicator").removeClass("forging");
-				$("#forging_indicator span").html("Not Forging");
-				$("#forging_indicator").show();
-				Lm.IsForging = false;
-			} else if (Lm.IsLocalHost) {
-				Lm.SendRequest("startForging", {
-					"secretPhrase": password
-				}, function(response) {
-					if ("deadline" in response) {
-						$("#forging_indicator").addClass("forging");
-						$("#forging_indicator span").html("Forging");
-						Lm.IsForging = true;
-					} else {
-						$("#forging_indicator").removeClass("forging");
-						$("#forging_indicator span").html("Not Forging");
-						Lm.IsForging = false;
-					}
-					$("#forging_indicator").show();
-				});
-			}
+			Login_GetAccountInfo_On(response);
 		});
 
 		//Lm.GetAccountAliases();
@@ -202,7 +174,41 @@ var Lm = (function(Lm, $, undefined) {
 		Lm.GetInitialTransactions();
 	}
 
+	function Login_GetAccountInfo_On(response) {
+		if (Lm.AccountInfo.currentLeasingHeightFrom) {
+			Lm.IsLeased = (Lm.LastBlockHeight >= Lm.AccountInfo.currentLeasingHeightFrom &&
+				Lm.LastBlockHeight <= Lm.AccountInfo.currentLeasingHeightTo);
+		} else {
+			Lm.IsLeased = false;
+		}
+
+		//forging requires password to be sent to the server, so we don't do it automatically if not localhost
+		if (!Lm.AccountInfo.publicKey || Lm.AccountInfo.EffectiveBalanceLm == 0 || !Lm.IsLocalHost ||
+				Lm.DownloadingBlockchain || Lm.IsLeased) {
+			$("#forging_indicator").removeClass("forging");
+			$("#forging_indicator span").html("Not Forging");
+			$("#forging_indicator").show();
+			Lm.IsForging = false;
+		} else if (Lm.IsLocalHost) {
+			Lm.SendRequest("startForging", {
+				"secretPhrase": password
+			}, function(response) {
+				if ("deadline" in response) {
+					$("#forging_indicator").addClass("forging");
+					$("#forging_indicator span").html("Forging");
+					Lm.IsForging = true;
+				} else {
+					$("#forging_indicator").removeClass("forging");
+					$("#forging_indicator span").html("Not Forging");
+					Lm.IsForging = false;
+				}
+				$("#forging_indicator").show();
+			});
+		}
+	}
+
 	function Logout(stopForging) {
+		$("#billing").css({display:"none"});
 		if (stopForging && Lm.IsForging) {
 			$("#stop_forging_modal .show_logout").show();
 			$("#stop_forging_modal").modal("show");
@@ -349,8 +355,14 @@ var Lm = (function(Lm, $, undefined) {
 
 		$(".content-splitter-right").css("bottom", (contentHeaderHeight + navBarHeight + 10) + "px");
 
+		$("#billing").css({display: "block"});
 		$("#lockscreen").hide();
+		$("#login_page").hide();
 		$("body, html").removeClass("lockscreen");
+		Lm.GoToPage('about');
+
+		$("#nav_login").css({display:'none'})
+		$("#nav_logout").css({display:'block'});
 
 		$(document.documentElement).scrollTop(0);
 	}

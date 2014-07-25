@@ -1,6 +1,6 @@
 body {
-  background-color: #9DC7A9; /*WESLEY */
-  background: url(../img/blur-background.jpg) repeat center center fixed;
+  /*background-color: #9DC7A9; /*WESLEY*/
+  /*background: url(../img/blur-background.jpg) repeat center center fixed;*/
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;
@@ -65,7 +65,7 @@ footer.myFooter1 {
   width: 300px;
 }
 
-.divCommunityBlock {
+.divGroupBlock {
   background-color: #EEFFEE;
   border: 1px solid black;
   float: left;
@@ -75,49 +75,49 @@ footer.myFooter1 {
   width: 320px;
 }
 
-.divCommunityBlock:hover {
+.divGroupBlock:hover {
   background-color: #DDEEDD;
 }
 
-.divCommunityBlock_ProjectsAll {
+.divGroupBlock_ProjectsAll {
   font-weight: bold;
 }
 
-.divCommunityBlock_ProjectsOk {
+.divGroupBlock_ProjectsOk {
   color: green;
   font-weight: bold;
 }
 
-.divCommunityBlock_ProjectsBad {
+.divGroupBlock_ProjectsBad {
   color: red;
   font-weight: bold;
 }
 
-.divCommunityBlock_ProjectsRun {
+.divGroupBlock_ProjectsRun {
   color: gray;
   font-weight: bold;
 }
 
-.divCommunityBlock_ProjectsFundBegin {
+.divGroupBlock_ProjectsFundBegin {
   color: black;
   font-weight: bold;
 }
 
-.divCommunityBlock_ProjectsFundNon {
+.divGroupBlock_ProjectsFundNon {
   color: black;
   font-weight: bold;
 }
 
-.divCommunityBlock_Users {
+.divGroupBlock_Users {
   color: black;
   font-weight: bold;
 }
 
-.divMenuCommunity {
+.divMenuGroups {
   background-color: #FFEEEE;
 }
 
-.divMenuCommunity:hover {
+.divMenuGroups:hover {
   background-color: #EEDDDD;
 }
 

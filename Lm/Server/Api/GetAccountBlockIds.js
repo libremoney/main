@@ -1,39 +1,26 @@
-/*
-import nxt.Account;
-import nxt.Block;
-import nxt.Nxt;
-import nxt.NxtException;
-import nxt.util.DbIterator;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONStreamAware;
-*/
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-function Main(req, res) {
-	res.send('This is not implemented');    
-	/*
-	static final GetAccountBlockIds instance = new GetAccountBlockIds();
+var Blockchain = require(__dirname + '/../../Blockchain');
+var JsonResponses = require(__dirname + '/../JsonResponses');
+var ParameterParser = require(__dirname + '/../ParameterParser');
 
-	private GetAccountBlockIds() {
-		super("account", "timestamp");
+
+//super("account", "timestamp");
+function GetAccountBlockIds(req, res) {
+	var account = ParameterParser.GetAccount(req);
+	var timestamp = ParameterParser.GetTimestamp(req);
+	var blockIds = new Array();
+	var blocks = Blockchain.GetBlocks(account, timestamp)
+	for (block in blocks) {
+		blockIds.push(block.GetStringId());
 	}
-
-	JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
-		Account account = ParameterParser.getAccount(req);
-		int timestamp = ParameterParser.getTimestamp(req);
-
-		JSONArray blockIds = new JSONArray();
-		try (DbIterator<? extends Block> iterator = Nxt.getBlockchain().getBlocks(account, timestamp)) {
-			while (iterator.hasNext()) {
-				Block block = iterator.next();
-				blockIds.add(block.getStringId());
-			}
-		}
-		JSONObject response = new JSONObject();
-		response.put("blockIds", blockIds);
-		return response;
-	}
-	*/
+	var response = {};
+	response.blockIds = blockIds;
+	res.send(response);    
 }
 
-module.exports = Main;
+module.exports = GetAccountBlockIds;

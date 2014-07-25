@@ -1,49 +1,39 @@
-/*
-import nxt.Nxt;
-import nxt.NxtException;
-import nxt.Transaction;
-import nxt.util.Convert;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONStreamAware;
-import static nxt.http.JSONResponses.INCORRECT_TRANSACTION_BYTES;
-import static nxt.http.JSONResponses.MISSING_TRANSACTION_BYTES;
-*/
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-function Main(req, res) {
-	//static final BroadcastTransaction instance = new BroadcastTransaction();
-	res.send('This is not implemented');
+var Convert = require(__dirname + '/../../Util/Convert');
+var JsonResponses = require(__dirname + '/../JsonResponses');
+var Logger = require(__dirname + '/../../Logger').GetLogger(module);
+var TransactionProcessor = require(__dirname + '/../../TransactionProcessor');
 
-	/*
-	private BroadcastTransaction() {
-		super("transactionBytes");
+
+//super("transactionBytes");
+function BroadcastTransaction(req, res) {
+	var transactionBytes = req.query.transactionBytes;
+	if (!transactionBytes) {
+		res.send(JsonResponses.MissingTransactionBytes);
+		return;
 	}
+	try {
+		var bytes = Convert.ParseHexString(transactionBytes);
+		var transaction = TransactionProcessor.ParseTransaction(bytes);
+		transaction.ValidateAttachment();
 
-	JSONStreamAware processRequest(HttpServletRequest req) throws NxtException.ValidationException {
-		String transactionBytes = req.getParameter("transactionBytes");
-		if (transactionBytes == null) {
-			return MISSING_TRANSACTION_BYTES;
-		}
+		var response = {};
 		try {
-			byte[] bytes = Convert.parseHexString(transactionBytes);
-			Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(bytes);
-			transaction.validateAttachment();
-
-			JSONObject response = new JSONObject();
-
-			try {
-				Nxt.getTransactionProcessor().broadcast(transaction);
-				response.put("transaction", transaction.getStringId());
-				response.put("fullHash", transaction.getFullHash());
-			} catch (NxtException.ValidationException e) {
-				response.put("error", e.getMessage());
-			}
-
-			return response;
-		} catch (RuntimeException e) {
-			return INCORRECT_TRANSACTION_BYTES;
+			TransactionProcessor.Broadcast(transaction);
+			response.transaction = transaction.GetStringId();
+			response.fullHash = transaction.GetFullHash();
+		} catch (e) {
+			response.error = e;
 		}
+		res.send(response);
+	} catch (e) {
+		res.send(JsonResponses.IncorrectTransactionBytes);
 	}
-	*/
 }
 
-module.exports = Main;
+module.exports = BroadcastTransaction;

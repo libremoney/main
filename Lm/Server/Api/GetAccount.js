@@ -1,86 +1,78 @@
-/*
-import nxt.Account;
-import nxt.NxtException;
-import nxt.util.Convert;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONStreamAware;
-*/
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-function Main(req, res) {
-	res.send('This is not implemented');
-	/*
-	static final GetAccount instance = new GetAccount();
+var JsonData = require(__dirname + '/../JsonData');
+var JsonResponses = require(__dirname + '/../JsonResponses');
+var ParameterParser = require(__dirname + '/../ParameterParser');
 
-	private GetAccount() {
-		super("account");
+
+//super("account");
+function GetAccount(req, res) {
+	var account = ParameterParser.GetAccount(req);
+
+	var response = JsonData.AccountBalance(account);
+	response.account = Convert.ToUnsignedLong(account.getId());
+	response.accountRS = Convert.RsAccount(account.getId());
+
+	if (account.GetPublicKey() != null) {
+		response.publicKey = Convert.ToHexString(account.GetPublicKey());
 	}
-
-	JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
-
-		Account account = ParameterParser.getAccount(req);
-
-		synchronized (account) {
-			JSONObject response = JSONData.accountBalance(account);
-			response.put("account", Convert.toUnsignedLong(account.getId()));
-			response.put("accountRS", Convert.rsAccount(account.getId()));
-
-			if (account.getPublicKey() != null) {
-				response.put("publicKey", Convert.toHexString(account.getPublicKey()));
-			}
-			if (account.getName() != null) {
-				response.put("name", account.getName());
-			}
-			if (account.getDescription() != null) {
-				response.put("description", account.getDescription());
-			}
-			if (account.getCurrentLesseeId() != null) {
-				response.put("currentLessee", Convert.toUnsignedLong(account.getCurrentLesseeId()));
-				response.put("currentLeasingHeightFrom", account.getCurrentLeasingHeightFrom());
-				response.put("currentLeasingHeightTo", account.getCurrentLeasingHeightTo());
-				if (account.getNextLesseeId() != null) {
-					response.put("nextLessee", Convert.toUnsignedLong(account.getNextLesseeId()));
-					response.put("nextLeasingHeightFrom", account.getNextLeasingHeightFrom());
-					response.put("nextLeasingHeightTo", account.getNextLeasingHeightTo());
-				}
-			}
-			if (!account.getLessorIds().isEmpty()) {
-				JSONArray lessorIds = new JSONArray();
-				for (Long lessorId : account.getLessorIds()) {
-					lessorIds.add(Convert.toUnsignedLong(lessorId));
-				}
-				response.put("lessors", lessorIds);
-			}
-
-			JSONArray assetBalances = new JSONArray();
-			for (Map.Entry<Long, Long> assetBalanceEntry : account.getAssetBalancesQNT().entrySet()) {
-
-				JSONObject assetBalance = new JSONObject();
-				assetBalance.put("asset", Convert.toUnsignedLong(assetBalanceEntry.getKey()));
-				assetBalance.put("balanceQNT", String.valueOf(assetBalanceEntry.getValue()));
-				assetBalances.add(assetBalance);
-
-			}
-			if (assetBalances.size() > 0) {
-				response.put("assetBalances", assetBalances);
-			}
-
-			JSONArray unconfirmedAssetBalances = new JSONArray();
-			for (Map.Entry<Long, Long> unconfirmedAssetBalanceEntry : account.getUnconfirmedAssetBalancesQNT().entrySet()) {
-
-				JSONObject unconfirmedAssetBalance = new JSONObject();
-				unconfirmedAssetBalance.put("asset", Convert.toUnsignedLong(unconfirmedAssetBalanceEntry.getKey()));
-				unconfirmedAssetBalance.put("unconfirmedBalanceQNT", String.valueOf(unconfirmedAssetBalanceEntry.getValue()));
-				unconfirmedAssetBalances.add(unconfirmedAssetBalance);
-
-			}
-			if (unconfirmedAssetBalances.size() > 0) {
-				response.put("unconfirmedAssetBalances", unconfirmedAssetBalances);
-			}
-			return response;
+	if (account.GetName() != null) {
+		response.name = account.GetName();
+	}
+	if (account.GetDescription() != null) {
+		response.description = account.getDescription();
+	}
+	if (account.GetCurrentLesseeId() != null) {
+		response.currentLessee = Convert.ToUnsignedLong(account.GetCurrentLesseeId());
+		response.currentLeasingHeightFrom = account.GetCurrentLeasingHeightFrom();
+		response.currentLeasingHeightTo = account.GetCurrentLeasingHeightTo();
+		if (account.GetNextLesseeId() != null) {
+			response.nextLessee = Convert.ToUnsignedLong(account.GetNextLesseeId());
+			response.nextLeasingHeightFrom = account.GetNextLeasingHeightFrom();
+			response.nextLeasingHeightTo = account.GetNextLeasingHeightTo();
 		}
 	}
+	if (!account.GetLessorIds().IsEmpty()) {
+		var lessorIds = new Array();
+		for (var lessorId in account.GetLessorIds()) {
+			lessorIds.push(Convert.ToUnsignedLong(lessorId));
+		}
+		response.lessors = lessorIds;
+	}
+
+	/*
+	var assetBalances = new Array();
+	for (Map.Entry<Long, Long> assetBalanceEntry : account.getAssetBalancesQNT().entrySet()) {
+		JSONObject assetBalance = new JSONObject();
+		assetBalance.put("asset", Convert.toUnsignedLong(assetBalanceEntry.getKey()));
+		assetBalance.put("balanceQNT", String.valueOf(assetBalanceEntry.getValue()));
+		assetBalances.add(assetBalance);
+
+	}
+	if (assetBalances.size() > 0) {
+		response.put("assetBalances", assetBalances);
+	}
+
+	JSONArray unconfirmedAssetBalances = new JSONArray();
+	for (Map.Entry<Long, Long> unconfirmedAssetBalanceEntry : account.getUnconfirmedAssetBalancesQNT().entrySet()) {
+
+		JSONObject unconfirmedAssetBalance = new JSONObject();
+		unconfirmedAssetBalance.put("asset", Convert.toUnsignedLong(unconfirmedAssetBalanceEntry.getKey()));
+		unconfirmedAssetBalance.put("unconfirmedBalanceQNT", String.valueOf(unconfirmedAssetBalanceEntry.getValue()));
+		unconfirmedAssetBalances.add(unconfirmedAssetBalance);
+
+	}
+	if (unconfirmedAssetBalances.size() > 0) {
+		response.put("unconfirmedAssetBalances", unconfirmedAssetBalances);
+	}
+	return response;
 	*/
+	res.send('This is not implemented');
 }
 
-module.exports = Main;
+
+module.exports = GetAccount;

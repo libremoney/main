@@ -28,7 +28,7 @@ var Transactions = require(__dirname + '/Transactions');
 var Logger = require(__dirname + '/Logger').GetLogger(module);
 
 
-var version = "0.0.5";
+var version = "0.0.6";
 
 
 function Log(msg) {

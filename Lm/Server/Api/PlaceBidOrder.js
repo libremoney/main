@@ -1,13 +1,18 @@
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 import nxt.Account;
 import nxt.Asset;
 import nxt.Attachment;
 import nxt.NxtException;
 import nxt.util.Convert;
-import static nxt.http.JSONResponses.NOT_ENOUGH_FUNDS;
 */
 
-function Main(req, res) {
+function PlaceBidOrder(req, res) {
 	var obj = CreateTransaction();
 	res.send('This is not implemented');
 	/*
@@ -27,10 +32,10 @@ function Main(req, res) {
 
 		try {
 			if (Convert.safeAdd(feeNQT, Convert.safeMultiply(priceNQT, quantityQNT)) > account.getUnconfirmedBalanceNQT()) {
-				return NOT_ENOUGH_FUNDS;
+				return JsonResponses.NotEnoughFunds;
 			}
 		} catch (ArithmeticException e) {
-			return NOT_ENOUGH_FUNDS;
+			return JsonResponses.NotEnoughFunds;
 		}
 
 		Attachment attachment = new Attachment.ColoredCoinsBidOrderPlacement(asset.getId(), quantityQNT, priceNQT);
@@ -39,4 +44,4 @@ function Main(req, res) {
 	*/
 }
 
-module.exports = Main;
+module.exports = PlaceBidOrder;

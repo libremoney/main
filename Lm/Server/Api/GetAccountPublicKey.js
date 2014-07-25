@@ -1,31 +1,24 @@
-/*
-import nxt.Account;
-import nxt.NxtException;
-import nxt.util.Convert;
-import nxt.util.JSON;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONStreamAware;
-*/
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-function Main(req, res) {
-	//static final GetAccountPublicKey instance = new GetAccountPublicKey();
-	res.send('This is not implemented');
-	/*
-	private GetAccountPublicKey() {
-		super("account");
-	}
+var Convert = require(__dirname + '/../../Util/Convert');
+var JsonResponses = require(__dirname + '/../JsonResponses');
+var ParameterParser = require(__dirname + '/../ParameterParser');
 
-	JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
-		Account account = ParameterParser.getAccount(req);
-		if (account.getPublicKey() != null) {
-			JSONObject response = new JSONObject();
-			response.put("publicKey", Convert.toHexString(account.getPublicKey()));
-			return response;
-		} else {
-			return JSON.emptyJSON;
-		}
+
+//super("account");
+function GetAccountPublicKey(req, res) {
+	var account = ParameterParser.GetAccount(req);
+	if (account.GetPublicKey() != null) {
+		var response = {};
+		response.publicKey = Convert.ToHexString(account.GetPublicKey());
+		res.send(response);
+	} else {
+		res.send({});
 	}
-	*/
 }
 
-module.exports = Main;
+module.exports = GetAccountPublicKey;

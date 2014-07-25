@@ -1,3 +1,9 @@
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 import nxt.Account;
 import nxt.Generator;
@@ -5,13 +11,11 @@ import nxt.Nxt;
 import nxt.crypto.Crypto;
 import nxt.util.Convert;
 import static nxt.http.JSONResponses.MISSING_SECRET_PHRASE;
-import static nxt.http.JSONResponses.NOT_FORGING;
 import static nxt.http.JSONResponses.UNKNOWN_ACCOUNT;
 */
 
 
-function Main(req, res) {
-	//static final GetForging instance = new GetForging();
+function GetForging(req, res) {
 	res.send('This is not implemented');
 	/*
 	private GetForging() {
@@ -31,7 +35,7 @@ function Main(req, res) {
 
 		Generator generator = Generator.getGenerator(secretPhrase);
 		if (generator == null) {
-			return NOT_FORGING;
+			return JsonResponses.NOT_FORGING;
 		}
 
 		JSONObject response = new JSONObject();
@@ -49,4 +53,4 @@ function Main(req, res) {
 	*/
 }
 
-module.exports = Main;
+module.exports = GetForging;

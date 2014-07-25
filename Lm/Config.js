@@ -27,49 +27,40 @@ function GetBooleanProperty(name) {
 }
 
 function GetIntProperty(name) {
-	throw new Error('Not implemented');
-	/*
 	try {
-		int result = Integer.parseInt(properties.getProperty(name));
-		Logger.logMessage(name + " = \"" + result + "\"");
+		var result = parseInt(Get(name));
+		Logger.info(name + " = \"" + result + "\"");
 		return result;
-	} catch (NumberFormatException e) {
-		Logger.logMessage(name + " not defined, assuming 0");
+	} catch (e) {
+		Logger.warn(name + " not defined, assuming 0");
 		return 0;
 	}
-	*/
 }
 
 function GetStringListProperty(name) {
-	throw new Error('Not implementted');
-	/*
-	String value = getStringProperty(name);
+	var value = GetStringProperty(name);
 	if (value == null || value.length() == 0) {
-		return Collections.emptyList();
+		return null;
 	}
-	List<String> result = new ArrayList<>();
-	for (String s : value.split(";")) {
+	var result = new Array();
+	for (var s in value.split(";")) {
 		s = s.trim();
 		if (s.length() > 0) {
-			result.add(s);
+			result.push(s);
 		}
 	}
 	return result;
-	*/
 }
 
 function GetStringProperty(name, defaultValue) {
-	throw new Error('Not implementted');
-	/*
-	String value = properties.getProperty(name);
-	if (value != null && ! "".equals(value)) {
-		Logger.logMessage(name + " = \"" + value + "\"");
+	var value = Get(name);
+	if (value != null && value != "") {
+		Logger.info(name + " = \"" + value + "\"");
 		return value;
 	} else {
-		Logger.logMessage(name + " not defined");
+		Logger.warn(name + " not defined");
 		return defaultValue;
 	}
-	*/
 }
 
 function Init(fileName, callback) {
@@ -81,7 +72,6 @@ function Init(fileName, callback) {
 }
 
 
-//module.exports = nconf;
 exports.Get = Get;
 exports.get = Get;
 exports.GetIntProperty = GetIntProperty;

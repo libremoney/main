@@ -1,3 +1,9 @@
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 import nxt.Account;
 import nxt.NxtException;

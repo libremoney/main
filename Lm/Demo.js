@@ -66,7 +66,7 @@ function Init(callback) {
 		1000000000/*AmountMilliLm*/, 1/*FeeMilliLm*/, 0/*ReferencedTransactionFullHash*/, 0/*Signature*/,
 		0/*BlockId*/, 0/*Height*/, 0/*Id*/, 0/*SenderId*/, 0/*BlockTimestamp*/, 0/*FullHash*/);
 
-	PrintTrInfo(Tr0);
+	//PrintTrInfo(Tr0);
 
 	// Create user "LibreMoney"
 	var Tr1 = Transactions.AddNewTransaction(LmTrTypeUser.GetUserCreate(), 1400000001, 255, 0/*SenderPublicKey*/, 0/*RecipientId*/,

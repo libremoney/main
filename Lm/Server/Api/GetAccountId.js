@@ -1,41 +1,29 @@
-/*
-import nxt.Account;
-import nxt.crypto.Crypto;
-import nxt.util.Convert;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONStreamAware;
-import static nxt.http.JSONResponses.MISSING_SECRET_PHRASE;
-*/
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-function Main(req, res) {
-	//static final GetAccountId instance = new GetAccountId();
-	res.send('This is not implemented');
-	/*
-	private GetAccountId() {
-		super("secretPhrase");
+var Accounts = require(__dirname + '/../../Accounts');
+var Convert = require(__dirname + '/../../Util/Convert');
+var Crypto = require(__dirname + '/../../Crypto/Crypto');
+var JsonResponses = require(__dirname + '/../JsonResponses');
+
+
+//super("secretPhrase");
+// POST
+function GetAccountId(req, res) {
+	var secretPhrase = req.query.secretPhrase;
+	if (!secretPhrase) {
+		res.send(JsonResponses.MissingSecretPhrase);
+		return;
 	}
-
-	JSONStreamAware processRequest(HttpServletRequest req) {
-
-		String secretPhrase = req.getParameter("secretPhrase");
-		if (secretPhrase == null) {
-			return MISSING_SECRET_PHRASE;
-		}
-
-		byte[] publicKey = Crypto.getPublicKey(secretPhrase);
-
-		JSONObject response = new JSONObject();
-		Long accountId = Account.getId(publicKey);
-		response.put("accountId", Convert.toUnsignedLong(accountId));
-		response.put("accountRS", Convert.rsAccount(accountId));
-
-		return response;
-	}
-
-	boolean requirePost() {
-		return true;
-	}
-	*/
+	var publicKey = Crypto.GetPublicKey(secretPhrase);
+	var response = {};
+	var accountId = Accounts.GetId(publicKey);
+	response.accountId = Convert.ToUnsignedLong(accountId);
+	response.accountRS = Convert.RsAccount(accountId);
+	res.send(response);
 }
 
-module.exports = Main;
+module.exports = GetAccountId;

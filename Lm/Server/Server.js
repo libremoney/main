@@ -8,6 +8,7 @@
 var express = require('express');
 var path = require('path');
 
+var Config = require(__dirname + '/../Config');
 var Logger = require(__dirname + "/../Logger").GetLogger(module);
 
 var Api = require(__dirname + "/Api");
@@ -17,9 +18,15 @@ var ProjectsPage = require(__dirname + "/Pages/Projects");
 var StartPage = require(__dirname + "/Pages/Start");
 var UserPage = require(__dirname + "/Pages/User");
 var UsersPage = require(__dirname + "/Pages/Users");
+var Test = require(__dirname + '/Test');
 
 //var routes = require('./routes'); // Файл с роутам
 //var Db = require('./lib/db'); // Файл работы с базой MongoDB
+
+
+var TESTNET_API_PORT = 6876;
+var allowedBotHosts = new Array();
+var enforcePost;
 
 
 // ==== Functions ====
@@ -57,8 +64,10 @@ function Init(app, callback) {
 	Init400(app);
 	Init500(app);
 	InitApi(app);
+	InitApi2(app);
 	InitHello(app);
 	InitStartPage(app);
+	InitTest(app);
 
 	app.get('/groups', GroupsPage);
 	app.get('/projects', ProjectsPage);
@@ -111,7 +120,6 @@ function Init500(app) {
 }
 
 function InitApi(app) {
-	app.post('/api', Api.PostMain);
 	app.get('/', MainPage);
 	app.get('/api', Api.GetMain);
 	app.get('/api/user/:id', Api.GetUser);
@@ -185,6 +193,106 @@ function InitApi(app) {
 	app.get("/api/transferAsset", Api.TransferAsset);
 }
 
+function InitApi2(app) {
+	app.post('/api', Api.Main);
+
+
+	/*
+	enforcePost = Config.GetBooleanProperty("apiServerEnforcePost");
+	var allowedBotHostsList = Config.GetStringListProperty("allowedBotHosts");
+	if (allowedBotHostsList.indexOf("*") >= 0)  {
+		allowedBotHosts = null;
+	} else {
+		allowedBotHosts = allowedBotHostsList; //Collections.unmodifiableSet(new HashSet<>(allowedBotHostsList));
+	}
+
+	var enableApiServer = Config.GetBooleanProperty("enableApiServer");
+	if (enableApiServer) {
+		//var port = Constants.isTestnet ? TESTNET_API_PORT : Nxt.getIntProperty("nxt.apiServerPort");
+		//var = Nxt.getStringProperty("nxt.apiServerHost");
+		//ServerConnector connector;
+
+		boolean enableSSL = Nxt.getBooleanProperty("nxt.apiSSL");
+		if (enableSSL) {
+			Logger.logMessage("Using SSL (https) for the API server");
+			HttpConfiguration https_config = new HttpConfiguration();
+			https_config.setSecureScheme("https");
+			https_config.setSecurePort(port);
+			https_config.addCustomizer(new SecureRequestCustomizer());
+			SslContextFactory sslContextFactory = new SslContextFactory();
+			sslContextFactory.setKeyStorePath(Nxt.getStringProperty("nxt.keyStorePath"));
+			sslContextFactory.setKeyStorePassword(Nxt.getStringProperty("nxt.keyStorePassword"));
+			sslContextFactory.setExcludeCipherSuites("SSL_RSA_WITH_DES_CBC_SHA", "SSL_DHE_RSA_WITH_DES_CBC_SHA",
+					"SSL_DHE_DSS_WITH_DES_CBC_SHA", "SSL_RSA_EXPORT_WITH_RC4_40_MD5", "SSL_RSA_EXPORT_WITH_DES40_CBC_SHA",
+					"SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA", "SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA");
+			connector = new ServerConnector(apiServer, new SslConnectionFactory(sslContextFactory, "http/1.1"),
+					new HttpConnectionFactory(https_config));
+		} else {
+			connector = new ServerConnector(apiServer);
+		}
+
+		connector.setPort(port);
+		connector.setHost(host);
+		connector.setIdleTimeout(Nxt.getIntProperty("nxt.apiServerIdleTimeout"));
+		apiServer.addConnector(connector);
+
+		HandlerList apiHandlers = new HandlerList();
+
+		String apiResourceBase = Nxt.getStringProperty("nxt.apiResourceBase");
+		if (apiResourceBase != null) {
+			ResourceHandler apiFileHandler = new ResourceHandler();
+			apiFileHandler.setDirectoriesListed(true);
+			apiFileHandler.setWelcomeFiles(new String[]{"index.html"});
+			apiFileHandler.setResourceBase(apiResourceBase);
+			apiHandlers.addHandler(apiFileHandler);
+		}
+
+		String javadocResourceBase = Nxt.getStringProperty("nxt.javadocResourceBase");
+		if (javadocResourceBase != null) {
+			ContextHandler contextHandler = new ContextHandler("/doc");
+			ResourceHandler docFileHandler = new ResourceHandler();
+			docFileHandler.setDirectoriesListed(false);
+			docFileHandler.setWelcomeFiles(new String[]{"index.html"});
+			docFileHandler.setResourceBase(javadocResourceBase);
+			contextHandler.setHandler(docFileHandler);
+			apiHandlers.addHandler(contextHandler);
+		}
+
+		ServletHandler apiHandler = new ServletHandler();
+		apiHandler.addServletWithMapping(APIServlet.class, "/nxt");
+		apiHandler.addServletWithMapping(APITestServlet.class, "/test");
+
+		if (Nxt.getBooleanProperty("nxt.apiServerCORS")) {
+			FilterHolder filterHolder = apiHandler.addFilterWithMapping(CrossOriginFilter.class, "/*", FilterMapping.DEFAULT);
+			filterHolder.setInitParameter("allowedHeaders", "*");
+			filterHolder.setAsyncSupported(true);
+		}
+
+		apiHandlers.addHandler(apiHandler);
+		apiHandlers.addHandler(new DefaultHandler());
+
+		apiServer.setHandler(apiHandlers);
+		apiServer.setStopAtShutdown(true);
+
+		ThreadPool.runBeforeStart(new Runnable() {
+			public void run() {
+				try {
+					apiServer.start();
+					Logger.logMessage("Started API server at " + host + ":" + port);
+				} catch (Exception e) {
+					Logger.logDebugMessage("Failed to start API server", e);
+					throw new RuntimeException(e.toString(), e);
+				}
+
+			}
+		});
+	} else {
+		Logger.info("API server not enabled");
+	}
+	*/
+}
+
+
 function InitHello(app) {
 	app.get('/hello', function(req, res) {
 		res.send('Hello world');
@@ -195,6 +303,22 @@ function InitStartPage(app) {
 	app.get('/start', function(req, res) {
 		StartPage.Main(req, res);
 	});
+}
+
+function InitTest(app) {
+	app.get("/test", Test);
+}
+
+function Shutdown() {
+	/*
+	if (apiServer != null) {
+		try {
+			apiServer.stop();
+		} catch (Exception e) {
+			Logger.logDebugMessage("Failed to stop API server", e);
+		}
+	}
+	*/
 }
 
 function Start(app, port, callback) {

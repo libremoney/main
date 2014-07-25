@@ -11,7 +11,6 @@ $(function() {
 	//Enable sidebar toggle
 	$("[data-toggle='offcanvas']").click(function(e) {
 		e.preventDefault();
-
 		//If window is small enough, enable sidebar push menu
 		if ($(window).width() <= 992) {
 			$('.row-offcanvas').toggleClass('active');

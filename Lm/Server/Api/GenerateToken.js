@@ -1,43 +1,37 @@
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 import nxt.Token;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONStreamAware;
-import static nxt.http.JSONResponses.INCORRECT_WEBSITE;
-import static nxt.http.JSONResponses.MISSING_SECRET_PHRASE;
-import static nxt.http.JSONResponses.MISSING_WEBSITE;
 */
 
-function Main(req, res) {
-	res.send('This is not implemented');    
-	/*
-	static final GenerateToken instance = new GenerateToken();
+var JsonResponses = require(__dirname + '/../JsonResponses');
+var Tokens = require(__dirname + '/../../Tokens');
 
-	private GenerateToken() {
-		super("website", "secretPhrase");
-	}
 
-	JSONStreamAware processRequest(HttpServletRequest req) {
-		String secretPhrase = req.getParameter("secretPhrase");
-		String website = req.getParameter("website");
-		if (secretPhrase == null) {
-			return MISSING_SECRET_PHRASE;
-		} else if (website == null) {
-			return MISSING_WEBSITE;
-		}
-		try {
-			String tokenString = Token.generateToken(secretPhrase, website.trim());
-			JSONObject response = new JSONObject();
-			response.put("token", tokenString);
-			return response;
-		} catch (RuntimeException e) {
-			return INCORRECT_WEBSITE;
-		}
+//super("website", "secretPhrase");
+// POST
+function GenerateToken(req, res) {
+	var secretPhrase = req.query.secretPhrase;
+	var website = req.query.website;
+	if (!secretPhrase) {
+		res.send(JsonResponses.MissingSecretPhrase);
+		return;
+	} else if (!website) {
+		res.send(JsonResponses.MissingWebsite);
+		return;
 	}
-
-	boolean requirePost() {
-		return true;
+	try {
+		var response = {};
+		response.token = Tokens.GenerateToken(secretPhrase, website.trim());
+		res.send(response);
+	} catch (e) {
+		res.send(JsonResponses.IncorrectWebsite);
 	}
-*/
 }
 
-module.exports = Main;
+
+module.exports = GenerateToken;

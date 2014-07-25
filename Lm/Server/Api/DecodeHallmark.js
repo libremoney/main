@@ -1,33 +1,26 @@
-/*
-import nxt.peer.Hallmark;
-import org.json.simple.JSONStreamAware;
-import static nxt.http.JSONResponses.INCORRECT_HALLMARK;
-import static nxt.http.JSONResponses.MISSING_HALLMARK;
-*/
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-function Main(req, res) {
-	res.send('This is not implemented');    
+var JsonResponses = require(__dirname + '/../JsonResponses');
+var Hallmark = require(__dirname + '/../../Peers/Hallmark');
 
-	/*
-	static final DecodeHallmark instance = new DecodeHallmark();
 
-	private DecodeHallmark() {
-		super("hallmark");
+//super("hallmark");
+function DecodeHallmark(req, res) {
+	var hallmarkValue = req.query.hallmark;
+	if (!hallmarkValue) {
+		res.send(JsonResponses.MissingHallmark);
+		return;
 	}
-
-	JSONStreamAware processRequest(HttpServletRequest req) {
-		String hallmarkValue = req.getParameter("hallmark");
-		if (hallmarkValue == null) {
-			return MISSING_HALLMARK;
-		}
-		try {
-			Hallmark hallmark = Hallmark.parseHallmark(hallmarkValue);
-			return JSONData.hallmark(hallmark);
-		} catch (RuntimeException e) {
-			return INCORRECT_HALLMARK;
-		}
+	try {
+		var hallmark = Hallmark.ParseHallmark(hallmarkValue);
+		res.send(JsonData.Hallmark(hallmark));
+	} catch (e) {
+		res.send(JsonResponses.IncorrectHallmark);
 	}
-	*/
 }
 
-module.exports = Main;
+module.exports = DecodeHallmark;

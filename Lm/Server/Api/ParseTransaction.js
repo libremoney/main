@@ -1,40 +1,34 @@
-/*
-import nxt.Nxt;
-import nxt.NxtException;
-import nxt.Transaction;
-import nxt.util.Convert;
-import static nxt.http.JSONResponses.INCORRECT_TRANSACTION_BYTES;
-import static nxt.http.JSONResponses.MISSING_TRANSACTION_BYTES;
-*/
+/**!
+ * LibreMoney JsonResponses 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-function Main(req, res) {
-	res.send('This is not implemented');
-	/*
-	static final ParseTransaction instance = new ParseTransaction();
+var Convert = require(__dirname + '/../../Util/Convert');
+var JsonData = require(__dirname + '/../JsonData');
+var JsonResponses = require(__dirname + '/../JsonResponses');
+var Logger = require(__dirname + '/../../Logger').GetLogger(module);
+var TransactionProcessor = require(__dirname + '/../../TransactionProcessor');
 
-	private ParseTransaction() {
-		super("transactionBytes");
+
+//super("transactionBytes");
+function ParseTransaction(req, res) {
+	var transactionBytes = req.query.transactionBytes;
+	if (!transactionBytes) {
+		return JsonResponses.MissingTransactionBytes;
 	}
-
-	JSONStreamAware processRequest(HttpServletRequest req) throws NxtException.ValidationException {
-		String transactionBytes = req.getParameter("transactionBytes");
-		if (transactionBytes == null) {
-			return MISSING_TRANSACTION_BYTES;
-		}
-		JSONObject response;
-		try {
-			byte[] bytes = Convert.parseHexString(transactionBytes);
-			Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(bytes);
-			transaction.validateAttachment();
-			response = JSONData.unconfirmedTransaction(transaction);
-			response.put("verify", transaction.verify());
-		} catch (NxtException.ValidationException|RuntimeException e) {
-			//Logger.logDebugMessage(e.getMessage(), e);
-			return INCORRECT_TRANSACTION_BYTES;
-		}
-		return response;
+	var response;
+	try {
+		var bytes = Convert.ParseHexString(transactionBytes);
+		var transaction = TransactionProcessor.ParseTransaction(bytes);
+		transaction.ValidateAttachment();
+		response = JsonData.UnconfirmedTransaction(transaction);
+		response.verify = transaction.verify();
+	} catch (e) {
+		return JsonResponses.IncorrectTransactionBytes;
+		Logger.error('ParseTransaction: Error');
 	}
-	*/
+	return response;
 }
 
-module.exports = Main;
+module.exports = ParseTransaction;

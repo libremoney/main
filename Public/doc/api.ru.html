@@ -1,0 +1,4449 @@
+<!DOCTYPE html>
+<html lang="ru" dir="ltr" class="client-nojs">
+<head>
+<meta charset="UTF-8" /><title>Nxt API — Nxt Wiki</title>
+<link rel="stylesheet" href="//wiki.nxtcrypto.org/w/load.php?debug=false&amp;lang=ru&amp;modules=ext.uls.nojs%7Cmediawiki.legacy.commonPrint%2Cshared%7Cskins.vector&amp;only=styles&amp;skin=vector&amp;*" />
+<style>
+a:lang(ar),a:lang(ckb),a:lang(kk-arab),a:lang(mzn),a:lang(ps),a:lang(ur){text-decoration:none}
+/* cache key: krisjose_med1-war_:resourceloader:filter:minify-css:7:8e805246ec8c0e84192ab7a694983413 */
+</style>
+<body class="mediawiki ltr sitedir-ltr ns-0 ns-subject page-Nxt_API_ru skin-vector action-view vector-animateLayout">
+<div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="mw-js-message" style="display:none;" lang="ru" dir="ltr"></div>
+				<h1 id="firstHeading" class="firstHeading" lang="ru"><span dir="auto">Nxt API</span></h1>
+	<div id="bodyContent">
+						<div id="siteSub">Материал из Nxt Wiki</div>
+						<div id="contentSub" lang="ru" dir="ltr"></div>
+										<div id="jump-to-nav" class="mw-jump">
+			Перейти к:					<a href="#mw-navigation">навигация</a>, 					<a href="#p-search">поиск</a>
+		</div>
+		<div id="mw-content-text" lang="ru" dir="ltr" class="mw-content-ltr"><div class="mw-translate-page-info">Эта страница является <span class="plainlinks"><a rel="nofollow" class="external text" href="//wiki.nxtcrypto.org/w/index.php?title=Special:Translate&amp;group=page-Nxt+API&amp;action=page&amp;filter=&amp;language=ru">переводом</a></span> страницы <a href="/wiki/Nxt_API" title="Nxt API">Nxt API</a>. Перевод актуален и выполнен на 100%.</div>
+<hr />
+
+
+<table align="right">
+<tr>
+<td> <div id="toc" class="toc"><div id="toctitle"><h2>Содержание</h2></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="#.D0.9E.D0.BF.D0.B8.D1.81.D0.B0.D0.BD.D0.B8.D0.B5"><span class="tocnumber">1</span> <span class="toctext">Описание</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="#.D0.9E.D0.B1.D1.89.D0.B8.D0.B5_.D1.81.D0.B2.D0.B5.D0.B4.D0.B5.D0.BD.D0.B8.D1.8F"><span class="tocnumber">2</span> <span class="toctext"><b>Общие сведения</b></span></a></li>
+<li class="toclevel-1 tocsection-3"><a href="#.D0.9E.D0.BF.D0.B5.D1.80.D0.B0.D1.86.D0.B8.D0.B8_.D1.81.D0.BE_.D1.81.D1.87.D0.B5.D1.82.D0.BE.D0.BC"><span class="tocnumber">3</span> <span class="toctext"><b>Операции со счетом</b></span></a>
+<ul>
+<li class="toclevel-2 tocsection-4"><a href="#Get_Account"><span class="tocnumber">3.1</span> <span class="toctext"><b>Get Account</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-8"><a href="#Get_Account_ID"><span class="tocnumber">3.2</span> <span class="toctext"><b>Get Account ID</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-12"><a href="#Get_Account_Block_IDs"><span class="tocnumber">3.3</span> <span class="toctext"><b>Get Account Block IDs</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-16"><a href="#Get_Account_Public_Key"><span class="tocnumber">3.4</span> <span class="toctext"><b>Get Account Public Key</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-20"><a href="#Get_Account_Transaction_IDs"><span class="tocnumber">3.5</span> <span class="toctext"><b>Get Account Transaction IDs</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-24"><a href="#Get_Balance"><span class="tocnumber">3.6</span> <span class="toctext"><b>Get Balance</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-28"><a href="#Get_Guaranteed_Balance"><span class="tocnumber">3.7</span> <span class="toctext"><b>Get Guaranteed Balance</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-32"><a href="#Lease_Balance"><span class="tocnumber">3.8</span> <span class="toctext"><b>Lease Balance</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-36"><a href="#Start_.2F_Stop_Forging"><span class="tocnumber">3.9</span> <span class="toctext"><b>Start / Stop Forging</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-40"><a href="#Set_Account_Information"><span class="tocnumber">3.10</span> <span class="toctext"><b>Set Account Information</b></span></a>
+</li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-44"><a href="#.D0.94.D0.B5.D0.B9.D1.81.D1.82.D0.B2.D0.B8.D1.8F_.D1.81_.D0.90.D0.BB.D1.8C.D1.8F.D1.81.D0.B0.D0.BC.D0.B8"><span class="tocnumber">4</span> <span class="toctext"><b>Действия с Альясами</b></span></a>
+<ul>
+<li class="toclevel-2 tocsection-45"><a href="#.D0.A1.D0.BE.D0.B7.D0.B4.D0.B0.D0.BD.D0.B8.D0.B5.2F.D0.BF.D1.80.D0.B8.D1.81.D0.B2.D0.BE.D0.B5.D0.BD.D0.B8.D0.B5_.D0.B0.D0.BB.D1.8C.D1.8F.D1.81.D0.B0"><span class="tocnumber">4.1</span> <span class="toctext"><b>Создание/присвоение альяса</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-49"><a href="#Get_alias"><span class="tocnumber">4.2</span> <span class="toctext"><b>Get alias</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-53"><a href="#Get_aliases"><span class="tocnumber">4.3</span> <span class="toctext"><b>Get aliases</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-57"><a href="#Get_alias_ID_.28.D0.9D.D0.B5_.D0.B8.D1.81.D0.BF.D0.BE.D0.BB.D1.8C.D0.B7.D1.83.D0.B5.D1.82.D1.81.D1.8F.29"><span class="tocnumber">4.4</span> <span class="toctext"><b>Get alias ID (Не используется)</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-61"><a href="#Get_alias_IDs_.28.D0.9D.D0.B5_.D0.B8.D1.81.D0.BF.D0.BE.D0.BB.D1.8C.D0.B7.D1.83.D0.B5.D1.82.D1.81.D1.8F.29"><span class="tocnumber">4.5</span> <span class="toctext"><b>Get alias IDs (Не используется)</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-65"><a href="#Get_alias_URI_.28.D0.9D.D0.B5_.D0.B8.D1.81.D0.BF.D0.BE.D0.BB.D1.8C.D0.B7.D1.83.D0.B5.D0.BC.D1.8B.D0.B9.29"><span class="tocnumber">4.6</span> <span class="toctext"><b>Get alias URI (Не используемый)</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-69"><a href="#List_Aliases_.28.D0.9D.D0.B5_.D0.B8.D1.81.D0.BF.D0.BE.D0.BB.D1.8C.D1.83.D0.B7.D0.B5.D1.82.D1.81.D1.8F.29"><span class="tocnumber">4.7</span> <span class="toctext"><b>List Aliases (Не испольузется)</b></span></a>
+</li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-73"><a href="#.D0.A1.D0.B8.D1.81.D1.82.D0.B5.D0.BC.D0.BD.D1.8B.D0.B5_.D1.84.D1.83.D0.BD.D0.BA.D1.86.D0.B8.D0.B8_.D0.B4.D0.BB.D1.8F_.D1.80.D0.B0.D0.B1.D0.BE.D1.82.D1.8B_.D1.81_.D0.BF.D1.80.D0.BE.D0.B8.D0.B7.D0.B2.D0.BE.D0.BB.D1.8C.D0.BD.D1.8B.D0.BC.D0.B8_.D1.81.D0.BE.D0.BE.D0.B1.D1.89.D0.B5.D0.BD.D0.B8.D1.8F.D0.BC.D0.B8"><span class="tocnumber">5</span> <span class="toctext"><b>Системные функции для работы с произвольными сообщениями</b></span></a>
+<ul>
+<li class="toclevel-2 tocsection-74"><a href="#Send_Message"><span class="tocnumber">5.1</span> <span class="toctext"><b>Send Message</b></span></a>
+</li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-78"><a href="#.D0.9E.D0.BF.D0.B5.D1.80.D0.B0.D1.86.D0.B8.D0.B8_.D0.B4.D0.BB.D1.8F_.D1.80.D0.B0.D0.B1.D0.BE.D1.82.D1.8B_.D1.81_.D0.B1.D0.BB.D0.BE.D0.BA.D0.B0.D0.BC.D0.B8"><span class="tocnumber">6</span> <span class="toctext"><b>Операции для работы с блоками</b></span></a>
+<ul>
+<li class="toclevel-2 tocsection-79"><a href="#Get_Block"><span class="tocnumber">6.1</span> <span class="toctext"><b>Get Block</b></span></a>
+</li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-83"><a href="#.D0.9E.D0.BF.D0.B5.D1.80.D0.B0.D1.86.D0.B8.D0.B8_.D0.BD.D0.B0_.D0.91.D0.B8.D1.80.D0.B6.D0.B5_.D0.90.D0.BA.D1.82.D0.B8.D0.B2.D0.BE.D0.B2"><span class="tocnumber">7</span> <span class="toctext"><b>Операции на Бирже Активов</b></span></a>
+<ul>
+<li class="toclevel-2 tocsection-84"><a href="#Issue_asset"><span class="tocnumber">7.1</span> <span class="toctext"><b>Issue asset</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-88"><a href="#Get_asset_IDs"><span class="tocnumber">7.2</span> <span class="toctext"><b>Get asset IDs</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-92"><a href="#Get_asset"><span class="tocnumber">7.3</span> <span class="toctext"><b>Get asset</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-96"><a href="#Get_assets"><span class="tocnumber">7.4</span> <span class="toctext"><b>Get assets</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-100"><a href="#Get_all_assets"><span class="tocnumber">7.5</span> <span class="toctext"><b>Get all assets</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-104"><a href="#Get_assets_by_name_.28.D0.9D.D0.B5_.D0.B8.D1.81.D0.BF.D0.BE.D0.BB.D1.8C.D0.B7.D1.83.D0.B5.D1.82.D1.81.D1.8F.29"><span class="tocnumber">7.6</span> <span class="toctext"><b>Get assets by name (Не используется)</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-108"><a href="#Get_assets_by_issuer"><span class="tocnumber">7.7</span> <span class="toctext"><b>Get assets by issuer</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-112"><a href="#Get_all_trades"><span class="tocnumber">7.8</span> <span class="toctext"><b>Get all trades</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-116"><a href="#Get_trades"><span class="tocnumber">7.9</span> <span class="toctext"><b>Get trades</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-120"><a href="#Transfer_asset"><span class="tocnumber">7.10</span> <span class="toctext"><b>Transfer asset</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-124"><a href="#Place_order"><span class="tocnumber">7.11</span> <span class="toctext"><b>Place order</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-128"><a href="#Get_order_IDs"><span class="tocnumber">7.12</span> <span class="toctext"><b>Get order IDs</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-132"><a href="#Get_orders"><span class="tocnumber">7.13</span> <span class="toctext"><b>Get orders</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-136"><a href="#Get_current_account_order_IDs"><span class="tocnumber">7.14</span> <span class="toctext"><b>Get current account order IDs</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-140"><a href="#Get_order"><span class="tocnumber">7.15</span> <span class="toctext"><b>Get order</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-144"><a href="#Get_all_open_orders"><span class="tocnumber">7.16</span> <span class="toctext"><b>Get all open orders</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-148"><a href="#Cancel_order"><span class="tocnumber">7.17</span> <span class="toctext"><b>Cancel order</b></span></a>
+</li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-152"><a href="#.D0.9E.D0.BF.D0.B5.D1.80.D0.B0.D1.86.D0.B8.D0.B8_.D1.81_.D0.BE.D0.BF.D1.80.D0.BE.D1.81.D0.B0.D0.BC.D0.B8"><span class="tocnumber">8</span> <span class="toctext"><b>Операции с опросами</b></span></a>
+</li>
+<ul>
+<li class="toclevel-2 tocsection-157"><a href="#Get_Poll"><span class="tocnumber">8.2</span> <span class="toctext"><b>Get Poll</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-161"><a href="#Get_Poll_IDs"><span class="tocnumber">8.3</span> <span class="toctext"><b>Get Poll IDs</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-165"><a href="#Cast_Vote"><span class="tocnumber">8.4</span> <span class="toctext"><b>Cast Vote</b></span></a>
+</li>
+</ul>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-169"><a href="#.D0.9E.D0.BF.D0.B5.D1.80.D0.B0.D1.86.D0.B8.D0.B8_.D0.B4.D0.BB.D1.8F_.D1.80.D0.B0.D0.B1.D0.BE.D1.82.D1.8B_.D1.81_.D1.81.D0.B5.D1.80.D0.B2.D0.B5.D1.80.D0.BD.D0.BE.D0.B9_.D1.87.D0.B0.D1.81.D1.82.D1.8C.D1.8E"><span class="tocnumber">9</span> <span class="toctext"><b>Операции для работы с серверной частью</b></span></a>
+<ul>
+<li class="toclevel-2 tocsection-170"><a href="#Get_Constants"><span class="tocnumber">9.1</span> <span class="toctext"><b>Get Constants</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-174"><a href="#Get_My_Info"><span class="tocnumber">9.2</span> <span class="toctext"><b>Get My Info</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-178"><a href="#Get_Peer"><span class="tocnumber">9.3</span> <span class="toctext"><b>Get Peer</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-182"><a href="#Get_Peers"><span class="tocnumber">9.4</span> <span class="toctext"><b>Get Peers</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-186"><a href="#Get_State"><span class="tocnumber">9.5</span> <span class="toctext"><b>Get State</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-190"><a href="#Get_Time"><span class="tocnumber">9.6</span> <span class="toctext"><b>Get Time</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-194"><a href="#Get_Blockchain_Status"><span class="tocnumber">9.7</span> <span class="toctext"><i>Get Blockchain Status</i></span></a>
+</li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-198"><a href="#.D0.9E.D0.BF.D0.B5.D1.80.D0.B0.D1.86.D0.B8.D0.B8_.D1.81_.D0.BA.D0.BB.D0.B5.D0.B9.D0.BC.D0.B0.D0.BC.D0.B8_.28hallmarks.29"><span class="tocnumber">10</span> <span class="toctext"><b>Операции с клеймами (hallmarks)</b></span></a>
+<ul>
+<li class="toclevel-2 tocsection-199"><a href="#Decode_Hallmark"><span class="tocnumber">10.1</span> <span class="toctext"><b>Decode Hallmark</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-203"><a href="#Generate_Hallmark"><span class="tocnumber">10.2</span> <span class="toctext"><b>Generate Hallmark</b></span></a>
+</li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-207"><a href="#.D0.9E.D0.BF.D0.B5.D1.80.D0.B0.D1.86.D0.B8.D0.B8_.D1.81_.D1.82.D0.BE.D0.BA.D0.B5.D0.BD.D0.B0.D0.BC.D0.B8"><span class="tocnumber">11</span> <span class="toctext"><b>Операции с токенами</b></span></a>
+</li>
+<ul>
+<li>Decode Token</li>
+<li class="toclevel-2 tocsection-212"><a href="#Generate_Token"><span class="tocnumber">11.2</span> <span class="toctext"><b>Generate Token</b></span></a>
+</li>
+</ul>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-216"><a href="#.D0.9E.D0.BF.D0.B5.D1.80.D0.B0.D1.86.D0.B8.D0.B8_.D1.81_.D1.82.D1.80.D0.B0.D0.BD.D0.B7.D0.B0.D0.BA.D1.86.D0.B8.D1.8F.D0.BC.D0.B8"><span class="tocnumber">12</span> <span class="toctext"><b>Операции с транзакциями</b></span></a>
+<ul>
+<li class="toclevel-2 tocsection-217"><a href="#Broadcast_Transaction"><span class="tocnumber">12.1</span> <span class="toctext"><b>Broadcast Transaction</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-221"><a href="#Calculate_Full_Hash"><span class="tocnumber">12.2</span> <span class="toctext"><b>Calculate Full Hash</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-225"><a href="#Get_Account_Transaction_IDs_2"><span class="tocnumber">12.3</span> <span class="toctext"><b>Get Account Transaction IDs</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-229"><a href="#Get_Unconfirmed_Account_Transaction_IDs"><span class="tocnumber">12.4</span> <span class="toctext"><b>Get Unconfirmed Account Transaction IDs</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-233"><a href="#Get_Transaction"><span class="tocnumber">12.5</span> <span class="toctext"><b>Get Transaction</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-237"><a href="#Parse_Transaction"><span class="tocnumber">12.6</span> <span class="toctext"><b>Parse Transaction</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-241"><a href="#Get_Transaction_Bytes"><span class="tocnumber">12.7</span> <span class="toctext"><b>Get Transaction Bytes</b></span></a></li>
+<li class="toclevel-2 tocsection-242"><a href="#.D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_57"><span class="tocnumber">12.8</span> <span class="toctext"><b>Запрос</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-245"><a href="#Send_Nxt"><span class="tocnumber">12.9</span> <span class="toctext"><b>Send Nxt</b></span></a>
+</li>
+<li class="toclevel-2 tocsection-249"><a href="#Sign_Transation"><span class="tocnumber">12.10</span> <span class="toctext"><b>Sign Transation</b></span></a>
+<ul>
+<li class="toclevel-3 tocsection-250"><a href="#Request_4"><span class="tocnumber">12.10.1</span> <span class="toctext"><b>Request</b></span></a></li>
+<li class="toclevel-3 tocsection-251"><a href="#.D0.9E.D1.82.D0.B2.D0.B5.D1.82_47"><span class="tocnumber">12.10.2</span> <span class="toctext"><b>Ответ</b></span></a></li>
+<li class="toclevel-3 tocsection-252"><a href="#.D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_57"><span class="tocnumber">12.10.3</span> <span class="toctext"><b>Пример</b></span></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-253"><a href="#.22.22.D0.9A.D0.BE.D0.B4.D1.8B_.D0.BE.D1.88.D0.B8.D0.B1.D0.BE.D0.BA.22.22"><span class="tocnumber">13</span> <span class="toctext">""Коды ошибок""</span></a></li>
+</ul>
+</div>
+
+</td></tr></table>
+<h2><span class="mw-headline" id=".D0.9E.D0.BF.D0.B8.D1.81.D0.B0.D0.BD.D0.B8.D0.B5">Описание</span></h2>
+<p>Nxt API позволяет взаимодействовать с нодами Nxt посредством HTTP GET запросов. Ответы возвращаются в виде JSON объектов.
+</p><p>Все API вызовы делаются посредством общения с нодами Nxt по порту 7876. Во всех примерах, приведенных здесь, нода представлена, как "localhost". Все примеры и ответы отформатированы для комфортного чтения, поэтому надо помнить, что переносы строк и пробелы не используются в действительности в запросах и ответах.
+</p><p>Многие вызовы API ссылаются на генезис блок. Для справки, ID генезисного блока: <a rel="nofollow" class="external text" href="http://blocks.nxtcrypto.org/nxt/nxt.cgi?action=1000&amp;blk=2680262203532249785">2680262203532249785</a>
+</p><p>Со всеми API функциями можно ознакомиться а также протестировать их по адресу <a rel="nofollow" class="external free" href="http://localhost:7876/test">http://localhost:7876/test</a>
+Для определенных API функций, для ознакомления и тестирования можно использовать запрос вида <a rel="nofollow" class="external free" href="http://localhost:7876/test?requestType=">http://localhost:7876/test?requestType=</a>&lt;specificRequestType&gt; где &lt;specificRequestType&gt; это имя определенной API функции которую вы хотите вызвать
+</p>
+<h2><span class="mw-headline" id=".D0.9E.D0.B1.D1.89.D0.B8.D0.B5_.D1.81.D0.B2.D0.B5.D0.B4.D0.B5.D0.BD.D0.B8.D1.8F"><b>Общие сведения</b></span></h2>
+<p>Все http API запросы которые создают новую транзакцию , теперь работают с secretPhrase или publicKey параметром. 
+</p>
+<ul>
+<li> Если secretPhrase предоставлена, транзакция получает статус созданной, подписывается на сервере и передается сервером, как обычно. 
+</li>
+<li> Если secretPhrase не предоставлена, но есть publicKey параметр, в виде закодированного байтового массива, то операция будет подготовлена сервером и возвращена в JSON ответе  как transactionBytes. Этот байтовый массив может теперь быть подписан клиентом, и затем передан обратно на сервер для широковещательной передачи используя API broadcastTransaction.
+</li>
+</ul>
+<p>У всех вызовов API, которые требуют номер аккаунта, могут принимать номер аккаунта как в виде идентификатор учетной записи (цифровой номер аккаунта) или как адрес в формате Reed-Solomon (начиная с NRS v1.0.1)
+</p>
+<h2><span class="mw-headline" id=".D0.9E.D0.BF.D0.B5.D1.80.D0.B0.D1.86.D0.B8.D0.B8_.D1.81.D0.BE_.D1.81.D1.87.D0.B5.D1.82.D0.BE.D0.BC"><b>Операции со счетом</b></span></h2>
+<h3><span class="mw-headline" id="Get_Account"><b>Get Account</b></span></h3>
+<p>Возвращает информацию о аккаунте, ассоциированным с предоставленным номером аккаунта.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getAccount&amp;
+     account=ACCOUNTNUM
+</pre>
+<p>Where:
+</p>
+<ul>
+<li>ACCOUNTNUM Это ID аккаунта, по которому вы запрашиваете информацию.
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82"><b>Ответ</b></span></h4>
+<pre>
+{
+    &quot;publicKey&quot;: &quot;PUBKEY&quot;,
+    &quot;assetBalances&quot;: [
+        {
+            [ARRAY_OF_ASSETs]
+        }
+    ],
+    &quot;balanceNQT&quot;: &quot;BALANCENQT&quot;,
+    &quot;accountRS&quot;: &quot;ACCOUNTRS&quot;,
+    &quot;unconfirmedAssetBalances&quot;: [
+        {
+            [ARRAY_OF_UNCONFIRMED_ASSETs]
+        }
+    ],
+    &quot;account&quot;: &quot;ACCOUNT&quot;,
+    &quot;effectiveBalanceNXT&quot;: EFFBALANCE,
+    &quot;unconfirmedBalanceNQT&quot;: &quot;UNCONFBALANCENQT&quot;,
+    &quot;forgedBalanceNQT&quot;: &quot;FORGEDBAL&quot;
+}
+</pre>
+<p>Where:
+</p>
+<ul>
+<li>PUBKEY 64-битный публичный ключ ассоциированный с аккаунтом.
+</li>
+<li>ACCOUNTRS адрес аккаунта в формате Reed-Solomon.
+</li>
+<li>BALANCENQT: количество NXT (в NQT) которым вы владеете независимо от числа подтвержденных транзакций, связанные с этими NXT
+</li>
+<li>ACCOUNT учетная запись, создавшая актив
+</li>
+<li>EFFBALANCE: количество NXT которым вы владеете и которое подтверждено более чем 1440 раз. Это эффективный баланс , который может использоваться для форжинга.
+</li>
+<li>UNCONFBALANCENQT: баланс (в NQT) за вычетом всех неподтвержденных исходящих транзакций. Также не включаются неподтвержденные входящие транзакции и double-spending. Пользователь видит неподтвержденный баланс в клиенте.
+</li>
+<li>FORGEDBAL баланс который используется для форжинга, в NQT
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getAccount&amp;
+     account=7898870630272254992
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+    &quot;publicKey&quot;: &quot;ce0fc0f2fed0645f7018e251493a8af1e1ecfb444a4603902e71bfd2a4b41558&quot;,
+    &quot;assetBalances&quot;: [
+        {
+            &quot;asset&quot;: &quot;1013693125509851736&quot;,
+            &quot;balanceQNT&quot;: &quot;48&quot;
+        }
+    ],
+    &quot;balanceNQT&quot;: &quot;1000700000000&quot;,
+    &quot;accountRS&quot;: &quot;NXT-BK2J-ZMY4-93UY-8EM9V&quot;,
+    &quot;unconfirmedAssetBalances&quot;: [
+        {
+            &quot;unconfirmedBalanceQNT&quot;: &quot;48&quot;,
+            &quot;asset&quot;: &quot;1013693125509851736&quot;
+        }
+    ],
+    &quot;account&quot;: &quot;7898870630272254992&quot;,
+    &quot;effectiveBalanceNXT&quot;: 9932,
+    &quot;unconfirmedBalanceNQT&quot;: &quot;1000700000000&quot;,
+    &quot;forgedBalanceNQT&quot;: &quot;0&quot;
+}
+</pre>
+<p><small><i>Verified 5/12/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_Account_ID"><b>Get Account ID</b></span></h3>
+<p>Возвращает номер счета, связанный с переданной парольной фразой.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_2"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getAccountId&amp;
+     secretPhrase=PASSPHRASE
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>PASSPHRASE — парольная фраза того счета, ID которого вы хотите получить
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_2"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;accountId&quot;:       &quot;ACCOUNTNUM&quot;
+     &quot;accountRS&quot;:       &quot;ACCOUNTRS&quot;
+}
+</pre>
+<p>Where:
+</p>
+<ul>
+<li>ACCOUNTNUM ассоциированный с аккаунтом ID.
+</li>
+<li>ACCOUNTRS адрес аккаунта в кодировке Reed-Solomon. 
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_2"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getAccountId&amp;
+     secretPhrase=mySuperSecretPassphraseThatYouCanNeverGuess
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;accountId&quot;:       &quot;4357314498768237104&quot;
+     &quot;accountRS&quot;:       &quot;NXT-UWKJ-GFEV-AGY4-5C4YS&quot;
+}
+</pre>
+<p><i>Внимание: Вы получите ERRORCODE:1, если вы делаете этот запрос не через метод POST</i><br />
+<small><i>Проверено 14/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_Account_Block_IDs"><b>Get Account Block IDs</b></span></h3>
+<p>Возвращает ID всех блоков, созданных данным аккаунтом. Результаты отсортированы в хронологическом порядке.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_3"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getAccountBlockIds&amp;
+     account=ACCOUNT
+     timestamp=TIME
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ACCOUNT — номер счета, который вы хотите проверить
+</li>
+<li>TIME — значение в секундах начиная с создания генезис блока, определяющее время самой ранней генерации блока, который вы бы хотели получить. Установка параметра в 0 даст ID всех блоков, сгенерированных данным аккаунтом.
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_3"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;blockIds&quot;:
+          [ARRAY_OF_BLOCK_IDs]
+}
+</pre>
+<p><b>Примечание:</b> результаты отсортированы в хронологическом порядке (самый ранний блок отображается первым)
+</p>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_3"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getAccountBlockIds&amp;
+     account=387977119245692429
+     timestamp=0
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;blockIds&quot;:
+          [
+               &quot;932115710792099523&quot;
+          ]
+}
+</pre>
+<p><small><i>Проверено 15/05/2014</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_Account_Public_Key"><b>Get Account Public Key</b></span></h3>
+<p>Возвращает публичный ключ, связанный с переданным номером счета.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_4"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getAccountPublicKey&amp;
+     account=ACCOUNTNUM
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ACCOUNTNUM — номер счета, который вы хотите проверить
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_4"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;publicKey&quot;:       &quot;PUBKEY&quot;
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>PUBKEY — 64-битный публичный ключ, связанный с данным счетом.
+</li>
+</ul>
+<p>Примечание:  если переданный номер счета не известен, вы получите ошибку с кодом 5. Если счет существует, но с него не посылались транзакции, вы получите пустое значение:  <code>{}</code>
+</p>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_4"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getAccountPublicKey&amp;
+     account=6483973064837388393
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;publicKey&quot;:       &quot;29592749cd26f5c1c4bf0225f8ab225f289449b4978495e6fec09d486ae2d217&quot;
+}
+</pre>
+<p><small><i>Проверено 14/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_Account_Transaction_IDs"><b>Get Account Transaction IDs</b></span></h3>
+<p>Возвращает ID транзакций, связанных с переданным номером счета. Параметр timestamp определяет насколько далеко в прошлое вам нужно заглянуть в вашем списке транзакций; нулевое значение позволит вам получить все транзакции данного счета, начиная с генезис блока.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_5"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getAccountTransactionIds&amp;
+     account=ACCOUNT&amp;
+     timestamp=TIME&amp;
+     type=TYPE&amp;
+     subtype=SUBTYPE
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ACCOUNT — номер счета, который вы хотите проверить
+</li>
+<li>TIME — значение в секундах начиная с создания генезис блока, определяющее время самой ранней транзакции, которую вы бы хотели получить. Установка параметра в 0 даст ID всех транзакций данного аккаунта.
+</li>
+<li>TYPE (Optional) тип транзакции которую вы запрашиваете
+</li>
+<li>SUBTYPE (Optional) тип суб-транзакции которую вы запрашиваете
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_5"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;transactionIds&quot;:
+          [ARRAY_OF_IDs]
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ARRAY_OF_IDs — массив ID транзакций.
+</li>
+</ul>
+<p><b>Примечание:</b>  результаты отсортированы в хронологическом порядке (самая ранняя транзакция отображается первой)
+</p>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_5"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getAccountTransactionIds&amp;
+     account=25940420118693217452&amp;
+     timestamp=0
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;transactionIds&quot;:
+          [
+               &quot;17484500871708980634&quot;,
+               &quot;51938275284739120529&quot;
+          ]
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_Balance"><b>Get Balance</b></span></h3>
+<p>Возвращает баланс аккаунта.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_6"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getBalance&amp;
+     account=ACCOUNT
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ACCOUNT — номер счета Nxt
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_6"><b>Ответ</b></span></h4>
+<pre>
+{
+    &quot;guaranteedBalanceNQT&quot;: &quot;GUARANTEED_BALANCE&quot;,
+    &quot;balanceNQT&quot;: &quot;BALANCENQT&quot;,
+    &quot;effectiveBalanceNXT&quot;: EFFBALANCENXT,
+    &quot;unconfirmedBalanceNQT&quot;: &quot;UNCONFBALANCENQT&quot;,
+    &quot;forgedBalanceNQT&quot;: &quot;0&quot;
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>GUARANTEED_BALANCE общий баланс аккаунта соответствующего критериям. Результат выражается в NQT 
+</li>
+<li>BALANCENQT количество NXT которым вы владеете отображается в NQT, независимо от числа подтвержденных транзакций связанных с этими имеющимися NXT.
+</li>
+<li>EFFBALANCENXT количество NXT которым вы владеете и которые имеют минимум 1440 подтверждений.  Этот баланс Это - баланс, который используется для форжинга. 
+</li>
+<li>UNCONFBALANCENQT баланс (в NQT) за вычетом всех неподтвержденных исходящих транзакций. Он также не включает не подтвержденные входящие транзакции и double-spending. Пользователь видит этот неподтвержденный балансA  в клиенте.
+</li>
+<li>FORGEDBAL баланс NXT который используется аккаунтом для форжинга,выражается в NQT
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_6"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getBalance&amp;
+     account=7898870630272254992
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+    &quot;guaranteedBalanceNQT&quot;: &quot;0&quot;,
+    &quot;balanceNQT&quot;: &quot;1000700000000&quot;,
+    &quot;effectiveBalanceNXT&quot;: 9932,
+    &quot;unconfirmedBalanceNQT&quot;: &quot;1000700000000&quot;,
+    &quot;forgedBalanceNQT&quot;: &quot;0&quot;
+}
+</pre>
+<p><small><i>Проверено 14/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_Guaranteed_Balance"><b>Get Guaranteed Balance</b></span></h3>
+<p>Возвращает баланс счета, который подтвержден определенное число раз. Реализовано, начиная с версии 0.5.5
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_7"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getGuaranteedBalance&amp;
+     account=ACCOUNT&amp;
+     numberOfConfirmations=CONFIRMATIONS
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ACCOUNT — номер Nxt аккаунта 
+</li>
+<li>CONFIRMATIONS — минимальное число подтверждений транзакции, позволяющее ей быть видимой при подсчете гарантированного баланса
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_7"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;guaranteedBalanceNQT&quot;:       GUARANTEED_BALANCE
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>GUARANTEED_BALANCE — общий баланс счета, удовлетворяющий критериям CONFIRMATIONS. Выражается в NQT.
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_7"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getGuaranteedBalance&amp;
+     account=3847997711292454692&amp;
+     numberOfConfirmations=15
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;guaranteedBalanceNQT&quot;:       1303400000000
+}
+</pre>
+<p><small><i>Проверено 14/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Lease_Balance"><b>Lease Balance</b></span></h3>
+<p>Передача вашего баланса в аренду другому аккаунту.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_8"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=leaseBalance&amp;
+     period=PERIOD&amp;
+     recipient=REC&amp;
+     secretPhrase=SECRET&amp;
+     feeNQT=FEE&amp;
+     deadline=DEADLINE&amp;
+     referencedTransaction=REFTXID&amp;
+     broadcast=BROAD
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>PERIOD продолжительность аренды вашего баланса, продолжительность указывается в количестве блоков.
+</li>
+<li>REC аккаунт которому вы передаете в аренду свои средства
+</li>
+<li>SECRET секретная фраза аккаунта передающего в аренду свои средства
+</li>
+<li>FEE комиссия которую вы платите за транзакцию (в NQT)
+</li>
+<li>DEADLINE дедлайн транзакции до получения подтверждения, определяется в минутах
+</li>
+<li>REFTXID ID предыдущей транзакции на которую вы ссылаетесь. Это создает зависимые транзакции (цепочка транзакций), означая, что текущая транзакция не может быть подтверждена, пока транзакция на которую вы ссылаетесь, не подтверждена. (опционально)
+</li>
+<li>BROAD если вы хотите чтобы транзакция широковещательно передавалась или нет (опционально) 
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_8"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;fullHash&quot;:                 &quot;FULLHASH&quot;, 
+     &quot;signatureHash&quot;:            &quot;SIGHASH&quot;, 
+     &quot;transactionBytes&quot;:         &quot;TXBYTES&quot;, 
+     &quot;hash&quot;:                     &quot;HASH&quot;, 
+     &quot;transaction&quot;:              &quot;TX&quot;, 
+     &quot;broadcasted&quot;:              BROAD, 
+     &quot;unsignedTransactionBytes&quot;: &quot;UNTXBYTES&quot; 
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>FULLHASH полный хэш транзакции
+</li>
+<li>SIGHASH sha256 хэш подписи транзакции. Используется для транзакций условного депонирования
+</li>
+<li>TXBYTES байткод транзакции
+</li>
+<li>HASH хеш всех полей транзакции, за исключением подписи
+</li>
+<li>TX ID транзакции
+</li>
+<li>BROAD статус - транзакция была передана или нет
+</li>
+<li>UNTXBYTES байты транзакции с частью подписи, заменяемой нулями
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_8"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=leaseBalance&amp;
+     period=2880&amp;
+     recipient=1562462127635514638&amp;
+     secretPhrase=123&amp;
+     feeNQT=100000000&amp;
+     deadline=1440
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;fullHash&quot;:                 &quot;e4d1f83e1cf26ee71d8566d00077510c4a641e04174e7ec3893d7e5aafc82e65&quot;, 
+     &quot;signatureHash&quot;:            &quot;48cab5351b4c08ac2816b5e13e9d238fa910085a0d07a16e1c7d7986222fc444&quot;, 
+     &quot;transactionBytes&quot;:         &quot;0400401adb00a005668683e673274c671802492d6f5...&quot;, 
+     &quot;hash&quot;:                     &quot;9b64d859cecdf63773d0696777c2783892616f3a793794544531e4fd7b8a66b2&quot;, 
+     &quot;transaction&quot;:              &quot;16676532673329025508&quot;, 
+     &quot;broadcasted&quot;:              true, 
+     &quot;unsignedTransactionBytes&quot;: &quot;0400401adb00a005668683e673274c671802492d6f54cdc...&quot; 
+}
+</pre>
+<p><small><i>Проверено 14/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Start_.2F_Stop_Forging"><b>Start / Stop Forging</b></span></h3>
+<p>Запуск или остановка форжинга аккаунтом, или проверка, чтобы увидеть, форжит ли учетная запись. Учетная запись форжит, когда ее секретная фраза (закрытый ключ) предоставлена серверу/узлу Nxt. 
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_9"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=START_OR_STOP_OR_GET&amp;
+     secretPhrase=SECRET
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>START_OR_STOP startForging или stopForging
+</li>
+<li>SECRET секретная фраза (личный ключ) для аккаунта, форжинг на котором вы хотите начать или остановить
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_9"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;deadline&quot;:       DEADLINE
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>DEADLINE оценочное число секунд до генерации аккаунтом нового блока
+</li>
+</ul>
+<p>Для "stopForging":
+</p>
+<pre>
+{
+     &quot;foundAndStopped&quot;:       TRUE_OR_FALSE
+}
+</pre>
+<p><br />
+</p>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_9"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=startForging&amp;
+     secretPhrase=MySuperSecretPasswordThatIsNotActuallyPostedHereOrIsEvenRealSoDoNotEvenTryIt
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;deadline&quot;:       1036742
+}
+</pre>
+<p><small><i>Проверено 14/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Set_Account_Information"><b>Set Account Information</b></span></h3>
+<p>Установка сведений об аккаунте
+</p>
+<h4><span class="mw-headline" id="Request"><b>Request</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=setAccountInfo&amp;
+     secretPhrase=SECRET&amp;
+     name=NAME&amp;
+     description=DESCRIPT&amp;
+     publicKey=PUBKEY&amp;	
+     feeNQT=FEENQT&amp;
+     deadline=DEADLINE&amp;
+     referencedTransactionFullHash=REFTXHASH&amp;
+     broadcast=BROAD
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>SECRET секретная фраза (приватный ключ) аккаунта
+</li>
+<li>DEADLINE дедлайн для транзакции, задается в минутах
+</li>
+<li>FEENQT комиссия за транзакцию(в NQT)
+</li>
+<li>PUBKEY открытый ключ передающего счета для транзакции (опционально)
+</li>
+<li>NAME имя которое вы хотите установить для аккаунта(опционально)
+</li>
+<li>DESCIPT описание которое вы хотите дать для аккаунта(опционально)
+</li>
+<li>REFTXHASH ID транзакции, на которую ссылается эта транзакция(опционально)
+</li>
+<li>BROAD true или false если это должно быть передано широковещательно (опционально)
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_10"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;fullHash&quot;:                 &quot;FULLHASH&quot;, 
+     &quot;signatureHash&quot;:            &quot;SIGHASH&quot;, 
+     &quot;transactionBytes&quot;:         &quot;TXBYTES&quot;, 
+     &quot;hash&quot;:                     &quot;HASH&quot;, 
+     &quot;transaction&quot;:              &quot;TX&quot;, 
+     &quot;broadcasted&quot;:              BROAD, 
+     &quot;unsignedTransactionBytes&quot;: &quot;UNTXBYTES&quot; 
+}
+</pre>
+<p>Where:
+</p>
+<ul>
+<li>FULLHASH полный хэш транзакции 
+</li>
+<li>SIGHASH sha256 хэш подписи транзакции. Используется для транзакций условного депонирования
+</li>
+<li>TXBYTES байткод транзакции 
+</li>
+<li>HASH хэш всех полей транзакции, за исключение подписи
+</li>
+<li>TX ID транзакции
+</li>
+<li>BROAD указывает была транзакция передана или нет
+</li>
+<li>UNTXBYTES байты транзакции c подписью, частично замененной нулями
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_10"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=setAccountInfo&amp;
+     secretPhrase=MySuperSecretPasswordThatIsNotActuallyPostedHereOrIsEvenRealSoDoNotEvenTryIt&amp;
+     feeNQT=100000000&amp;
+     deadline=1440
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{ 
+     &quot;fullHash&quot;:                 &quot;93e8bba270eed8693f62576e13b45b45a848dd475e510fdb1e4026712829b734&quot;, 
+     &quot;signatureHash&quot;:            &quot;5487681f5a828d379864cbbdba9b1f4f2c6f7035c8cf2f272dc323147aea5eac&quot;, 
+     &quot;transactionBytes&quot;:         &quot;0105c84ad700a005668683e673274c671802492d6f54cdc33d247aa426e7...&quot;, 
+     &quot;hash&quot;:                     &quot;6b6ec6ad2f06119493caca546b6561069cd5341b41884d5be068e0b1d9ce7748&quot;, 
+     &quot;transaction&quot;:              &quot;7627108136485906579&quot;, 
+     &quot;broadcasted&quot;:              true, 
+     &quot;unsignedTransactionBytes&quot;: &quot;0105c84ad700a005668683e673274c671802492d6f54cdc33d247aa4...&quot; 
+}
+</pre>
+<p><small>Проверено 14/05/14</small>
+</p>
+<h2><span class="mw-headline" id=".D0.94.D0.B5.D0.B9.D1.81.D1.82.D0.B2.D0.B8.D1.8F_.D1.81_.D0.90.D0.BB.D1.8C.D1.8F.D1.81.D0.B0.D0.BC.D0.B8"><b>Действия с Альясами</b></span></h2>
+<h3><span class="mw-headline" id=".D0.A1.D0.BE.D0.B7.D0.B4.D0.B0.D0.BD.D0.B8.D0.B5.2F.D0.BF.D1.80.D0.B8.D1.81.D0.B2.D0.BE.D0.B5.D0.BD.D0.B8.D0.B5_.D0.B0.D0.BB.D1.8C.D1.8F.D1.81.D0.B0"><b>Создание/присвоение альяса</b></span></h3>
+<p>Позволяет вам создать альяс в один запрос.  Если данный альяс уже существует , этот запрос присвоит новый URI псевдониму.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_10"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=assignAlias&amp;
+     secretPhrase=SECRET&amp;
+     alias=ALIAS&amp;
+     uri=URI&amp;
+     feeNQT=FEE&amp;
+     deadline=DEADLINE&amp;
+     publicKey=PUBKEY&amp;
+     referencedTransactionFullHash=TRANSFULLHASH&amp;
+     broadcast=BROAD
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>SECRET секретная фраза аккаунта 
+</li>
+<li>ALIAS альяс, который вы хотите создать
+</li>
+<li>URI текст альяса (на пример <a rel="nofollow" class="external free" href="http://www.google.com/">http://www.google.com/</a>)
+</li>
+<li>FEE комиссия (в NQT) за транзакцию
+</li>
+<li>DEADLINE дедлайн для транзакции, задается в минутах
+</li>
+<li>PUBKEY 64-битный публичный ключ ассоциированный с данным аккаунтом. (опционально)
+</li>
+<li>TRANSFULLHASH Если Вы хотите сослаться на другую транзакцию(опционально)
+</li>
+<li>BROAD true или false если это должно быть опубликовано широковещательно (опционально)
+</li>
+</ul>
+<h4><span class="mw-headline" id=".27.D0.9E.D1.82.D0.B2.D0.B5.D1.82.27">'<b>Ответ'</b></span></h4>
+<pre>
+{
+     &quot;transactionId&quot;:       &quot;TXID&quot;
+}
+{ 
+     &quot;fullHash&quot;:                 &quot;FULLHASH&quot;, 
+     &quot;signatureHash&quot;:            &quot;SIGHASH&quot;, 
+     &quot;transactionBytes&quot;:         &quot;TXBYTES&quot;, 
+     &quot;hash&quot;:                     &quot;HASH&quot;, 
+     &quot;transaction&quot;:              &quot;TX&quot;, 
+     &quot;broadcasted&quot;:              BROAD, 
+     &quot;unsignedTransactionBytes&quot;: &quot;UNTXBYTES&quot; 
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_11"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=setAlias&amp;
+     secretPhrase=123&amp;
+     aliasName=Google&amp;
+     aliasURI=http://google.com&amp;
+     feeNQT=100000000&amp;
+     deadline=1440
+</pre>
+<p>Результат:
+</p>
+<pre>
+{ 
+     &quot;fullHash&quot;:                 &quot;645853ddc55daa2c948f46520b0630d964ce0f40c0ee03515faffce6259d0bae&quot;, 
+     &quot;signatureHash&quot;:            &quot;1e622a64292f8b1fcb1ccf155a42a37a99b89cbcaa725f1200ab55b5ec5f1ca8&quot;, 
+     &quot;transactionBytes&quot;:         &quot;0101fe21d700a005668683e673274c671802492d6f54cdc33d247aa426e7ce...&quot;, 
+     &quot;hash&quot;:                     &quot;580c1bb70d7bcb1eb967c4e86c6c9bfc481641dcce84300a579caf35840e662a&quot;, 
+     &quot;transaction&quot;:              &quot;3218487988112808036&quot;, 
+     &quot;broadcasted&quot;:              true, 
+     &quot;unsignedTransactionBytes&quot;: &quot;0101fe21d700a005668683e673274c671802492d6f54cdc33d247a...&quot; 
+}
+</pre>
+<p><small><i>Исправлено 22/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_alias"><b>Get alias</b></span></h3>
+<p>Возвращает информацию о заданном альясе
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_11"><b>Запрос</b></span></h4>
+<pre>https://localhost:7876/nxt?
+     requestType=getAlias&amp;
+     alias=ALIAS_ID
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ALIAS_ID альяс который вас интересует
+</li>
+<li>ALIAS_NAME имя альяса который вас интересует
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_11"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;timestamp&quot;:  TIMESTAMP, 
+     &quot;aliasName&quot;:      &quot;ALIAS&quot;, 
+     &quot;account&quot;:    &quot;ACCOUNT&quot;,
+     &quot;accountRS&quot;:  &quot;ACCOUNTRS&quot;,
+     &quot;aliasURI&quot;:        &quot;URI&quot;,
+     &quot;alias&quot;:      &quot;ALIAS_ID&quot;
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>TIMESTAMP метка времени, когда был создан альяс. Задается в секундах, от даты создания генезисного блока
+</li>
+<li>ALIAS название альяса
+</li>
+<li>ACCOUNT аккаунт, который владеет альсом
+</li>
+<li>ACCOUNTRS адрес аккаунта в кодировке Reed-Solomon
+</li>
+<li>URI адрес, на который указывает псевдоним
+</li>
+<li>ALIAS_ID идентификатор альяса (id)
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_12"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>https://localhost:7876/nxt?
+     requestType=getAlias&amp;
+     alias=15515279700680480368
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;timestamp&quot;: 2409343, 
+     &quot;alias&quot;:     &quot;google&quot;, 
+     &quot;account&quot;:   &quot;5629477397208681336&quot;,
+     &quot;accountRS&quot;: &quot;NXT-FLVS-VRBV-LDPD-6DZ9W&quot;,
+     &quot;uri&quot;:       &quot;http://google.com&quot;
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p><p><br />
+</p>
+<h3><span class="mw-headline" id="Get_aliases"><b>Get aliases</b></span></h3>
+<p>Возвращает информацию о всех альясах для указанного аккаунта (начиная с указанной метки времени, если задано)
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_12"><b>Запрос</b></span></h4>
+<pre>https://localhost:7876/nxt?
+     requestType=getAliases&amp;
+     account=ACCOUNT&amp;
+     timestamp=TIMESTAMP
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ACCOUNT аккаунт, список альясов которого вас интересует
+</li>
+<li>TIMESTAMP время начиная с которого были созданы альясы. Задается в секундах начиная с времени создания генезисного блока.
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_12"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;aliases&quot;: [
+     {
+          &quot;timestamp&quot;:  TIMESTAMP, 
+          &quot;aliasName&quot;:      &quot;ALIAS&quot;, 
+          &quot;account&quot;:    &quot;ACCOUNT&quot;,
+          &quot;accountRS&quot;:  &quot;ACCOUNTRS&quot;,
+          &quot;aliasURI&quot;:        &quot;URI&quot;,
+          &quot;alias&quot;:      &quot;ALIAS_ID&quot;
+     },
+     {
+          ...
+     }]
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>TIMESTAMP метка времени, когда был создан альяс. Задается в секундах, от даты создания генезисного блока
+</li>
+<li>ALIAS название альяса
+</li>
+<li>ACCOUNT аккаунт, который владеет альсом
+</li>
+<li>ACCOUNTRS адрес аккаунта в кодировке Reed-Solomon
+</li>
+<li>URI адрес, на который указывает псевдоним
+</li>
+<li>ALIAS_ID идентификатор альяса (id)
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_13"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>https://localhost:7876/nxt?
+     requestType=getAliases&amp;
+     account=5629477397208681336
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+    &quot;aliases&quot;: [
+        {
+            &quot;timestamp&quot;: 2409602,
+            &quot;aliasName&quot;: &quot;promotion&quot;,
+            &quot;alias&quot;: &quot;11086300057073013586&quot;,
+            &quot;aliasURI&quot;: &quot;&quot;,
+            &quot;accountRS&quot;: &quot;NXT-FLVS-VRBV-LDPD-6DZ9W&quot;,
+            &quot;account&quot;: &quot;5629477397208681336&quot;
+        },
+        {
+            ...
+        }
+               ]
+}
+</pre>
+<p><small><i>Проверено 26/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_alias_ID_.28.D0.9D.D0.B5_.D0.B8.D1.81.D0.BF.D0.BE.D0.BB.D1.8C.D0.B7.D1.83.D0.B5.D1.82.D1.81.D1.8F.29"><b>Get alias ID (Не используется)</b></span></h3>
+<p>Возвращает ID определенного алиаса. Реализовано начиная с версии 0.5.4e. Функция не используется с версии клиента 1.1.4.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_13"><b>Запрос</b></span></h4>
+<pre>https://localhost:7876/nxt?
+     requestType=getAliasId&amp;
+     alias=ALIAS
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ALIAS — альяс, ID которого вы хотите получить
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_13"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;id&quot;:       &quot;ALIAS_ID&quot;
+}
+</pre>
+<h4><span class="mw-headline" id=".27.D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80.27">'<b>Пример'</b></span></h4>
+<p>Запрос:
+</p>
+<pre>https://localhost:7876/nxt?
+     requestType=getAliasId&amp;
+     alias=google
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;id&quot;:       &quot;15515279700680480368&quot;
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_alias_IDs_.28.D0.9D.D0.B5_.D0.B8.D1.81.D0.BF.D0.BE.D0.BB.D1.8C.D0.B7.D1.83.D0.B5.D1.82.D1.81.D1.8F.29"><b>Get alias IDs (Не используется)</b></span></h3>
+<p>Возвращает все ID транзакций алиасов после определенного времени в блокчейне. Функция не используется, начиная с клиента версии 1.1.4
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_14"><b>Запрос</b></span></h4>
+<pre>https://localhost:7876/nxt?
+     requestType=getAliasIds&amp;
+     timestamp=TIMESTAMP
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>TIMESTAMP — время, начиная с которого вы хотели бы видеть определенные алиасы. Выражается в секундах начиная с времени генезис блока
+</li>
+</ul>
+<h4><span class="mw-headline" id=".27.D0.9E.D1.82.D0.B2.D0.B5.D1.82.27_2">'<b>Ответ'</b></span></h4>
+<pre>
+{
+     &quot;aliasIds&quot;:       [ARRAY_OF_ALIAS_IDs]
+}
+</pre>
+<p><small><i>Проверено 14/05/14</i></small>
+</p>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_14"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>https://localhost:7876/nxt?
+     requestType=getAliasIds&amp;
+     timestamp=30000
+</pre>
+<p>Результат:
+</p>
+<pre>
+{
+     &quot;aliasIds&quot;:
+               [&quot;12219820415480193342&quot;,
+               &quot;2284413548488744428&quot;,
+               &quot;6882945328050210195&quot;...]
+}
+</pre>
+<p><small><i>Исправлено 22/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_alias_URI_.28.D0.9D.D0.B5_.D0.B8.D1.81.D0.BF.D0.BE.D0.BB.D1.8C.D0.B7.D1.83.D0.B5.D0.BC.D1.8B.D0.B9.29"><b>Get alias URI (Не используемый)</b></span></h3>
+<p>Возвращает целевой URI альяса. Функция не используется, начиная с клиента версии 1.1.4
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_15"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getAliasURI&amp;
+     alias=ALIAS
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ALIAS альяс, целевой URI которого Вы хотели бы видеть
+</li>
+</ul>
+<h4><span class="mw-headline" id=".27.D0.9E.D1.82.D0.B2.D0.B5.D1.82.27_3">'<b>Ответ'</b></span></h4>
+<pre>
+{
+     &quot;uri&quot;:       &quot;URI_ASSIGNED_TO_ALIAS&quot;
+}
+</pre>
+<p>Внимание:  Возвращенный URI будет ограничен! 
+<small><i>Проверено 14/05/14</i></small>
+</p>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_15"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getAliasURI&amp;
+     alias=Google
+</pre>
+<p>Ответ:
+</p>
+<pre>{
+     &quot;uri&quot;:       &quot;http:\/\/google.com&quot;
+}
+</pre>
+<p><small><i>Исправлено 22/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="List_Aliases_.28.D0.9D.D0.B5_.D0.B8.D1.81.D0.BF.D0.BE.D0.BB.D1.8C.D1.83.D0.B7.D0.B5.D1.82.D1.81.D1.8F.29"><b>List Aliases (Не испольузется)</b></span></h3>
+<p>Возвращает список алиасов, принадлежащих аккаунту. Функция не используется начиная с клиента версии 1.1.4
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_16"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=listAccountAliases&amp;
+     account=ACCOUNT
+</pre>
+<p>Где:
+</p>
+<ul>
+<li> ACCOUNT — номер аккаунта
+</li>
+</ul>
+<h4><span class="mw-headline" id=".27.D0.9E.D1.82.D0.B2.D0.B5.D1.82.27_4">'<b>Ответ'</b></span></h4>
+<pre>
+{
+     &quot;aliases&quot;: 
+          [ 
+               { 
+                    &quot;alias&quot;:        &quot;ALIAS&quot;,  
+                    &quot;uri&quot;:          &quot;URI&quot;,
+                    &quot;account&quot;:      &quot;ACCOUNT&quot;,
+                    &quot;timestamp&quot;:    &quot;TIMESTAMP&quot;
+               } 
+          ] 
+}
+</pre>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_16"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=listAccountAliases&amp;
+     account=17157779854388545959</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;aliases&quot;:
+          [
+               {
+                    &quot;alias&quot;:     &quot;testalias&quot;,
+                    &quot;uri&quot;:       &quot;1337&quot;,
+                    &quot;account&quot;:   &quot;17157779854388545959&quot;,
+                    &quot;timestamp&quot;:  2920016
+               }
+          ]
+}
+</pre>
+<p><small><i>Проверено 14/05/14</i></small>
+</p>
+<h2><span class="mw-headline" id=".D0.A1.D0.B8.D1.81.D1.82.D0.B5.D0.BC.D0.BD.D1.8B.D0.B5_.D1.84.D1.83.D0.BD.D0.BA.D1.86.D0.B8.D0.B8_.D0.B4.D0.BB.D1.8F_.D1.80.D0.B0.D0.B1.D0.BE.D1.82.D1.8B_.D1.81_.D0.BF.D1.80.D0.BE.D0.B8.D0.B7.D0.B2.D0.BE.D0.BB.D1.8C.D0.BD.D1.8B.D0.BC.D0.B8_.D1.81.D0.BE.D0.BE.D0.B1.D1.89.D0.B5.D0.BD.D0.B8.D1.8F.D0.BC.D0.B8"><b>Системные функции для работы с произвольными сообщениями</b></span></h2>
+<h3><span class="mw-headline" id="Send_Message"><b>Send Message</b></span></h3>
+<p>Создает транзакцию с исходящим произвольным сообщением.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_17"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=sendMessage&amp;
+     secretPhrase=SECRET&amp;
+     recipient=RECIP_ACCOUNT&amp;
+     feeNQT=FEE&amp;
+     message=HEX_STRING&amp;
+     deadline=DEADLINE&amp;
+     referencedTransaction=REFTXID&amp;
+     broadcast=BROAD
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>SECRET секретная фраза аккаунта, который отправляет сообщение
+</li>
+<li>RECIP_ACCOUNT номер аккаунта, которому отправляется сообщение (получателя)
+</li>
+<li>HEX_STRING сообщение в hex кодировке.  Механизмы шифрования сообщения не предусмотрены, оставлено для разработчиков.  Длинна сообщения ограниченна 1000 байтами.
+</li>
+<li>FEE комиссия (в NQT) за транзакцию
+</li>
+<li>DEADLINE дедлайн транзакции, указывается в минутах
+</li>
+<li>REFTXID ID предыдущей транзакции на которую вы ссылаетесь. Это создает зависимые транзакции (цепочка транзакций), означая, что текущая транзакция не может быть подтверждена, пока транзакция на которую вы ссылаетесь, не будет подтверждена. (опционально)
+</li>
+<li>BROAD если вы хотите чтобы транзакция широковещательно передавалась или нет (опционально) 
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_14"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;fullHash&quot;:                 &quot;FULLHASH&quot;, 
+     &quot;signatureHash&quot;:            &quot;SIGHASH&quot;, 
+     &quot;transactionBytes&quot;:         &quot;TXBYTES&quot;, 
+     &quot;hash&quot;:                     &quot;HASH&quot;, 
+     &quot;transaction&quot;:              &quot;TX&quot;, 
+     &quot;broadcasted&quot;:              BROAD, 
+     &quot;unsignedTransactionBytes&quot;: &quot;UNTXBYTES&quot; 
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>FULLHASH полный хэш транзакции 
+</li>
+<li>SIGHASH sha256 хэш подписи транзакции. Используется для транзакций условного депонирования
+</li>
+<li>TXBYTES байткод транзакции 
+</li>
+<li>HASH хэш всех полей транзакции, за исключение подписи
+</li>
+<li>TX ID транзакции
+</li>
+<li>BROAD указывает была транзакция передана или нет
+</li>
+<li>UNTXBYTES байты транзакции c подписью, частично замененной нулями
+</li>
+</ul>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_17"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=sendMessage&amp;
+     secretPhrase=MySuperSecretPasswordThatYouDoNotKnow&amp;
+     recipient=501860284368&amp;
+     message= 6602b1611f921092bdf2a89fc97148ec9684066776b83fd3&amp;
+     deadline=720&amp;
+     referencedTransaction=8815617645011985536
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{ 
+     &quot;fullHash&quot;:                 &quot;d56ade2c322083d76ebcdb9f9ef18d7d52c6d105f67be040cc423c7a41a47aea&quot;, 
+     &quot;signatureHash&quot;:            &quot;458514e72f4272c789f99201c27cff611460de10fe484b474166c1199c23e754&quot;, 
+     &quot;transactionBytes&quot;:         &quot;0100471ddb00a005668683e673274c671802492d6f54cdc33d247aa426e7cef...&quot;, 
+     &quot;hash&quot;:                     &quot;36a0dc90736d95ad5302f078d5db6fc48e5c087b76da65944f7fe2836b73abcd&quot;, 
+     &quot;transaction&quot;:              &quot;15529291339976829653&quot;, 
+     &quot;broadcasted&quot;:              true, 
+     &quot;unsignedTransactionBytes&quot;: &quot;0100471ddb00a005668683e673274c671802492d6f54cdc33d247aa4...&quot; 
+}
+</pre>
+<p><small><i>Проверено 13/05/14</i></small>
+</p>
+<h2><span class="mw-headline" id=".D0.9E.D0.BF.D0.B5.D1.80.D0.B0.D1.86.D0.B8.D0.B8_.D0.B4.D0.BB.D1.8F_.D1.80.D0.B0.D0.B1.D0.BE.D1.82.D1.8B_.D1.81_.D0.B1.D0.BB.D0.BE.D0.BA.D0.B0.D0.BC.D0.B8"><b>Операции для работы с блоками</b></span></h2>
+<h3><span class="mw-headline" id="Get_Block"><b>Get Block</b></span></h3>
+<p>Получить данные блока.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_18"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getBlock&amp;
+     block=BLOCKADDRESS
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>BLOCKADDRESS адрес блока Nxt 
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_15"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;generatorRS&quot;: &quot;ACCOUNTRS&quot;,
+     &quot;previousBlockHash&quot;:&quot;32BytesRepresentedInHexadecimalForm&quot;,
+     &quot;payloadLength&quot;:PAYLOADLEN,
+     &quot;totalAmountNQT&quot;:TOTAL,
+     &quot;generationSignature&quot;:&quot;64BytesRepresentedInHexadecimalForm&quot;,
+     &quot;generator&quot;:&quot;ACCOUNT&quot;,
+     &quot;baseTarget&quot;:&quot;BASETARGET&quot;,
+     &quot;payloadHash&quot;:&quot;32BytesRepresentedInHexadecimalForm&quot;,
+     &quot;nextBlock&quot;:&quot;NEXTBLOCK&quot;,
+     &quot;numberOfTransactions&quot;:NUMTX,
+     &quot;blockSignature&quot;:&quot;64BytesRepresentedInHexadecimalForm&quot;,
+     &quot;transactions&quot;:
+          [
+               &quot;TRANSACTION1&quot;,
+               &quot;TRANSACTION2&quot;
+          ],
+     &quot;version&quot;:VERSION,
+     &quot;totalFeeNQT&quot;:&quot;FEE&quot;,
+     &quot;previousBlock&quot;:&quot;PREVBLOCK&quot;,
+     &quot;height&quot;:HEIGHT,
+     &quot;timestamp&quot;:TIME
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li> HEIGHT высота блока 
+</li>
+<li> ACCOUNTRS адрес аккаунта в кодировке Reed-Solomon
+</li>
+<li> "generator" аккаунт который сгенерировал блок.
+</li>
+<li> ACCOUNT номер аккаунта.
+</li>
+<li> TIME время в секундах когда блок был сгенерирован; 0 время создания генезисного блока.
+</li>
+<li> NUMTX количество транзакций в этом блоке
+</li>
+<li> TOTAL общее количество NXT в данном блоке, измеряется в NQT 
+</li>
+<li> FEE комиссия NXT для данного блока, измеряется в NQT 
+</li>
+<li> VERSION версия блока
+</li>
+<li> BASETARGET целевой hash для генерации блока
+</li>
+<li> Payload length = "numberOfTransactions" * 128 Bytes.
+</li>
+<li> "previousBlock" адрес предыдущего блока. Параметр будет пустым для генезисного блока.
+</li>
+<li> PREVBLOCK адрес предыдущего блока
+</li>
+<li> "nextBlock" адрес следующего блока за текущим. Параметр будет пустым для последнего блока в blockchain.
+</li>
+<li> NEXTBLOCK адрес следующего блока, за указанным
+</li>
+<li> "transactions" список/массив идентификаторов (ID) транзакций представленных в этом блоке.
+</li>
+<li> TRANSACTIONX  идентификаторы (ID) транзакций в блоке
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_18"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getBlock&amp;
+     block=3081264592726137683
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;generatorRS&quot;: &quot;NXT-25TQ-G377-8TJ9-EVPAD&quot;,
+     &quot;previousBlockHash&quot;:&quot;d2df42de82c3fbc808715ce9738630b31bece282864fafd164b0d4cf5b0e9e3e&quot;,
+     &quot;payloadLength&quot;:256,
+     &quot;totalAmountNQT&quot;:&quot;16400300000000&quot;,
+     &quot;generationSignature&quot;:&quot;5beac191d5a20b443b9fdd83cfeb3abddfb31294c1999a85c75955a4c99b3f3c&quot;,
+     &quot;generator&quot;:&quot;14241151062656421686&quot;,
+     &quot;baseTarget&quot;:&quot;191236740&quot;,
+     &quot;payloadHash&quot;:&quot;fc153c1f3d18af9e5a60be42bee896b19089a4b1e391179c98c2a9d2d383275f&quot;,
+     &quot;nextBlock&quot;:&quot;5728643978405745233&quot;,
+     &quot;numberOfTransactions&quot;:2,
+     &quot;blockSignature&quot;:&quot;5bf8d6f39c6303815dbf591667d613175e916520052f21ffaddec818e2e4ab0cca07f17b0dea8352e837aa89e774cd95dbeb5a2bdab1f1f50f5955d1a3718375&quot;,
+     &quot;transactions&quot;:
+          [
+               &quot;10431005438877942947&quot;,
+               &quot;16244324356084723003&quot;
+          ],
+     &quot;version&quot;:2,
+     &quot;totalFeeNQT&quot;:&quot;200000000&quot;,
+     &quot;previousBlock&quot;:&quot;14482383993582051282&quot;,
+     &quot;height&quot;:115147,
+     &quot;timestamp&quot;:12439666
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h2><span class="mw-headline" id=".D0.9E.D0.BF.D0.B5.D1.80.D0.B0.D1.86.D0.B8.D0.B8_.D0.BD.D0.B0_.D0.91.D0.B8.D1.80.D0.B6.D0.B5_.D0.90.D0.BA.D1.82.D0.B8.D0.B2.D0.BE.D0.B2"><b>Операции на Бирже Активов</b></span></h2>
+<p>Обратите  внимание - единицей биржевой операции является АКТИВ. Активом может быть что угодно - NXT, другая криптовалюта, акции и т.п.
+</p>
+<h3><span class="mw-headline" id="Issue_asset"><b>Issue asset</b></span></h3>
+<p>Создание актива для биржи
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_19"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=issueAsset&amp; 
+     secretPhrase=SECRET&amp; 
+     name=ASSETNAME&amp; 
+     description=DESCRIPTION&amp; 
+     quantityQNT=QTY&amp;
+     decimals=DECIMALS&amp;
+     feeNQT=FEE&amp;
+     deadline=DEADLINE&amp; 
+     referencedTransaction=REFTX&amp;
+     broadcast=BROAD
+</pre>
+<p>Where:
+</p>
+<ul>
+<li> SECRET секретная фраза аккаунта создающего актив.
+</li>
+<li> ASSETNAME имя актива, который вы создаете для продажи на бирже
+</li>
+<li> DESCRIPTION описание актива. Этот текст должен быть URL-encoded, но может включать любые Unicode символы, и иметь максимальную длину 1000 символов. (опционально)
+</li>
+<li> QTY количество единиц актива
+</li>
+<li> DECIMALS количество знаков после запятой для указанного актива. Для примера, для USD это будет 2 (т.е. 1.87 USD), для Bitcoin это будет 8 (т.е. 0.00000025 BTC)
+</li>
+<li> FEE комиссия (в NQT )за транзакцию по созданию актива. На данный момент минимальная комиссия за создание активасоставляет 1000 Nxt
+</li>
+<li> DEADLINE дедлайн до подтверждения транзакции, задается в минутах 
+</li>
+<li> REFTXID ID предыдущей транзакции на которую вы ссылаетесь. Это создает зависимые транзакции (цепочка транзакций), означая, что текущая транзакция не может быть подтверждена, пока транзакция на которую вы ссылаетесь, не будет подтверждена. (опционально)
+</li>
+<li> BROAD если вы хотите чтобы транзакция широковещательно передавалась или нет (опционально)
+</li>
+</ul>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_16"><b>Ответ</b></span></h4>
+<p>В ответе возвращаются идентификаторы транзакции (ID), который является также ID актива
+</p>
+<pre>
+{
+     &quot;fullHash&quot;:                 &quot;FULLHASH&quot;, 
+     &quot;signatureHash&quot;:            &quot;SIGHASH&quot;, 
+     &quot;transactionBytes&quot;:         &quot;TXBYTES&quot;, 
+     &quot;hash&quot;:                     &quot;HASH&quot;, 
+     &quot;transaction&quot;:              &quot;TX&quot;, 
+     &quot;broadcasted&quot;:              BROAD, 
+     &quot;unsignedTransactionBytes&quot;: &quot;UNTXBYTES&quot; 
+}
+</pre>
+<p>Where:
+</p>
+<ul>
+<li>FULLHASH полный хэш транзакции
+</li>
+<li>SIGHASH sha256 хэш подписи транзакции. Полезно для транзакций условного депонирования
+</li>
+<li>TXBYTES байткод транзакции
+</li>
+<li>HASH шэх всех полей транзакции за исключением подписи
+</li>
+<li>TX идентификатор (ID) транзакции
+</li>
+<li>BROAD указывает была транзакция передана или нет
+</li>
+<li>UNTXBYTES байты транзакции c подписью, частично замененной нулями
+</li>
+</ul>
+<p><small><i>Исправлено 22/05/14</i></small>
+</p>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_19"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=issueAsset&amp;
+     secretPhrase=123&amp;
+     name=turtleCoin&amp;
+     description=This+is+Turtlecoin+issued+by+Tommy-Turtle&amp;
+     quantityQNT=500&amp; 
+     deadline=1440&amp;
+     feeNQT=1000
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{ 
+     &quot;fullHash&quot;:                 &quot;ebccb29dc4286a4a55ad9f0a4334cd3b0df75c26fcaf4a6ee3b62832f8f1a403&quot;, 
+     &quot;signatureHash&quot;:            &quot;adb63682ac9598b7ea951df09535ee662b4b2f977e4f8a3f1a1aa0fd1f3e3da1&quot;, 
+     &quot;transactionBytes&quot;:         &quot;0200701fdb00a005668683e673274c671802492d6f54cdc33d247aa426e7cef83776...&quot;, 
+     &quot;hash&quot;:                     &quot;f1fa3f7b8ca5dd38d529e9f9a052aac0f96a7e5a4ef57cdabb0e4633cb4fcd89&quot;, 
+     &quot;transaction&quot;:              &quot;5362143131262438635&quot;, 
+     &quot;broadcasted&quot;:              true, 
+     &quot;unsignedTransactionBytes&quot;: &quot;0200701fdb00a005668683e673274c671802492d6f54cdc33d247aa426e7ce...&quot; 
+}
+</pre>
+<p><small><i>Проверено 13/06/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_asset_IDs"><b>Get asset IDs</b></span></h3>
+<p>Получить список всех идентификаторов актива на бирже
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_20"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getAssetIds
+</pre>
+<h4><span class="mw-headline" id=".27.D0.A0.D0.B5.D0.B7.D1.83.D0.BB.D1.8C.D1.82.D0.B0.D1.82.27">'<b>Результат'</b></span></h4>
+<pre>
+{
+     &quot;assetIds&quot;:       [ARRAY_OF_ASSET_IDs]
+}
+</pre>
+<p>Где ARRAY_OF_ASSET_IDs - массив/список идентификаторов актива
+</p>
+<h4><span class="mw-headline" id=".27.D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80.27_2">'<b>Пример'</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getAssetIds
+</pre>
+<p>Результат:
+</p>
+<pre>
+{
+     &quot;assetIds&quot;:
+          [
+               &quot;923860986719836&quot;, 
+               &quot;46556984592384756298&quot;, 
+               &quot;87918658237693184156&quot;,
+               ...
+          ]
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_asset"><b>Get asset</b></span></h3>
+<p>Позволяет получить информацию ассоциированную с ID актива
+</p>
+<h4><span class="mw-headline" id="Request_2"><b>Request</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getAsset&amp; 
+     asset=ASSETID
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ASSETID ID актива, который вас интересует
+</li>
+</ul>
+<h4><span class="mw-headline" id="Response"><b>Response</b></span></h4>
+<pre>
+{
+     &quot;account&quot;:          &quot;ACCOUNT&quot;, 
+     &quot;accountRS&quot;:        &quot;ACCOUNTRS&quot;,
+     &quot;name&quot;:             &quot;NAME&quot;, 
+     &quot;description&quot;:      &quot;DESCRIPTION&quot;, 
+     &quot;quantityQNT&quot;:       QTY,
+     &quot;asset&quot;:             ASSETID,
+     &quot;decimals&quot;:          DECIMALS, 
+     &quot;numberOfTrades&quot;:    NUMTRADES
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ACCOUNT аккаунт которому принадлежит актив
+</li>
+<li>ACCOUNTRS адрес аккаунта в кодировке Reed-Solomon. 
+</li>
+<li>NAME имя/название актива
+</li>
+<li>DESCRIPTION описание актива.  Данная запись может не возвращаться, если описание отсутствует.
+</li>
+<li>QTY количество единиц актива
+</li>
+<li>ASSETID ID актива который вас интересует
+</li>
+<li>DECIMALS количество знаков после запятой для указанного актива. Для примера, для USD это будет 2 (т.е. 1.87 USD), для Bitcoin это будет 8 (т.е. 0.00000025 BTC)
+</li>
+<li>NUMTRADES число сделок с этим активом
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_20"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getAsset&amp; 
+     asset=46556984592384756298
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;account&quot;:           &quot;334765832685676&quot;,
+     &quot;accountRS&quot;:         &quot;NXT-DE2F-W76R-GL25-HMFPR&quot;,
+     &quot;name&quot;:              &quot;cfbBTCx1&quot;, 
+     &quot;description&quot;:       &quot;This is BTC issued by Come-from-Beyond&quot;, 
+     &quot;quantityQNT&quot;:       500,
+     &quot;asset&quot;:             46556984592384756298,
+     &quot;decimals&quot;:          6, 
+     &quot;numberOfTrades&quot;:    0
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_assets"><b>Get assets</b></span></h3>
+<p>Получить информацию, связанную с несколькими идентификаторами активов
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_21"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getAssets&amp; 
+     assets=ASSETID&amp;
+     assets=ASSETID&amp;
+     ...
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ASSETID ID актива, который вас интереесует
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_22"><b>Запрос</b></span></h4>
+<pre>
+{
+     &quot;assets&quot;: [ {
+          &quot;account&quot;:          &quot;ACCOUNT&quot;, 
+          &quot;accountRS&quot;:        &quot;ACCOUNTRS&quot;,
+          &quot;name&quot;:             &quot;NAME&quot;, 
+          &quot;description&quot;:      &quot;DESCRIPTION&quot;, 
+          &quot;quantityQNT&quot;:       QTY,
+          &quot;asset&quot;:             ASSETID,
+          &quot;decimals&quot;:          DECIMALS, 
+          &quot;numberOfTrades&quot;:    NUMTRADES
+     },
+     {
+          ...
+     }]
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ACCOUNT аккаунт которому принадлежит актив
+</li>
+<li>ACCOUNTRS адрес аккаунта в кодировке Reed-Solomon. 
+</li>
+<li>NAME имя/название актива
+</li>
+<li>DESCRIPTION описание актива.  Данная запись может не возвращаться, если описание отсутствует.
+</li>
+<li>QTY количество единиц актива
+</li>
+<li>ASSETID ID актива который вас интересует
+</li>
+<li>DECIMALS количество знаков после запятой для указанного актива. Для примера, для USD это будет 2 (т.е. 1.87 USD), для Bitcoin это будет 8 (т.е. 0.00000025 BTC)
+</li>
+<li>NUMTRADES число сделок с этим активом
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_21"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getAssets&amp; 
+     assets=46556984592384756298
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;assets&quot;: [ {
+          &quot;account&quot;:           &quot;334765832685676&quot;, 
+          &quot;accountRS&quot;:         &quot;NXT-DE2F-W76R-GL25-HMFPR&quot;,
+          &quot;name&quot;:              &quot;cfbBTCx1&quot;, 
+          &quot;description&quot;:       &quot;This is BTC issued by Come-from-Beyond&quot;, 
+          &quot;quantityQNT&quot;:       500,
+          &quot;asset&quot;:             46556984592384756298,
+          &quot;decimals&quot;:          6, 
+          &quot;numberOfTrades&quot;:    0
+     } ]
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_all_assets"><b>Get all assets</b></span></h3>
+<p>Предоставляет информацию по всем активам представленным на бирже
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_23"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getAllAssets
+</pre>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_17"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;assets&quot;: 
+     [ { 
+          &quot;account&quot;:           &quot;ACCOUNT&quot;, 
+          &quot;accountRS&quot;:         &quot;ACCOUNTRS&quot;
+          &quot;name&quot;:              &quot;NAME&quot;, 
+          &quot;description&quot;:       &quot;DESCRIPTION&quot;, 
+          &quot;quantityQNT&quot;:       QTY,
+          &quot;asset&quot;:             ASSETID,
+          &quot;decimals&quot;:          DECIMALS, 
+          &quot;numberOfTrades&quot;:    NUMTRADES
+     } ] 
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ACCOUNT аккаунт которому принадлежит актив
+</li>
+<li>ACCOUNTRS адрес аккаунта в кодировке Reed-Solomon. 
+</li>
+<li>NAME имя/название актива
+</li>
+<li>DESCRIPTION описание актива.  Данная запись может не возвращаться, если описание отсутствует.
+</li>
+<li>QTY количество единиц актива
+</li>
+<li>ASSETID ID актива который вас интересует
+</li>
+<li>DECIMALS количество знаков после запятой для указанного актива. Для примера, для USD это будет 2 (т.е. 1.87 USD), для Bitcoin это будет 8 (т.е. 0.00000025 BTC)
+</li>
+<li>NUMTRADES число сделок с этим активом
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_22"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getAllAssets
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;assets&quot;: 
+     [ { 
+          &quot;decimals&quot;:       7, 
+          &quot;numberOfTrades&quot;: 0, 
+          &quot;asset&quot;:          &quot;3283533989023503499&quot;, 
+          &quot;quantityQNT&quot;:    &quot;132249500000000&quot;, 
+          &quot;description&quot;:    &quot;CCGGUQMJKOMUCLBIEGGTKCQVSBSJAZSE&quot;, 
+          &quot;name&quot;:           &quot;GZSHFQY&quot;, 
+          &quot;account&quot;:        &quot;14136559604731496960&quot;,
+          &quot;accountRS&quot;:      &quot;NXT-KRDB-ZFA3-RNDV-AALNT&quot;
+       },
+       { 
+          &quot;decimals&quot;:       6, 
+          &quot;numberOfTrades&quot;: 0, 
+          &quot;asset&quot;:          &quot;5008310702202713285&quot;, 
+          &quot;quantityQNT&quot;:    &quot;994512000000000&quot;, 
+          &quot;description&quot;:    &quot;QESZUYEJCGBGHBVXIRC&quot;, 
+          &quot;name&quot;:           &quot;GWNU&quot;, 
+          &quot;account&quot;:        &quot;14136559604731496960&quot;,
+          &quot;accountRS&quot;:      &quot;NXT-UWKJ-GFEV-AGY4-5C4YS&quot;
+       },
+       ...
+     ]
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_assets_by_name_.28.D0.9D.D0.B5_.D0.B8.D1.81.D0.BF.D0.BE.D0.BB.D1.8C.D0.B7.D1.83.D0.B5.D1.82.D1.81.D1.8F.29"><b>Get assets by name (Не используется)</b></span></h3>
+<p>Предоставляет информацию ассоциированную  с именем актива. Функция не используется начиная с версии клиента 1.1.4.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_24"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getAssetsByName&amp; 
+     assetName=ASSET
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ASSET название актива, который вас интересует
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_18"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;assets&quot;: 
+     [ { 
+          &quot;account&quot;:           &quot;ACCOUNT&quot;,
+          &quot;accountRS&quot;:         &quot;ACCOUNTRS&quot;
+          &quot;name&quot;:              &quot;NAME&quot;, 
+          &quot;description&quot;:       &quot;DESCRIPTION&quot;, 
+          &quot;quantityQNT&quot;:       QTY,
+          &quot;asset&quot;:             ASSETID,
+          &quot;decimals&quot;:          DECIMALS, 
+          &quot;numberOfTrades&quot;:    NUMTRADES
+     } ] 
+}
+</pre>
+<p>Where:
+</p>
+<ul>
+<li>ACCOUNT аккаунт которому принадлежит актив
+</li>
+<li>ACCOUNTRS адрес аккаунта в кодировке Reed-Solomon. 
+</li>
+<li>NAME имя/название актива
+</li>
+<li>DESCRIPTION описание актива.  Данная запись может не возвращаться, если описание отсутствует.
+</li>
+<li>QTY количество единиц актива
+</li>
+<li>ASSETID ID актива который вас интересует
+</li>
+<li>DECIMALS количество знаков после запятой для указанного актива. Для примера, для USD это будет 2 (т.е. 1.87 USD), для Bitcoin это будет 8 (т.е. 0.00000025 BTC)
+</li>
+<li>NUMTRADES число сделок с этим активом
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_23"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getAssetsByName&amp; 
+     assetName=GZSHFQY
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;assets&quot;: 
+     [ { 
+          &quot;decimals&quot;:       7, 
+          &quot;numberOfTrades&quot;: 0, 
+          &quot;asset&quot;:          &quot;3283533989023503499&quot;, 
+          &quot;quantityQNT&quot;:    &quot;132249500000000&quot;, 
+          &quot;description&quot;:    &quot;CCGGUQMJKOMUCLBIEGGTKCQVSBSJAZSE&quot;, 
+          &quot;name&quot;:           &quot;GZSHFQY&quot;, 
+          &quot;account&quot;:        &quot;14136559604731496960&quot;,
+          &quot;accountRS&quot;:      &quot;NXT-UWKJ-GFEV-AGY4-5C4YS&quot;
+     } ] 
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_assets_by_issuer"><b>Get assets by issuer</b></span></h3>
+<p>Возвращает все активы, которые создал указанный аккаунт
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_25"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getAssetsByIssuer&amp; 
+     account=ACCOUNT
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ACCOUNT аккаунт который выпустил актив
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_19"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;assets&quot;: 
+     [ { 
+          &quot;account&quot;:                 &quot;ACCOUNT&quot;, 
+          &quot;accountRS&quot;:             &quot;ACCOUNTRS&quot;,
+          &quot;name&quot;:                    &quot;NAME&quot;, 
+          &quot;description&quot;:           &quot;DESCRIPTION&quot;, 
+          &quot;quantityQNT&quot;:          QTY,
+          &quot;asset&quot;:                      ASSETID,
+          &quot;decimals&quot;:                DECIMALS, 
+          &quot;numberOfTrades&quot;:    NUMTRADES
+     } ] 
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ACCOUNT аккаунт которому принадлежит актив
+</li>
+<li>ACCOUNTRS адрес аккаунта в кодировке Reed-Solomon. 
+</li>
+<li>NAME имя/название актива
+</li>
+<li>DESCRIPTION описание актива.  Данная запись может не возвращаться, если описание отсутствует.
+</li>
+<li>QTY количество единиц актива
+</li>
+<li>ASSETID ID актива который вас интересует
+</li>
+<li>DECIMALS количество знаков после запятой для указанного актива. Для примера, для USD это будет 2 (т.е. 1.87 USD), для Bitcoin это будет 8 (т.е. 0.00000025 BTC)
+</li>
+<li>NUMTRADES число сделок с этим активом
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_24"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getAssetsByIssuer&amp; 
+     account=1562462127635514638
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;assets&quot;: 
+     [ { 
+          &quot;decimals&quot;:             7, 
+          &quot;numberOfTrades&quot;: 0, 
+          &quot;asset&quot;:                   &quot;3283533989023503499&quot;, 
+          &quot;quantityQNT&quot;:        &quot;132249500000000&quot;, 
+          &quot;description&quot;:          &quot;CCGGUQMJKOMUCLBIEGGTKCQVSBSJAZSE&quot;, 
+          &quot;name&quot;:                   &quot;GZSHFQY&quot;, 
+          &quot;accountRS&quot;:            &quot;NXT-GKAG-2VGD-U473-3VRDD&quot;,
+          &quot;account&quot;:                &quot;1562462127635514638&quot;
+     } ] 
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_all_trades"><b>Get all trades</b></span></h3>
+<p>Возвращает все сделки, начиная с определенного времени
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_26"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getAllTrades&amp; 
+     timestamp=TIME
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>TIME задается в секундах, от времени создания генезисного блока. Установка параметра в 0 вернет все сделки (опционально)
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_20"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;trades&quot;: [
+     { 
+          &quot;timestamp&quot;:   TIME, 
+          &quot;priceNQT&quot;:    &quot;PRICE&quot;, 
+          &quot;asset&quot;:       &quot;ASSETID&quot;, 
+          &quot;quantityQNT&quot;: &quot;QTY&quot;, 
+          &quot;block&quot;:       &quot;BLOCK&quot;, 
+          &quot;askOrder&quot;:    &quot;ASK&quot;, 
+          &quot;bidOrder&quot;:    &quot;BID&quot; 
+     },
+     {
+          ...
+     }
+     ]
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li> TIME время заданное в секундахis от момента создания генезисного блока
+</li>
+<li> ASSETID ID актива
+</li>
+<li> QTY количество ордеров
+</li>
+<li> PRICE цена, выраженная в  NQT
+</li>
+<li> BLOCK блок сделки
+</li>
+<li> ASK ID ордера на покупку
+</li>
+<li> BID ID ордера на продажу
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_25"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getAllTrades
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;trades&quot;: [ 
+     { 
+          &quot;timestamp&quot;:   13530463, 
+          &quot;priceNQT&quot;:    &quot;2500000000&quot;, 
+          &quot;asset&quot;:       &quot;13920592454636198263&quot;, 
+          &quot;quantityQNT&quot;: &quot;2&quot;, 
+          &quot;block&quot;:       &quot;1942829179466651543&quot;, 
+          &quot;askOrder&quot;:    &quot;16791208091984728819&quot;, 
+          &quot;bidOrder&quot;:    &quot;12730658526877674075&quot; 
+     },
+     {
+          ...
+     }
+     ]
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_trades"><b>Get trades</b></span></h3>
+<p>ПОлучить все торговые операции по активу с указанным ID
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_27"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getTrades&amp; 
+     asset=ASSETID&amp;
+     firstIndex=RANGE_START
+     lastIndex=RANGE_END
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ASSETID ID актива который вас интересует
+</li>
+<li>RANGE_START порядковый номер самой ранней торговой операции, которую вы хотите увидеть.  Если не указанно, то по умолчанию 0
+</li>
+<li>RANGE_END порядковый номер последней торговой операции которую вы хотите видеть.  Если не указанно, то по умолчанию устанавливается  2<sup>32</sup>-1
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_21"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;trades&quot;: [
+     { 
+          &quot;timestamp&quot;:   TIME, 
+          &quot;priceNQT&quot;:    &quot;PRICE&quot;, 
+          &quot;asset&quot;:       &quot;ASSETID&quot;, 
+          &quot;quantityQNT&quot;: &quot;QTY&quot;, 
+          &quot;block&quot;:       &quot;BLOCK&quot;, 
+          &quot;askOrder&quot;:    &quot;ASK&quot;, 
+          &quot;bidOrder&quot;:    &quot;BID&quot; 
+     },
+     {
+          ...
+     }
+     ]
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>TIME is the time expressed in seconds since the genesis block of the trade
+</li>
+<li>ASSETID ID актива
+</li>
+<li>QTY количество ордеров
+</li>
+<li>PRICE цена, указывается в NQT
+</li>
+<li>BLOCK блок сделки
+</li>
+<li>ASK ID ордера на покупку
+</li>
+<li>BID ID ордера на продажу
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_26"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getTrades&amp; 
+     asset=14269709746849295412&amp;
+     firstIndex=0
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;trades&quot;: [
+     { 
+          &quot;timestamp&quot;:   13386268, 
+          &quot;priceNQT&quot;:    &quot;100000000&quot;, 
+          &quot;asset&quot;:       &quot;13388701969217905199&quot;, 
+          &quot;quantityQNT&quot;: &quot;12&quot;, 
+          &quot;block&quot;:       &quot;15363991879367428772&quot;, 
+          &quot;askOrder&quot;:    &quot;9028610672087970547&quot;, 
+          &quot;bidOrder&quot;:    &quot;7785235474459518056&quot; 
+     },
+     {
+          ...
+     }
+     ] 
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Transfer_asset"><b>Transfer asset</b></span></h3>
+<p>Функция для передачи определенного количества актива с одного аккаунта на другой
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_28"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=transferAsset&amp;
+     secretPhrase=SECRET&amp;
+     recipient=ACCOUNT&amp; 
+     asset=ASSETID&amp;
+     comment=COMMENT&amp;
+     quantityQNT=QTY&amp;
+     feeNQT=FEE&amp;
+     deadline=DEADLINE&amp; 
+     referencedTransaction=REFTXID&amp;
+     broadcast=BROAD
+</pre>
+<p>Где:
+</p>
+<ul>
+<li> SECRET секретная фраза аккаунта который осуществляет передачу актива 
+</li>
+<li> RECIPIENT аккаунт получателя
+</li>
+<li> ASSETID идентификатор (ID) актива который будет передаваться
+</li>
+<li> QTY количество единиц актива которое будет передаваться
+</li>
+<li> COMMENT комментарий к перемещению  (опционально)
+</li>
+<li> FEE объем комиссии за эту транзакция, в NQT
+</li>
+<li> DEADLINE время в минутах, в течении которого транзакция должна быть подтверждена в сети.
+</li>
+<li> REFTX Идентификатор (ID)предыдущей транзакции на которую ссылается данная транзакция. Это значит, что создается цепочка зависимых транзакций, и текущая транзакция не может быть подтверждена, пока транзакция, на которую ссылаются, не будет подтверждена (опционально)
+</li>
+<li>BROAD если вы хотите чтобы транзакция широковещательно передавалась или нет (опционально)
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_22"><b>Ответ</b></span></h4>
+ <pre>
+{
+     &quot;fullHash&quot;:                 &quot;FULLHASH&quot;, 
+     &quot;signatureHash&quot;:            &quot;SIGHASH&quot;, 
+     &quot;transactionBytes&quot;:         &quot;TXBYTES&quot;, 
+     &quot;hash&quot;:                     &quot;HASH&quot;, 
+     &quot;transaction&quot;:              &quot;TX&quot;, 
+     &quot;broadcasted&quot;:              BROAD, 
+     &quot;unsignedTransactionBytes&quot;: &quot;UNTXBYTES&quot; 
+}
+</pre>
+<p>Где
+</p>
+<ul>
+<li>FULLHASH полный хэш транзакции 
+</li>
+<li>SIGHASH sha256 хэш подписи транзакции. Используется для транзакций условного депонирования
+</li>
+<li>TXBYTES байткод транзакции 
+</li>
+<li>HASH хэш всех полей транзакции, за исключение подписи
+</li>
+<li>TX ID транзакции
+</li>
+<li>BROAD указывает была транзакция передана или нет
+</li>
+<li>UNTXBYTES байты транзакции c подписью, частично замененной нулями
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_27"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=transferAsset&amp;
+     secretPhrase=123&amp;
+     recipient=81623458239475&amp;
+     asset=46556984592384756298&amp;
+     quantityQNT=45&amp;
+     feeNQT=100000000&amp;
+     deadline=1440
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{ 
+     &quot;fullHash&quot;:                 &quot;9bd14e7a93d228a85e82a98071f1bd96c158dda856311722e6feafb1a36e71e2&quot;, 
+     &quot;signatureHash&quot;:            &quot;540a2963aac95e63c5e4d13b452be02160e5ecd9cb1c3e8306eed4b47975b9ba&quot;, 
+     &quot;transactionBytes&quot;:         &quot;0201f120db00a005668683e673274c671802492d6f54cdc33d247a...&quot;, 
+     &quot;hash&quot;:                     &quot;8633ca65458bb9895ef53c3875ff59dd4b85ddf922dcaae3f276796932d33731&quot;, 
+     &quot;transaction&quot;:              &quot;12117166328294330779&quot;, 
+     &quot;broadcasted&quot;:              true, 
+     &quot;unsignedTransactionBytes&quot;: &quot;0201f120db00a005668683e673274c671802492d6f54cdc33d2...&quot; 
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Place_order"><b>Place order</b></span></h3>
+<p>Размещает на бирже заявку на "покупку" или "продажу" актива
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_29"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=BID_OR_ASK&amp;
+     secretPhrase=SECRET&amp;
+     asset=ASSETID&amp;
+     quantityQNT=QTY&amp;
+     priceNQT=PRICE&amp;
+     feeNQT=FEE&amp;
+     deadline=DEADLINE&amp;
+     referencedTransaction=REFTXID&amp;
+     broadcast=BROAD
+</pre>
+<p>Где:
+</p>
+<ul>
+<li> BID_OR_ASK тип размещаемой заявки "placeAskOrder" (купить) or "placeBidOrder"(продать)
+</li>
+<li> SECRET секретная фраза от аккаунта, который создает транзакцию
+</li>
+<li> ASSETID идентификатор (ID) актива на который формируется запрос
+</li>
+<li> QTY количество единиц актива на который формируется запрос
+</li>
+<li> PRICE цена покупки/продажи, измеряется в NQT (т.е. "145" это "1.45 NXT")
+</li>
+<li> FEE комиссия за эту транзакцию, в NQT
+</li>
+<li> DEADLINE время в минутах, в течении которого данная транзакция должна быть подтверждена в сети.
+</li>
+<li> REFTX Идентификатор (ID)предыдущей транзакции на которую ссылается данная транзакция. Это значит, что создается цепочка зависимых транзакций, и текущая транзакция не может быть подтверждена, пока транзакция, на которую ссылаются, не будет подтверждена (опционально)
+</li>
+<li>BROAD если вы хотите чтобы транзакция широковещательно передавалась или нет (опционально)
+</li>
+</ul>
+<h4><span class="mw-headline" id=".27.D0.9E.D1.82.D0.B2.D0.B5.D1.82.27_5">'<b>Ответ'</b></span></h4>
+<pre>
+{
+     &quot;fullHash&quot;:                 &quot;FULLHASH&quot;, 
+     &quot;signatureHash&quot;:            &quot;SIGHASH&quot;, 
+     &quot;transactionBytes&quot;:         &quot;TXBYTES&quot;, 
+     &quot;hash&quot;:                     &quot;HASH&quot;, 
+     &quot;transaction&quot;:              &quot;TX&quot;, 
+     &quot;broadcasted&quot;:              BROAD, 
+     &quot;unsignedTransactionBytes&quot;: &quot;UNTXBYTES&quot; 
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>FULLHASH полный хэш транзакции
+</li>
+<li>SIGHASH sha256 хэш подписи транзакции. Используется для транзакций условного депонирования
+</li>
+<li>TXBYTES байткод транзакции
+</li>
+<li>HASH хеш всех полей транзакции, за исключением подписи
+</li>
+<li>TX ID транзакции
+</li>
+<li>BROAD статус - транзакция была передана или нет
+</li>
+<li>UNTXBYTES байты транзакции с частью подписи, заменяемой нулями
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_28"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=placeBidOrder&amp;
+     secretPhrase=123&amp;
+     asset=46556984592384756298&amp;
+     quantityQNT=70&amp;
+     priceNQT=145&amp;
+     feeNQT=100000000&amp;
+     deadline=1440&amp;
+     referencedTransaction=65374835678
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;fullHash&quot;:                 &quot;a797ff58c5ed5c6f53c708dbe137812495c6af0eb280a3d001bb1917eb6a5561&quot;, 
+     &quot;signatureHash&quot;:            &quot;751c9df738e1894ef550bf9e0725188168d4febf48a4da51b1efafaaa840dbcb&quot;, 
+     &quot;transactionBytes&quot;:         &quot;02035d0fdb00a005668683e673274c671802492d6f54cdc33d247aa426e7cef83776...&quot;, 
+     &quot;hash&quot;:                     &quot;4785247b3238fda4fe53d47bc8a97a2b3acf974a02854792b59b092f3473eecd&quot;, 
+     &quot;transaction&quot;:              &quot;8024550067924866983&quot;, 
+     &quot;broadcasted&quot;:              true, 
+     &quot;unsignedTransactionBytes&quot;: &quot;02035d0fdb00a005668683e673274c671802492d6f54cdc33d247aa426e7cef...&quot; 
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_order_IDs"><b>Get order IDs</b></span></h3>
+<p>Получить идентификаторы (ID) заявок на покупку/продажу определенного актива
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_30"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=GET_BID_OR_ASK&amp;
+     asset=ASSETID
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>GET_BID_OR_ASK тип операции "getAskOrderIds" или "getBidOrderIds"
+</li>
+<li>ASSETID ID актива, ордера по которому вы желаете получить
+</li>
+</ul>
+<h4><span class="mw-headline" id=".27.D0.A0.D0.B5.D0.B7.D1.83.D0.BB.D1.8C.D1.82.D0.B0.D1.82.27_2">'<b>Результат'</b></span></h4>
+<p>Возвращает массив (список) ордеров покупки/продажи:
+</p>
+<pre>
+{
+     &quot;GET_BID_OR_ASK&quot;: [ARRAY_OF_ORDER_IDs]
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>GET_BID_OR_ASK тип операции "getAskOrderIds" или "getBidOrderIds"
+</li>
+</ul>
+<h4><span class="mw-headline" id=".27.D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80.27_3">'<b>Пример'</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getAskOrderIds
+     asset=14269709746849295412
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;askOrderIds&quot;:
+          [
+               &quot;3467356724512&quot;, 
+               &quot;824756987236452&quot;
+          ]
+}
+</pre>
+<p><small><i>Проверено 16/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_orders"><b>Get orders</b></span></h3>
+<p>Возвращает все ордера на покупку/продажу, по указанному активу
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_31"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=GET_BID_OR_ASK&amp;
+     asset=ASSETID&amp;
+     limit=LIMIT
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>GET_BID_OR_ASK может быть "getAskOrders" или "getAskOrders"
+</li>
+<li>ASSETID идентификатор (ID) актива, информация по которому вас интересует
+</li>
+<li>LIMIT определяет сколько ордеров необходимо отобразить, если не указанно, должен отобразить их все.
+</li>
+</ul>
+<p><small><i>Проверено 18/05/14</i></small>
+</p>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_23"><b>Ответ</b></span></h4>
+<p>Возвращает массив ордеров покупки/продажи:
+</p>
+<pre>
+{
+     &quot;GET_BID_OR_ASK&quot;: [ARRAY_OF_ORDERs]
+}
+</pre>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_29"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getAskOrders
+     asset=15680163033397272955
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+    &quot;askOrders&quot;: [
+        {
+            &quot;height&quot;: 90703,
+            &quot;priceNQT&quot;: &quot;78932342&quot;,
+            &quot;asset&quot;: &quot;15680163033397272955&quot;,
+            &quot;order&quot;: &quot;4529944714996630823&quot;,
+            &quot;quantityQNT&quot;: &quot;20&quot;,
+            &quot;accountRS&quot;: &quot;NXT-JNYK-TP3W-VDBB-9FRVB&quot;,
+            &quot;account&quot;: &quot;8425933418718057425&quot;,
+            &quot;type&quot;: &quot;ask&quot;
+        },
+        {
+            &quot;height&quot;: 77415,
+            &quot;priceNQT&quot;: &quot;99000000&quot;,
+            &quot;asset&quot;: &quot;15680163033397272955&quot;,
+            &quot;order&quot;: &quot;3158651792442050495&quot;,
+            &quot;quantityQNT&quot;: &quot;39&quot;,
+            &quot;accountRS&quot;: &quot;NXT-AMPQ-B6ZZ-S8TL-EFDBH&quot;,
+            &quot;account&quot;: &quot;14386024746077933238&quot;,
+            &quot;type&quot;: &quot;ask&quot;
+        },
+        {
+            &quot;height&quot;: 78822,
+            &quot;priceNQT&quot;: &quot;150000000&quot;,
+            &quot;asset&quot;: &quot;15680163033397272955&quot;,
+            &quot;order&quot;: &quot;954178876942447633&quot;,
+            &quot;quantityQNT&quot;: &quot;1&quot;,
+            &quot;accountRS&quot;: &quot;NXT-FVXE-SLB6-KL5V-A2Q75&quot;,
+            &quot;account&quot;: &quot;9337862827899547564&quot;,
+            &quot;type&quot;: &quot;ask&quot;
+        }
+    ]
+}
+</pre>
+<p><small><i>Исправлено 22/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_current_account_order_IDs"><b>Get current account order IDs</b></span></h3>
+<p>Возвращает идентификаторы (ID) ордеров на покупку или продажу для указанного аккаунта, опционально данные фильтруются согласно заданному идентификатору актива (assetID). Реализовано начиная с версии 0.5.9.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_32"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=GET_BID_OR_ASK&amp;
+     account=ACCOUNT&amp;
+     asset=ASSETID
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>GET_BID_OR_ASK может быть "getAccountCurrentAskOrderIds" или "getAccountCurrentBidOrderIds"
+</li>
+<li>ACCOUNT номер аккаунта ордера которого вы хотите получить.
+</li>
+<li>ASSETID идентификатор (ID) актива ордера с которым вы хотите получить.
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_24"><b>Ответ</b></span></h4>
+<p>Возвращает массив из всех идентификаторов (ID) запросов/предложений:
+</p>
+<pre>
+{
+     &quot;GET_BID_OR_ASK_IDs&quot;: 
+          [ARRAY_OF_ORDER_IDs]
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>GET_BID_OR_ASK_IDs может быть "askOrderIds" или "bidOrderIds"
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_30"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getAccountCurrentAskOrderIds&amp;
+     account=1189524830352486657&amp;
+     asset=2438729719254516952
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;askOrderIds&quot;:
+          [
+               &quot;3467356725412&quot;, 
+               &quot;824756987456452
+          ]
+}
+</pre>
+<h3><span class="mw-headline" id="Get_order"><b>Get order</b></span></h3>
+<p>Возвращает полную информацию о указанном ордере на покупку/продажу
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_33"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=GET_BID_OR_ASK&amp;
+     order=ORDERID</pre>
+<p>Где:
+</p>
+<ul>
+<li>GET_BID_OR_ASK может быть "getAskOrder" или "getBidOrder"
+</li>
+<li>ORDERID Идентификатор (ID) ордера, который вас интересует
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_25"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;account&quot;:       &quot;ACCOUNT&quot;,
+     &quot;accountRS&quot;:     &quot;ACCOUNTRS&quot;,
+     &quot;height&quot;:        HEIGHT,
+     &quot;asset&quot;:         &quot;ASSETID&quot;, 
+     &quot;quantityQNT&quot;:   QTY, 
+     &quot;priceNQT&quot;:      PRICE,
+     &quot;order&quot;:         &quot;ORDER&quot;,
+     &quot;type&quot;:          &quot;TYPE&quot;
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li> ACCOUNT номер аккаунта ассоциированный с ордером
+</li>
+<li> ACCOUNTRS адрес аккаунта в кодировке Reed-Solomon. 
+</li>
+<li> ASSETID идентификатор (ID) актива в ордере
+</li>
+<li> QTY количество актива в ордере
+</li>
+<li> PRICE цена, указана в NQT
+</li>
+<li> HEIGHT высота блока
+</li>
+<li> ORDER номер ордера
+</li>
+<li> TYPE тип ордера (покупка/продажа)
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_31"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getBidOrder&amp;
+     order=17936094171153028796
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;height&quot;:        90703, 
+     &quot;priceNQT&quot;:      &quot;78932342&quot;, 
+     &quot;asset&quot;:         &quot;15680163033397272955&quot;, 
+     &quot;order&quot;:         &quot;17936094171153028796&quot;, 
+     &quot;quantityQNT&quot;:   &quot;20&quot;, 
+     &quot;account&quot;:       &quot;8425933418718057425&quot;,
+     &quot;accountRS&quot;:     &quot;NXT-7HL4-WMNR-XGFL-ASVHV&quot;, 
+     &quot;type&quot;:          &quot;ask&quot;
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_all_open_orders"><b>Get all open orders</b></span></h3>
+<p>Возвращает информацию о всех открытых ордерах
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_34"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getAllOpenOrders
+</pre>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_26"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;height&quot;:        HEIGHT,
+     &quot;account&quot;:       &quot;ACCOUNT&quot;,
+     &quot;accountRS&quot;:     &quot;ACCOUNTRS&quot;,
+     &quot;asset&quot;:         &quot;ASSETID&quot;,
+     &quot;order&quot;:         &quot;ORDER&quot;,
+     &quot;quantityQNT&quot;:   QTY, 
+     &quot;priceNQT&quot;:      PRICE,
+     &quot;type&quot;:          TYPE
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li> ACCOUNT номер аккаунта связанный с ордером
+</li>
+<li> ACCOUNTRS адрес аккаунта в кодировке Reed-Solomon
+</li>
+<li> ASSETID идентификатор (ID) актива
+</li>
+<li> QTY количеств актива в ордере
+</li>
+<li> PRICE цена, задается в NQT
+</li>
+<li> TYPE тип ордера (т.е. покупка, продажа)
+</li>
+<li> HEIGHT высота блока
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_32"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getAllOpenOrders
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{ 
+     &quot;openOrders&quot;: 
+     [ { 
+          &quot;height&quot;:      90703, 
+          &quot;priceNQT&quot;:    &quot;78932342&quot;, 
+          &quot;asset&quot;:       &quot;15680163033397272955&quot;, 
+          &quot;order&quot;:       &quot;17936094171153028796&quot;, 
+          &quot;quantityQNT&quot;: &quot;20&quot;, 
+          &quot;account&quot;:     &quot;8425933418718057425&quot;, 
+          &quot;accountRS&quot;:   &quot;NXT-2UKS-7VYN-Q73Y-EKE8Y&quot;,
+          &quot;type&quot;:        &quot;ask&quot; 
+     }, 
+     {
+          ...
+     }
+     ]
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Cancel_order"><b>Cancel order</b></span></h3>
+<p>Отмена ранее созданного ордера
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_35"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=BID_OR_ASK&amp;
+     secretPhrase=SECRET&amp;
+     order=ORDERID&amp;
+     feeNQT=FEE&amp;
+     deadline=DEADLINE&amp;
+     referencedTransaction=REFTXID&amp;
+     broadcast=BROAD
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>BID_OR_ASK указание типа операции "cancelAskOrder" или "cancelBidOrder"
+</li>
+<li>SECRET секретная фраза от аккаунта создавшего транзакцию
+</li>
+<li>ORDERID идентификатор(ID) ордера, который необходимо отменить
+</li>
+<li>FEE размер комиссии за данную транзакцию
+</li>
+<li>DEADLINE время (в минутах)в течении которого транзакция должна быть подтверждена
+</li>
+<li>REFTXID идентификатор транзакции (ID) на которую ссылается текущая транзакция. Используется если создана зависимая транзакция и означает, что текущая транзакция не может быть подтверждена, если транзакция, на которую ссылаются еще не подтверждена. Опциональный параметр.
+</li>
+<li>BROAD если вы хотите чтобы транзакция широковещательно передавалась или нет (опционально) 
+</li>
+</ul>
+<h4><span class="mw-headline" id=".27.D0.9E.D1.82.D0.B2.D0.B5.D1.82.27_6">'<b>Ответ'</b></span></h4>
+<pre>
+{
+     &quot;fullHash&quot;:                 &quot;FULLHASH&quot;, 
+     &quot;signatureHash&quot;:            &quot;SIGHASH&quot;, 
+     &quot;transactionBytes&quot;:         &quot;TXBYTES&quot;, 
+     &quot;hash&quot;:                     &quot;HASH&quot;, 
+     &quot;transaction&quot;:              &quot;TX&quot;, 
+     &quot;broadcasted&quot;:              BROAD, 
+     &quot;unsignedTransactionBytes&quot;: &quot;UNTXBYTES&quot; 
+}
+</pre>
+<ul>
+<li>FULLHASH полный хэш транзакции
+</li>
+<li>SIGHASH sha256 хэш подписи транзакции. Используется для транзакций условного депонирования
+</li>
+<li>TXBYTES байткод транзакции
+</li>
+<li>HASH хеш всех полей транзакции, за исключением подписи
+</li>
+<li>TX ID транзакции
+</li>
+<li>BROAD статус - транзакция была передана или нет
+</li>
+<li>UNTXBYTES байты транзакции с частью подписи, заменяемой нулями
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_33"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=cancelAskOrder&amp;
+     secretPhrase=123&amp;
+     order=3467356724512&amp; 
+     feeNQT=100000000&amp;
+     deadline=1440
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;fullHash&quot;:                 &quot;e9c821547e851998f05ef39a39dc196b27f5e3069c1bf516fffaf53359304cc4&quot;, 
+     &quot;signatureHash&quot;:            &quot;a5bf7481f5ad02be69f5fff7cd73c3dd7e443a4335721511e9e79198bc6f0324&quot;, 
+     &quot;transactionBytes&quot;:         &quot;02051316db00a005668683e673274c671802492d6f54cdc33d247aa...&quot;, 
+     &quot;hash&quot;:                     &quot;10ffcff771db618ca243b561943e09fd4098ade100efb2dc68f7861705f6262d&quot;, 
+     &quot;transaction&quot;:              &quot;10959937945806686441&quot;, 
+     &quot;broadcasted&quot;:              true, 
+     &quot;unsignedTransactionBytes&quot;: &quot;02051316db00a005668683e673274c671802492d6f54cdc33d247aa426e7c...&quot; 
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h2><span class="mw-headline" id=".D0.9E.D0.BF.D0.B5.D1.80.D0.B0.D1.86.D0.B8.D0.B8_.D1.81_.D0.BE.D0.BF.D1.80.D0.BE.D1.81.D0.B0.D0.BC.D0.B8"><b>Операции с опросами</b></span></h2>
+<h3><span class="mw-headline" id="Create_Poll"><b>Create Poll</b></span></h3>
+<p>Создать новый опрос
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_36"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=createPoll&amp; 
+     name=NAME&amp;
+     description=DESCRIP&amp;
+     minNumberOfOptions=MINOPTIONS&amp;
+     maxNumberOfOptions=MAXOPTIONS&amp;
+     optionsAreBinary=BINARY&amp;
+     option1=OPTION1&amp;
+     option2=OPTION2&amp;
+     option3=OPTION3&amp;
+     secretPhrase=SECRET&amp;
+     feeNQT=FEENQT&amp;
+     deadline=DEADLINE&amp;
+     referencedTransactionFullHash=REFTXHASH&amp;
+     broadcast=BROAD
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>DESCRIP описание опроса
+</li>
+<li>NAME название опроса
+</li>
+<li>MINOPTIONS минимальное число вариантов для опроса
+</li>
+<li>MAXOPTIONS максимальное число вариантов для опроса
+</li>
+<li>OPTION1 название первой опции (OPTIONS 2 &amp; 3 опционально)
+</li>
+<li>SECRET секретная фраза (private key) аккаунта 
+</li>
+<li>DEADLINE дедлайн транзакции, задается в минутах
+</li>
+<li>FEENQT комиссия за транзакцию (в NQT)
+</li>
+<li>BINARY указатель бинарности опций (опционально)
+</li>
+<li>REFTXHASH Идентификатор (ID)предыдущей транзакции на которую ссылается данная транзакция (опционально)
+</li>
+<li>BROAD true или false если должна быть широковещаиельная передача (опционально) 
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_27"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;fullHash&quot;:                 &quot;FULLHASH&quot;, 
+     &quot;signatureHash&quot;:            &quot;SIGHASH&quot;, 
+     &quot;transactionBytes&quot;:         &quot;TXBYTES&quot;, 
+     &quot;hash&quot;:                     &quot;HASH&quot;, 
+     &quot;transaction&quot;:              &quot;TX&quot;, 
+     &quot;broadcasted&quot;:              BROAD, 
+     &quot;unsignedTransactionBytes&quot;: &quot;UNTXBYTES&quot; 
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>FULLHASH полный хэш транзакции
+</li>
+<li>SIGHASH sha256 хэш подписи транзакции. Используется для транзакций условного депонирования
+</li>
+<li>TXBYTES байткод транзакции
+</li>
+<li>HASH хеш всех полей транзакции, за исключением подписи
+</li>
+<li>TX ID транзакции
+</li>
+<li>BROAD статус - транзакция была передана или нет
+</li>
+<li>UNTXBYTES байты транзакции с частью подписи, заменяемой нулями
+</li>
+</ul>
+<p><small><i>Проверено 18/05/14</i></small>
+</p>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_34"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=createPoll&amp; 
+     name=Testing123&amp;
+     description=Testing&amp;
+     minNumberOfOptions=1&amp;
+     maxNumberOfOptions=1&amp;
+     option1=yes&amp;
+     option2=no&amp;
+     secretPhrase=MySuperSecretPasswordThatIsNotActuallyPostedHereOrIsEvenRealSoDoNotEvenTryIt&amp;
+     feeNQT=100000000&amp;
+     deadline=1440
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{ 
+     &quot;fullHash&quot;:                 &quot;7ef9e19d0c7943002fd98a7ae08f1b4a1d473c67796f89225b167fd4913ce73f&quot;, 
+     &quot;signatureHash&quot;:            &quot;a76722be0652d5c88cb7292d1cb04ea299eaea74c35ad726e868d08799946c38&quot;, 
+     &quot;transactionBytes&quot;:         &quot;010234fbda00a005668683e673274c671802492d6f54cdc33d247aa426e...&quot;, 
+     &quot;hash&quot;:                     &quot;940383ff1bf177d4e4fee05c78865b12ace2570152c64570219dfc0aa10c246b&quot;, 
+     &quot;transaction&quot;:              &quot;18991918535014782&quot;, 
+     &quot;broadcasted&quot;:              true, 
+     &quot;unsignedTransactionBytes&quot;: &quot;010234fbda00a005668683e673274c671802492d6f54cdc33d247...&quot; 
+}
+</pre>
+<p><small><i>Проверено 13/06/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_Poll"><b>Get Poll</b></span></h3>
+<p>Получить информацию о заданном опросе
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_37"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getPoll&amp; 
+     poll=POLL
+</pre>
+<p>Где:
+</p>
+<ul>
+<li> POLL идентификатор (id) опроса который вас интересует
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_28"><b>Ответ</b></span></h4>
+<pre>
+{ 
+     &quot;description&quot;:        &quot;DESCRIP&quot;, 
+     &quot;name&quot;:               &quot;NAME&quot;, 
+     &quot;maxNumberOfOptions&quot;: MAXOPTIONS, 
+     &quot;optionsAreBinary&quot;:   BINARY, 
+     &quot;voters&quot;:             [VOTERS], 
+     &quot;minNumberOfOptions&quot;: MINOPTIONS, 
+     &quot;options&quot;:            [OPTIONS] 
+}
+</pre>
+<p>Where:
+</p>
+<ul>
+<li>DESCRIP описание опроса
+</li>
+<li>NAME название опроса
+</li>
+<li>MAXOPTIONS максимальное количество опций опроса
+</li>
+<li>BINARY указатель что опции бинарные
+</li>
+<li>VOTERS количество голосующих в опросе
+</li>
+<li>MINOPTIONS минимальное количество опций опроса
+</li>
+<li>OPTIONS список опций
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_35"><b>Пример</b></span></h4>
+<p>Request:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getPoll&amp; 
+     poll=15826354927269615782
+</pre>
+<p>Response:
+</p>
+<pre>
+{ 
+     &quot;description&quot;:        &quot;Does this work?&quot;, 
+     &quot;name&quot;:               &quot;Test&quot;, 
+     &quot;maxNumberOfOptions&quot;: 1, 
+     &quot;optionsAreBinary&quot;:   false, 
+     &quot;voters&quot;:             [], 
+     &quot;minNumberOfOptions&quot;: 1, 
+     &quot;options&quot;:            [ &quot;Yes&quot;, &quot;No&quot;, &quot;I don't know&quot; ] 
+}
+</pre>
+<p><small><i>Проверено 18/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_Poll_IDs"><b>Get Poll IDs</b></span></h3>
+<p>Возвращает ID (идентификаторы) всех голосований
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_38"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getPollIds
+</pre>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_29"><b>Ответ</b></span></h4>
+<pre>
+{ 
+     &quot;pollIds&quot;: 
+     [ 
+          &quot;POLLID&quot;, 
+          ...
+     ]
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>POLLID ID голосования
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_36"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getPollIds
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{ 
+     &quot;pollIds&quot;: 
+     [ 
+          &quot;15826354927269615782&quot;, 
+          &quot;8883605113950920958&quot; 
+     ]
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Cast_Vote"><b>Cast Vote</b></span></h3>
+<p>Проголосовать в опросе
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_39"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=castVote&amp; 
+     poll=NAME&amp;
+     vote1=VOTE1&amp;
+     vote2=VOTE2&amp;
+     vote3=VOTE3&amp;
+     secretPhrase=SECRET&amp;
+     feeNQT=FEENQT&amp;
+     deadline=DEADLINE&amp;
+     referencedTransactionFullHash=REFTXHASH&amp;
+     broadcast=BROAD
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>NAME название голосования в котором вы  желаете принять участие, проголосовать
+</li>
+<li>VOTE1 ваш голос (VOTE 2 &amp; 3 опционально, если голосование допускает множественные опции)
+</li>
+<li>SECRET секретная фраза (private key) вашего аккаунта 
+</li>
+<li>DEADLINE дедлайн транзакции, задается в минутах
+</li>
+<li>FEENQT комиссия за транзакцию (в NQT)
+</li>
+<li>REFTXHASH Идентификатор (ID)предыдущей транзакции на которую ссылается данная транзакция (опционально)
+</li>
+<li>BROAD если вы хотите чтобы транзакция широковещательно передавалась или нет (опционально) 
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_30"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;fullHash&quot;:                 &quot;FULLHASH&quot;, 
+     &quot;signatureHash&quot;:            &quot;SIGHASH&quot;, 
+     &quot;transactionBytes&quot;:         &quot;TXBYTES&quot;, 
+     &quot;hash&quot;:                     &quot;HASH&quot;, 
+     &quot;transaction&quot;:              &quot;TX&quot;, 
+     &quot;broadcasted&quot;:              BROAD, 
+     &quot;unsignedTransactionBytes&quot;: &quot;UNTXBYTES&quot; 
+}
+</pre>
+<p>Where:
+</p>
+<ul>
+<li>FULLHASH полный хэш транзакции
+</li>
+<li>SIGHASH sha256 хэш подписи транзакции. Используется для транзакций условного депонирования
+</li>
+<li>TXBYTES байткод транзакции
+</li>
+<li>HASH хеш всех полей транзакции, за исключением подписи
+</li>
+<li>TX ID транзакции
+</li>
+<li>BROAD статус - транзакция была передана или нет
+</li>
+<li>UNTXBYTES байты транзакции с частью подписи, заменяемой нулями
+</li>
+</ul>
+<p><small><i>Проверено 18/05/14</i></small>
+</p>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_37"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=castVote&amp; 
+     poll=18991918535014782&amp;
+     vote1=yes&amp;
+     secretPhrase=MySuperSecretPasswordThatIsNotActuallyPostedHereOrIsEvenRealSoDoNotEvenTryIt&amp;
+     feeNQT=100000000&amp;
+     deadline=1440
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{ 
+     &quot;fullHash&quot;:                 &quot;637ea3215258adef61f7fc5a90eff6435d1a7ad8c3790d5855c6943b9aff1daf&quot;, 
+     &quot;signatureHash&quot;:            &quot;a6745e26165e9c7870c85bd174348e4e72c825378cfb71760e04f08e30879fa6&quot;, 
+     &quot;transactionBytes&quot;:         &quot;010314feda00a005668683e673274c671802492d6f54cdc33...&quot;, 
+     &quot;hash&quot;:                     &quot;10ee68836162f6a8e2559a6dbcbc41c4db4b7441e6ff321f01b268d761c6916d&quot;, 
+     &quot;transaction&quot;:              &quot;17270557255810645603&quot;, 
+     &quot;broadcasted&quot;:              true, 
+     &quot;unsignedTransactionBytes&quot;: &quot;010314feda00a005668683e673274c671802492d6f54cdc33d247aa426e7...&quot; 
+}
+</pre>
+<p><small><i>Проверено 13/06/14</i></small>
+</p>
+<h2><span class="mw-headline" id=".D0.9E.D0.BF.D0.B5.D1.80.D0.B0.D1.86.D0.B8.D0.B8_.D0.B4.D0.BB.D1.8F_.D1.80.D0.B0.D0.B1.D0.BE.D1.82.D1.8B_.D1.81_.D1.81.D0.B5.D1.80.D0.B2.D0.B5.D1.80.D0.BD.D0.BE.D0.B9_.D1.87.D0.B0.D1.81.D1.82.D1.8C.D1.8E"><b>Операции для работы с серверной частью</b></span></h2>
+<h3><span class="mw-headline" id="Get_Constants"><b>Get Constants</b></span></h3>
+<p>Запрос на получение списка всех констант, используемых сервером, и их текущих значений.
+</p>
+<h4><span class="mw-headline" id="Request_3"><b>Request</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getConstants
+</pre>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_40"><b>Запрос</b></span></h4>
+<pre>
+{
+     &quot;maxBlockPayloadLength&quot;:40800,
+     &quot;genesisAccountId&quot;:&quot;GENESISACC&quot;,
+     &quot;genesisBlockId&quot;:&quot;GENESISBLK&quot;,
+     &quot;transactionTypes&quot;:
+     [
+          {
+               &quot;description&quot;:&quot;Payment&quot;,&quot;value&quot;:0,&quot;subtypes&quot;:
+               [
+                    {&quot;description&quot;:&quot;Ordinary payment&quot;,&quot;value&quot;:0}
+               ]
+          },
+          {
+               &quot;description&quot;:&quot;Messaging&quot;,&quot;value&quot;:1,&quot;subtypes&quot;:
+               [
+                    {&quot;description&quot;:&quot;Arbitrary message&quot;,&quot;value&quot;:0},
+                    {&quot;description&quot;:&quot;Alias assignment&quot;,&quot;value&quot;:1},
+                    {&quot;description&quot;:&quot;Poll creation&quot;,&quot;value&quot;:2},
+                    {&quot;description&quot;:&quot;Vote casting&quot;,&quot;value&quot;:3},
+                    {&quot;description&quot;:&quot;Hub terminal announcement&quot;,&quot;value&quot;:4},
+                    {&quot;description&quot;:&quot;Account info&quot;,&quot;value&quot;:5}
+               ]
+          },
+          {
+               &quot;description&quot;:&quot;Colored coins&quot;,&quot;value&quot;:2,&quot;subtypes&quot;:
+               [
+                    {&quot;description&quot;:&quot;Asset issuance&quot;,&quot;value&quot;:0},
+                    {&quot;description&quot;:&quot;Asset transfer&quot;,&quot;value&quot;:1},
+                    {&quot;description&quot;:&quot;Ask order placement&quot;,&quot;value&quot;:2},
+                    {&quot;description&quot;:&quot;Bid order placement&quot;,&quot;value&quot;:3},
+                    {&quot;description&quot;:&quot;Ask order cancellation&quot;,&quot;value&quot;:4},
+                    {&quot;description&quot;:&quot;Bid order cancellation&quot;,&quot;value&quot;:5}
+               ]
+          },
+          {
+               &quot;description&quot;:&quot;Digital goods&quot;,&quot;value&quot;:3,&quot;subtypes&quot;:
+               [
+                    {&quot;description&quot;:&quot;Listing&quot;,&quot;value&quot;:0},
+                    {&quot;description&quot;:&quot;Delisting&quot;,&quot;value&quot;:1},
+                    {&quot;description&quot;:&quot;Price change&quot;,&quot;value&quot;:2},
+                    {&quot;description&quot;:&quot;Quantity change&quot;,&quot;value&quot;:3},
+                    {&quot;description&quot;:&quot;Purchase&quot;,&quot;value&quot;:4},
+                    {&quot;description&quot;:&quot;Delivery&quot;,&quot;value&quot;:5},
+                    {&quot;description&quot;:&quot;Feedback&quot;,&quot;value&quot;:6},
+                    {&quot;description&quot;:&quot;Refund&quot;,&quot;value&quot;:7}
+               ]
+          },
+          {
+               &quot;description&quot;:&quot;Account Control&quot;,&quot;value&quot;:4,&quot;subtypes&quot;:
+               [
+                    {&quot;description&quot;:&quot;Effective balance leasing&quot;,&quot;value&quot;:0}
+               ]
+          }
+     ],
+     &quot;peerStates&quot;:
+          [
+               {&quot;description&quot;:&quot;Non-connected&quot;,&quot;value&quot;:0},
+               {&quot;description&quot;:&quot;Connected&quot;,&quot;value&quot;:1},
+               {&quot;description&quot;:&quot;Disconnected&quot;,&quot;value&quot;:2}
+          ]
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>GENESISACC генезис аккаунт
+</li>
+<li>GENESISBLK генезис блок
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_38"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getConstants
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;maxBlockPayloadLength&quot;:40800,
+     &quot;genesisAccountId&quot;:&quot;1739068987193023818&quot;,
+     &quot;genesisBlockId&quot;:&quot;2680262203532249785&quot;,
+     &quot;transactionTypes&quot;:
+     [
+          {
+               &quot;description&quot;:&quot;Payment&quot;,&quot;value&quot;:0,&quot;subtypes&quot;:
+               [
+                    {&quot;description&quot;:&quot;Ordinary payment&quot;,&quot;value&quot;:0}
+               ]
+          },
+          {
+               &quot;description&quot;:&quot;Messaging&quot;,&quot;value&quot;:1,&quot;subtypes&quot;:
+               [
+                    {&quot;description&quot;:&quot;Arbitrary message&quot;,&quot;value&quot;:0},
+                    {&quot;description&quot;:&quot;Alias assignment&quot;,&quot;value&quot;:1},
+                    {&quot;description&quot;:&quot;Poll creation&quot;,&quot;value&quot;:2},
+                    {&quot;description&quot;:&quot;Vote casting&quot;,&quot;value&quot;:3},
+                    {&quot;description&quot;:&quot;Hub terminal announcement&quot;,&quot;value&quot;:4},
+                    {&quot;description&quot;:&quot;Account info&quot;,&quot;value&quot;:5}
+               ]
+          },
+          {
+               &quot;description&quot;:&quot;Colored coins&quot;,&quot;value&quot;:2,&quot;subtypes&quot;:
+               [
+                    {&quot;description&quot;:&quot;Asset issuance&quot;,&quot;value&quot;:0},
+                    {&quot;description&quot;:&quot;Asset transfer&quot;,&quot;value&quot;:1},
+                    {&quot;description&quot;:&quot;Ask order placement&quot;,&quot;value&quot;:2},
+                    {&quot;description&quot;:&quot;Bid order placement&quot;,&quot;value&quot;:3},
+                    {&quot;description&quot;:&quot;Ask order cancellation&quot;,&quot;value&quot;:4},
+                    {&quot;description&quot;:&quot;Bid order cancellation&quot;,&quot;value&quot;:5}
+               ]
+          },
+          {
+               &quot;description&quot;:&quot;Digital goods&quot;,&quot;value&quot;:3,&quot;subtypes&quot;:
+               [
+                    {&quot;description&quot;:&quot;Listing&quot;,&quot;value&quot;:0},
+                    {&quot;description&quot;:&quot;Delisting&quot;,&quot;value&quot;:1},
+                    {&quot;description&quot;:&quot;Price change&quot;,&quot;value&quot;:2},
+                    {&quot;description&quot;:&quot;Quantity change&quot;,&quot;value&quot;:3},
+                    {&quot;description&quot;:&quot;Purchase&quot;,&quot;value&quot;:4},
+                    {&quot;description&quot;:&quot;Delivery&quot;,&quot;value&quot;:5},
+                    {&quot;description&quot;:&quot;Feedback&quot;,&quot;value&quot;:6},
+                    {&quot;description&quot;:&quot;Refund&quot;,&quot;value&quot;:7}
+               ]
+          },
+          {
+               &quot;description&quot;:&quot;Account Control&quot;,&quot;value&quot;:4,&quot;subtypes&quot;:
+               [
+                    {&quot;description&quot;:&quot;Effective balance leasing&quot;,&quot;value&quot;:0}
+               ]
+          }
+     ],
+     &quot;peerStates&quot;:
+     [
+          {&quot;description&quot;:&quot;Non-connected&quot;,&quot;value&quot;:0},
+          {&quot;description&quot;:&quot;Connected&quot;,&quot;value&quot;:1},
+          {&quot;description&quot;:&quot;Disconnected&quot;,&quot;value&quot;:2}
+     ],
+     &quot;maxArbitraryMessageLength&quot;:1000
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_My_Info"><b>Get My Info</b></span></h3>
+<p>возвращает данные сервера - хост и адрес.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_41"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getMyInfo
+</pre>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_31"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;host&quot;:       &quot;HOSTNAME&quot;,
+     &quot;address&quot;:       &quot;ADDRESS&quot;
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>HOSTNAME - имя хоста сервера
+</li>
+<li>ADDRESS - адрес сервера
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_39"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getMyInfo
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;host&quot;:       &quot;127.0.0.1&quot;,
+     &quot;address&quot;:    &quot;127.0.0.1&quot;
+}
+</pre>
+<p><small><i>Проверено 18/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_Peer"><b>Get Peer</b></span></h3>
+<p>получает данные о заданном узле (peer)
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_42"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getPeer&amp;
+     peer=PEERNAME
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>PEERNAME - имя узла (peer) о котором вы желаете запросить информацию.
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82:">Ответ:</span></h4>
+<p>Информация возвращается в том виде и объеме, который хранится на сервере узла в файле web.xml file&#160;!
+</p>
+<pre>
+{
+     &quot;platform&quot;:          &quot;PLATFORM&quot;,
+     &quot;blacklisted&quot;:       BLACKLIST,
+     &quot;shareAddress&quot;:      SHAREADD
+     &quot;application&quot;:       &quot;NRS&quot;,
+     &quot;weight&quot;:            WEIGHT,
+     &quot;hallmark&quot;:          &quot;HALLMARK&quot;,
+     &quot;state&quot;:             1,
+     &quot;announcedAddress&quot;:  &quot;ANNOUNCED&quot;,
+     &quot;downloadedVolume&quot;:  DLBYTES,
+     &quot;version&quot;:           &quot;VERSION&quot;,
+     &quot;uploadedVolume&quot;:    ULBYTES
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>PLATFORM строка описывающая платформу указанного сервера
+</li>
+<li>WEIGHT вес узла
+</li>
+<li>BLACKLIST указывает включен узел в blacklisted или нет
+</li>
+<li>SHAREADD указывает является ли узел общедоступным (shared)
+</li>
+<li>HALLMARK строка в формате hex, описывающая hallmark узла (если он установлен)
+</li>
+<li>STATE определяет состояние узла. 1 - активный узел; 0 - известный узел.
+</li>
+<li>ANNOUNCED имя, которое узел сообщает сети (может быть имя DNS, IP-адрес или любая другая строка)
+</li>
+<li>VERSION версия программного обеспечения, работающего на узле
+</li>
+<li>DLBYTES and ULBYTES количество байтов, загруженных и выгруженных узлом
+</li>
+</ul>
+<p><small>Проверено 18/05/14</small>
+</p>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_40"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getPeer&amp;
+     peer=23.88.104.217
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     hallmark&quot;:           &quot;ea53f569819ad8c40d62dd7e4c1f4895b2a3...&quot;,
+     &quot;downloadedVolume&quot;:  115001,
+     &quot;blacklisted&quot;:       false,
+     &quot;announcedAddress&quot;:  &quot;vps9.nxtcrypto.org&quot;,
+     &quot;application&quot;:       &quot;NRS&quot;,
+     &quot;weight&quot;:            911527,
+     &quot;uploadedVolume&quot;:    4707,
+     &quot;state&quot;:             1,
+     &quot;version&quot;:           &quot;0.9.9&quot;,
+     &quot;platform&quot;:          &quot;nxt.now.im&quot;,
+     &quot;shareAddress&quot;:      true
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_Peers"><b>Get Peers</b></span></h3>
+<p>Возвращает все известные вашему клиенту узлы (peers), не зависимо от их состояния на данный момент.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_43"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getPeers
+</pre>
+<h4><span class="mw-headline" id=".D0.A0.D0.B5.D0.B7.D1.83.D0.BB.D1.8C.D1.82.D0.B0.D1.82:">Результат:</span></h4>
+<p>Массив имен/адресов узлов:
+</p>
+<pre>
+{
+     &quot;peers&quot;:
+          [
+               &quot;PEER&quot;,
+               &quot;PEER&quot;,
+               &quot;PEER&quot;...
+          ]
+}
+</pre>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_41"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7874/nxt?
+     requestType=getPeers
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;peers&quot;:
+     [
+          &quot;188.226.176.151&quot;,
+          &quot;88.202.37.38&quot;,
+          &quot;87.211.164.253&quot;...
+     ]
+}
+</pre>
+<p><small><i>Проверено 18/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_State"><b>Get State</b></span></h3>
+<p>Возвращает информацию о статусе/состоянии запрашиваемого сервера
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_44"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getState
+</pre>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_32"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;numberOfPolls&quot;:             NUMPOLLS,
+     &quot;numberOfVotes&quot;:             NUMVOTES,
+     &quot;numberOfTrades&quot;:            NUMTRADES,
+     &quot;lastBlock&quot;:                 &quot;LASTBLOCKID&quot;,
+     &quot;numberOfAliases&quot;:           NUMALIASES,
+     &quot;lastBlockchainFeeder&quot;:      &quot;FEEDERPEER&quot;,
+     &quot;numberOfBlocks&quot;:            HEIGHT,
+     &quot;numberOfPeers&quot;:             NUMPEERS
+     &quot;totalMemory&quot;:               CURMEMORY,
+     &quot;freeMemory&quot;:                FREEMEMORY,
+     &quot;maxMemory&quot;:                 MAXMEMORY,
+     &quot;numberOfTransactions&quot;:      NUMTRANS,
+     &quot;numberOfUnlockedAccounts&quot;:  NUMUSERS,
+     &quot;version&quot;:                   &quot;VERSION&quot;,
+     &quot;numberOfOrders&quot;:            NUMORDERS,
+     &quot;totalEffectiveBalanceNXT&quot;:  EFFECTIVEBALANCE
+     &quot;time&quot;:                      TIME,
+     &quot;availableProcessors&quot;:       NUMPROCESSORS,
+     &quot;numberOfAssets&quot;:            NUMASSETS,
+     &quot;cumulativeDifficulty&quot;:      &quot;CUMEDIFF&quot;
+     &quot;numberOfAccounts&quot;:          NUMACCOUNTS
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li> LASTBLOCKID идентификатор (ID) последнего полученного блока
+</li>
+<li> NUMALIASES количество известных алиасов в сети
+</li>
+<li> FEEDERPEER опубликованное имя узла фидера в последнем блоке
+</li>
+<li> HEIGHT высота блока
+</li>
+<li> NUMPEERS количество узлов в сети
+</li>
+<li> CURMEMORY общий объем памяти используемой узлом (в Байтах)
+</li>
+<li> FREEMEMORY общий объем свободной памяти на узле (в Байтах)
+</li>
+<li> MAXMEMORY максимальный объем памяти, доступной для использования на узле (в Байтах)
+</li>
+<li> NUMTRANS число транзакций в blockchain
+</li>
+<li> NUMUSERS число разблокированных аккаунтов на этом узле
+</li>
+<li> NUMPOLLS количество опросов на этом узле
+</li>
+<li> NUMTRADES количество сделок на этом узле
+</li>
+<li> NUMVOTES количество голосов (для опросов) на этом узле
+</li>
+<li> NUMORDERS количество ордеров на узле
+</li>
+<li> EFFECTIVEBALANCE эффективный баланс, актуальный для сети, указанный в Nxt-центах
+</li>
+<li> NUMPROCESSORS количество процессоров на данном узле
+</li>
+<li> NUMASSETS число счетов на узле 
+</li>
+<li> CUMEDIFF текущий, накопительный уровень сложности форжинга
+</li>
+<li> NUMACCOUNTS количество аккаунтов в blockchain
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_42"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getState</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;numberOfPeers&quot;:868,
+     &quot;numberOfPolls&quot;:0,
+     &quot;numberOfVotes&quot;:0,
+     &quot;availableProcessors&quot;:4,
+     &quot;totalEffectiveBalanceNXT&quot;:991634266,
+     &quot;numberOfAccounts&quot;:33172,
+     &quot;numberOfUnlockedAccounts&quot;:0,
+     &quot;numberOfBlocks&quot;:126493,
+     &quot;numberOfOrders&quot;:0,
+     &quot;numberOfTransactions&quot;:182379,
+     &quot;version&quot;:&quot;1.0.0&quot;,
+     &quot;maxMemory&quot;:477626368,
+     &quot;lastBlock&quot;:&quot;4329081735143326181&quot;,
+     &quot;totalMemory&quot;:466092032,
+     &quot;numberOfAliases&quot;:85657,
+     &quot;cumulativeDifficulty&quot;:&quot;3936422822105943&quot;,
+     &quot;numberOfTrades&quot;:0,
+     &quot;time&quot;:13671770,
+     &quot;numberOfAssets&quot;:0,
+     &quot;lastBlockchainFeeder&quot;:&quot;cubie-solar.mjke.de&quot;,
+     &quot;freeMemory&quot;:135007384
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_Time"><b>Get Time</b></span></h3>
+<p>Получает текущее время в системе. Внимание&#160;! В Nxt время исчисляется в секундах с момента генерации генезисного блока, т.е. с момента зарождения Nxt 
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_45"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getTime
+</pre>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_33"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;time&quot;:       TIME
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>TIME количество секунд прошедших с момента генерации генезисного блока.
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_43"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getTime
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;time&quot;:       417
+}
+</pre>
+<p><small><i>Проверено 21/06/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_Blockchain_Status"><i>Get Blockchain Status</i></span></h3>
+<p>Получить текущий статус blockchain
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_46"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getBlockchainStatus
+</pre>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_34"><b>Ответ</b></span></h4>
+<pre>
+{
+    &quot;lastBlock&quot;: &quot;LASTBLK&quot;,
+    &quot;lastBlockchainFeederHeight&quot;: LASTHEIGHT,
+    &quot;time&quot;: TIME,
+    &quot;lastBlockchainFeeder&quot;: &quot;FEEDERPEER&quot;,
+    &quot;numberOfBlocks&quot;: NUMBLKS,
+    &quot;isScanning&quot;: SCAN,
+    &quot;cumulativeDifficulty&quot;: &quot;CUMDIF&quot;,
+    &quot;version&quot;: &quot;VER&quot;
+}
+</pre>
+<p>Where:
+</p>
+<ul>
+<li>LASTBLK последний блок в blockchain
+</li>
+<li>LASTHEIGHT высота последнего блока
+</li>
+<li>TIME число секунд начиная с момента генерации генезисного блока.
+</li>
+<li>FEEDERPEER опубликованное имя хоста фидера последнего блока
+</li>
+<li>NUMBLKS общее количество блоков
+</li>
+<li>SCAN возвращает статус blockchain - происходит сейчас сканирование или нет.
+</li>
+<li>CUMDIF текущая сложность форжинга
+</li>
+<li>VER версия NRS который сейчас выполняется
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_44"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getBlockchainStatus
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+    &quot;lastBlock&quot;: &quot;3153685344875873318&quot;,
+    &quot;lastBlockchainFeederHeight&quot;: 95337,
+    &quot;time&quot;: 14604616,
+    &quot;lastBlockchainFeeder&quot;: &quot;192.241.223.132&quot;,
+    &quot;numberOfBlocks&quot;: 95339,
+    &quot;isScanning&quot;: false,
+    &quot;cumulativeDifficulty&quot;: &quot;2406110597084752&quot;,
+    &quot;version&quot;: &quot;1.1.0&quot;
+}
+</pre>
+<p><small><i>Проверено 18/05/14</i></small>
+</p>
+<h2><span class="mw-headline" id=".D0.9E.D0.BF.D0.B5.D1.80.D0.B0.D1.86.D0.B8.D0.B8_.D1.81_.D0.BA.D0.BB.D0.B5.D0.B9.D0.BC.D0.B0.D0.BC.D0.B8_.28hallmarks.29"><b>Операции с клеймами (hallmarks)</b></span></h2>
+<h3><span class="mw-headline" id="Decode_Hallmark"><b>Decode Hallmark</b></span></h3>
+<p>Декодирует клеймо узла.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_47"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=decodeHallmark&amp;
+     hallmark=HEXSTRING
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>HEXSTRING — значение клейма
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_35"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;valid&quot;:        VALID,
+     &quot;weight&quot;:       WEIGHT,
+     &quot;host&quot;:         &quot;HOSTIP&quot;,
+     &quot;account&quot;:      &quot;ACCOUNT&quot;,
+     &quot;accountRS&quot;:    &quot;ACCOUNTRS&quot;,
+     &quot;date&quot;:         &quot;DATE&quot;
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>VALID — либо true (истина), либо false (ложь)
+</li>
+<li>WEIGHT — вес, присвоенный клейму
+</li>
+<li>HOSTIP — IP-адрес или имя домена, ассоциированные с клеймом
+</li>
+<li>ACCOUNT — номер аккаунта, ассоциированный с клеймом
+</li>
+<li>ACCOUNT номер аккаунта ассоциированный с заданным клеймом
+</li>
+<li>ACCOUNTRS адрес аккаунта в кодировке Reed-Solomon
+</li>
+<li>DATE — дата создания клейма, в формате yyyy-mm-dd
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_45"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://127.0.0.1:7876/nxt?
+     requestType=decodeHallmark&amp;
+     hallmark=d67f03a47cd91fc...8b9e30f371a9fcc8f
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;valid&quot;:      true,
+     &quot;weight&quot;:     1000,
+     &quot;host&quot;:       &quot;162.23.47.189&quot;,
+     &quot;account&quot;:    &quot;NXT-5EGB-HKFP-NQUT-DKYFH&quot;,
+     &quot;accountRS&quot;:  &quot;ACCOUNTRS&quot;,
+     &quot;date&quot;:       &quot;2013-12-09&quot;
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Generate_Hallmark"><b>Generate Hallmark</b></span></h3>
+<p>Генерирует клеймо узла.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_48"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=markHost&amp;
+     secretPhrase=MY_SECRET&amp;
+     host=MY_HOST&amp;
+     weight=WEIGHT&amp;
+     date=CURRENT_DATE
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>MY_SECRET — секретная фраза аккаунта, для которого на ноде создается клеймо. Должна быть URL-encoded.
+</li>
+<li>MY_HOST — имя хоста для узла, которую вы хотите "заклеймить"
+</li>
+<li>WEIGHT — вес, который вы хотели бы назначить ноде. Если на одном и том же аккаунте "заклеймены" более, чем одна нода, этот вес будет определен как (этот_вес/сумма_всех_весов)
+</li>
+<li>CURRENT_DATE — сегодняшняя дата, в формате yyyy-mm-dd
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_36"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;hallmark&quot;:       &quot;HEXSTRING&quot;
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>HEXSTRING — строка с закодированным клеймом (1856 байт)
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_46"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=markHost&amp;
+     secretPhrase=MySuperSecretPasswordThatIsNotEasy&amp;
+     host=node23.nodesrus.com&amp;
+     weight=100&amp;
+     date=2014-01-01
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;hallmark&quot;:       &quot;d67f03a47cd91fc1...fd49f66b462daa1f14ae8&quot;
+}
+</pre>
+<p><small><i>Проверено 18/05/14</i></small>
+</p>
+<h2><span class="mw-headline" id=".D0.9E.D0.BF.D0.B5.D1.80.D0.B0.D1.86.D0.B8.D0.B8_.D1.81_.D1.82.D0.BE.D0.BA.D0.B5.D0.BD.D0.B0.D0.BC.D0.B8"><b>Операции с токенами</b></span></h2>
+<h3><span class="mw-headline" id="Decode_Token"><b>Decode Token</b></span></h3>
+<p>Декодирует токен авторизации. Используется для авторизации аккаунта на указанном веб-сайте, без необходимости передачи секретной фразы.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_49"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=decodeToken&amp;
+     website=WEBSITE&amp;
+     token=AUTHSTRING
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>WEBSITE — URL веб-сайта, где необходима авторизация по токену. По принятому соглашению не содержит часть "http://" URL'а.
+</li>
+<li>AUTHSTRING — закодированная строка авторизации
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_37"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;account&quot;:       &quot;NXTACCOUNT&quot;, 
+     &quot;timestamp&quot;:     TIME, 
+     &quot;valid&quot;:         BOOLEAN
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>NXTACCOUNT — номер аккаунта Nxt, ассоциированный с токеном
+</li>
+<li>TIME — время в секундах начиная с о времени создания блока генезиса, определяющее время создания токена
+</li>
+<li>BOOLEAN — либо "true" (истина), либо "false" (ложь), показывает валиден ли токен
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_47"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=decodeToken&amp;
+     website=www.domain.com&amp;
+     token=StringOf160Chars
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;account&quot;:       &quot;398532577100249608&quot;, 
+     &quot;timestamp&quot;:     622, 
+     &quot;valid&quot;:         true 
+}
+</pre>
+<p><small><i>Проверено 18/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Generate_Token"><b>Generate Token</b></span></h3>
+<p>Создаёт токен (ключ) авторизации. Используется для авторизации аккаунта на определенном веб-сайте без необходимости передачи секретной фразы.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_50"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=generateToken&amp;
+     secretPhrase=SECRET&amp;
+     website=WEBSITE
+
+</pre> 
+<p>Где: 
+</p>
+<ul>
+<li>SECRET - ключевая фраза (private key) аккаунта, который создаёт токен.
+</li>
+<li>WEBSITE - URL веб-сайта, на котором проходит авторизация. По соглашению не содержит часть "http://" URL'а.
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_38"><b>Ответ</b></span></h4>
+<pre> 
+{ 
+  &quot;token&quot;: StringOf160Chars 
+} 
+</pre> 
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_48"><b>Пример</b></span></h4>
+<p>Запрос: 
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=generateToken&amp;
+     secretPhrase=ItWasABrightColdDayInAprilAndTheClocksWereStrikingThirteen&amp;
+     website=www.genesisblock.com
+</pre>
+<p>Ответ: 
+</p>
+<pre>
+{
+     &quot;token&quot;:       &quot;7dstcbs4fnbq614faea405ga3dj...etb0n9f0k6uvlku4d751kftqlb128t4&quot;
+}
+</pre>
+<p><small><i>Проверено 18/05/14</i></small>
+</p>
+<h2><span class="mw-headline" id=".D0.9E.D0.BF.D0.B5.D1.80.D0.B0.D1.86.D0.B8.D0.B8_.D1.81_.D1.82.D1.80.D0.B0.D0.BD.D0.B7.D0.B0.D0.BA.D1.86.D0.B8.D1.8F.D0.BC.D0.B8"><b>Операции с транзакциями</b></span></h2>
+<h3><span class="mw-headline" id="Broadcast_Transaction"><b>Broadcast Transaction</b></span></h3>
+<p>Широковещательная передачи транзакции в сеть
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_51"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=broadcastTransaction&amp;
+     transactionBytes=TX_BYTECODE
+</pre>
+<p>Где:
+</p>
+<ul>
+<li> TX_BYTECODE - байткод транзакции
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_39"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;transaction&quot;:       &quot;TRANSACTION_ID&quot;
+}
+</pre>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_49"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=broadcastTransaction&amp;
+     transactionBytes= 000022e22800e8036653833f4272604d...</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;transaction&quot;:       &quot;17484500871708980634&quot;
+}
+</pre>
+<ul>
+<li>Внимание: Вы можете получить ошибку '"error": "Double spending transaction"' если транзакция уже была транслирована в сеть
+</li>
+</ul>
+<p><small><i>Проверено 18/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Calculate_Full_Hash"><b>Calculate Full Hash</b></span></h3>
+<p>Вычислить полный хэш транзакции
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_52"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=calculateFullHash&amp;
+     unsignedTransactionBytes=UNTXBYTES&amp;
+     signatureHash=SIGHASH
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>UNTXBYTES неподписанные байты, содержавшиеся в транзакции 
+</li>
+<li>SIGHASH sha256 хэш подписи транзакции. Применяется для операций условного депонирования
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_40"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;fullHash&quot;: &quot;FULLHASH&quot; 
+}
+</pre>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_50"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=calculateFullHash&amp;
+     unsignedTransactionBytes=01016e23d700a005668683e673274c67...&amp;
+     signatureHash=07afbcfb72b4fa91d8e22f8f47950404270edc1d250d2c6edad7a58679fbe1cf
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{ 
+     &quot;fullHash&quot;: &quot;cc98e57a065610d17c6ba6a6406e4930b9a740bf1737847ab2e96e3733233984&quot; 
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_Account_Transaction_IDs_2"><b>Get Account Transaction IDs</b></span></h3>
+<p>Позволяет получать список идентификаторов транзакций, связанных с указанным аккаунтом
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_53"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getAccountTransactionIds&amp;
+     account=ACCOUNT&amp;
+     timestamp=TIME
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ACCOUNT - номер аккаунта по которому вы запрашиваете информацию 
+</li>
+<li>TIME - время в секундах, с момента генерации генезисного блока
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_41"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;transactionIds&quot;:
+          [ARRAY_OF_IDs]
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li> ARRAY_OF_IDs - список (массив) идентификаторов транзакций, связанных с указанным аккаунтом
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_51"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getAccountTransactionIds&amp;
+     account=6331110009135084386&amp;
+     timestamp=0</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;transactionIds&quot;:
+          [
+               &quot;17484500871708980634&quot;
+          ]
+}
+</pre>
+<h3><span class="mw-headline" id="Get_Unconfirmed_Account_Transaction_IDs"><b>Get Unconfirmed Account Transaction IDs</b></span></h3>
+<p>Получить список идентификаторов неподтвержденных транзакций связанных с заданным Nxt аккаунтом
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_54"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getUnconfirmedTransactionIds&amp;
+     account=ACCOUNT
+</pre>
+<p>Где:
+</p>
+<ul>
+<li> ACCOUNT номер аккаунта, список идентификаторов неподтвержденных транзакций которого, вы хотите получить
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_42"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;unconfirmedTransactionIds&quot;:
+          [ARRAY_OF_IDs]
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li> ARRAY_OF_IDs массив идентификаторов неподтвержденных транзакций, относящихся к заданному аккаунту
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_52"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getUnconfirmedTransactionIds&amp;
+     account=6331110009135084386
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;unconfirmedTransactionIds&quot;:
+          [
+               &quot;17484500871708980634&quot;
+          ]
+}
+</pre>
+<p><small><i>Проверено 18/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_Transaction"><b>Get Transaction</b></span></h3>
+<p>Возвращает данные заданной транзакции.  Может задаваться  <b>любым</b> параметром:  ID транзакции, hash, или fullhash транзакции.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_55"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=getTransaction&amp;
+     transaction=TRANSID&amp;
+     hash=HASH&amp;
+     fullHash=FULLHASH
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>TRANSID ID транзакции Nxt 
+</li>
+<li>HASH hash транзакции
+</li>
+<li>FULLHASH fullhash транзакции
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_43"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;sender&quot;:          &quot;SENDERACCOUNT&quot;,
+     &quot;senderRS&quot;:        &quot;SENDERACCOUNTRS&quot;,
+     &quot;feeNQT&quot;:          &quot;FEE&quot;,
+     &quot;amountNQT&quot;:       &quot;AMOUNT&quot;,
+     &quot;timestamp&quot;:       TIME,
+     &quot;referencedTransaction&quot;:       REFTX,
+     &quot;confirmations&quot;:   CONFIRMS,
+     &quot;subtype&quot;:         SUBTYPE,
+     &quot;block&quot;:           &quot;BLOCKID&quot;,
+     &quot;senderPublicKey&quot;: &quot;PUBKEY&quot;,
+     &quot;type&quot;:            TYPE,
+     &quot;deadline&quot;:        DEADLINE,
+     &quot;signature&quot;:       &quot;SIGNATURE&quot;,
+     &quot;recipient&quot;:       &quot;RECIPACCOUNT&quot;,
+     &quot;recipientRS&quot;:     &quot;RECIPACCOUNTRS&quot;,
+     &quot;fullHash&quot;:        &quot;FULLHASH&quot;, 
+     &quot;signatureHash&quot;:   &quot;SIGHASH&quot;, 
+     &quot;hash&quot;:            &quot;HASH&quot;, 
+     &quot;transaction&quot;:     &quot;TRANSID&quot;, 
+     &quot;attachment&quot;:
+     {
+          ATTACHMENT
+     }
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>SENDERACCOUNT номер аккаунта отправителя
+</li>
+<li>SENDERACCOUNTRS адрес отправителя в кодировке Reed-Solomon
+</li>
+<li>FEE комиссия (в NQT) за данную транзакцию
+</li>
+<li>AMOUNT количество Nxt (в NQT) в данной транзакции
+</li>
+<li>TIME время транзакции, измеряется в количестве секунд от времени создания генезисного блока
+</li>
+<li>REFTX Идентификатор (ID)предыдущей транзакции на которую ссылается данная транзакция. Должно быть "0" iесли отсутствует транзакция на которую ссылается данная.
+</li>
+<li>CONFIRMS количество подтверждений транзакции
+</li>
+<li>TYPE тип транзакции:
+<ul>
+<li>0 обыкновенная транзакция
+</li>
+<li>1 альяс или произвольное сообщение в составе транзакции
+</li>
+<li>2 если это транзакция биржи активов
+</li>
+</ul>
+</li>
+<li>SUBTYPE субтип транзакции:
+<ul>
+<li>Для альясов/произвольных сообщений:
+<ul>
+<li>0 транзакция произвольного сообщения
+</li>
+<li>1 транзакция альяса
+</li>
+</ul>
+</li>
+<li>Для биржи активов:
+<ul>
+<li>0 выпуск актива
+</li>
+<li> 1 трансфер актива
+</li>
+<li> 2 запрос на размещение заказа на покупку 
+</li>
+<li> 3 запрос на размещение заказа на продажу
+</li>
+<li> 4 отмена ордера на покупку
+</li>
+<li> 5 отмена ордера на продажу
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li> BLOCKID ID идентификатор блока содержащий данную транзакцию
+</li>
+<li> ATTACHMENT суб-бъект, представляющий любые дополнительные данные, необходимые для транзакции. Будет присутствовать только если применимо к транзакции.
+</li>
+<li> PUBKEY публичный ключ отправляющего аккаунта для транзакции
+</li>
+<li> DEADLINE дедлайн транзакции, указывается в минутах
+</li>
+<li> SIGNATURE цифровая подпись транзакции transaction
+</li>
+<li> SIGHASH хэш sha256 подписи транзакции. Используется для условного операций депонирования. 
+</li>
+<li> RECIPACCOUNT номер аккаунта получателя
+</li>
+<li> RECIPACCOUNTRS адрес получателя в кодировке Reed-Solomon
+</li>
+</ul>
+<p><b>Внимание:</b> Данные о неподтвержденной транзакции не содержат параметров "block" и/или "confirmations".  Данные double-spending транзакций не возвращаются.
+</p>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_53"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getTransaction&amp;
+     transaction=16244659048134841060
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;sender&quot;:       &quot;14336428216306750617&quot;,
+     &quot;senderRS&quot;:     &quot;NXT-6DWM-GFYD-A7PS-72P3P&quot;,
+     &quot;feeNQT&quot;:       &quot;100000000&quot;,
+     &quot;amountNQT&quot;:       &quot;0&quot;,
+     &quot;timestamp&quot;:       7376798,
+     &quot;referencedTransaction&quot;:       &quot;0&quot;,
+     &quot;confirmations&quot;:       6,
+     &quot;subtype&quot;:       1,
+     &quot;block&quot;:       &quot;16385359704305994802&quot;,
+     &quot;blockTimestamp&quot;:       7376860,
+     &quot;attachment&quot;:
+     {
+          &quot;alias&quot;:&quot;NxtAPI&quot;,
+          &quot;uri&quot;:&quot;http:\/\/wiki.nxtcrypto.org/Wiki/Nxt_API&quot;
+     },
+     &quot;senderPublicKey&quot;:       &quot;64f103fbf0cc41045b1544cda6624eecfb8212b021fba22029a461c4b40c5d79&quot;,
+     &quot;type&quot;:       1,
+     &quot;deadline&quot;:       1,
+     &quot;signature&quot;:       &quot;0cdf64cb06ea21396180a6f201b6a...&quot;,
+     &quot;recipient&quot;:       &quot;1739068987193023818&quot;,
+     &quot;recipientRS&quot;:     &quot;NXT-BK2J-ZMY4-93UY-8EM9V&quot;,
+     &quot;fullHash&quot;: &quot;a3c47c4a2e60c2907efc9c4b9310066cabdf3e2137e67814aa57cb960ad2dfe1&quot;, 
+     &quot;signatureHash&quot;: &quot;95cc276d1608dc0c14942a5efc82ccc701a56e873746ef1bfd37995c37ef5991&quot;, 
+     &quot;hash&quot;: &quot;15a86f71e1ac267dce35791cefafb71460f458920784ea0d10894844f05894b0&quot;, 
+     &quot;transaction&quot;: &quot;10431005438877942947&quot;
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Parse_Transaction"><b>Parse Transaction</b></span></h3>
+<p>Получает данные транзакции
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_56"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=parseTransaction&amp;
+     transactionBytes=TRANSBYTES
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>TRANSBYTES байты Nxt транзакции
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_44"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;sender&quot;:          &quot;SENDERACCOUNT&quot;,
+     &quot;senderRS&quot;:        &quot;SENDERACCOUNTRS&quot;,
+     &quot;feeNQT&quot;:          &quot;FEE&quot;,
+     &quot;amountNQT&quot;:       &quot;AMOUNT&quot;,
+     &quot;timestamp&quot;:       TIME,
+     &quot;referencedTransaction&quot;:       REFTX,
+     &quot;confirmations&quot;:   CONFIRMS,
+     &quot;subtype&quot;:         SUBTYPE,
+     &quot;block&quot;:           &quot;BLOCKID&quot;,
+     &quot;senderPublicKey&quot;: &quot;PUBKEY&quot;,
+     &quot;type&quot;:            TYPE,
+     &quot;deadline&quot;:        DEADLINE,
+     &quot;signature&quot;:       &quot;SIGNATURE&quot;,
+     &quot;recipient&quot;:       &quot;RECIPACCOUNT&quot;,
+     &quot;recipientRS&quot;:     &quot;RECIPACCOUNTRS&quot;,
+     &quot;fullHash&quot;:        &quot;FULLHASH&quot;, 
+     &quot;signatureHash&quot;:   &quot;SIGHASH&quot;, 
+     &quot;hash&quot;:            &quot;HASH&quot;, 
+     &quot;transaction&quot;:     &quot;TRANSID&quot;, 
+     &quot;attachment&quot;:
+     {
+          ATTACHMENT
+     }
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>SENDERACCOUNT номер аккаунта отправителя
+</li>
+<li>SENDERACCOUNTRS адрес отправителя в кодировке Reed-Solomon
+</li>
+<li>FEE комиссия (в NQT) за данную транзакцию
+</li>
+<li>AMOUNT количество Nxt (в NQT) в данной транзакции
+</li>
+<li>TIME время транзакции, измеряется в количестве секунд от времени создания генезисного блока
+</li>
+<li>REFTX Идентификатор (ID)предыдущей транзакции на которую ссылается данная транзакция. Должно быть "0" iесли отсутствует транзакция на которую ссылается данная.
+</li>
+<li>CONFIRMS количество подтверждений транзакции
+</li>
+<li>TYPE тип транзакции:
+<ul>
+<li>0 обыкновенная транзакция
+</li>
+<li>1 альяс или произвольное сообщение в составе транзакции
+</li>
+<li>2 если это транзакция биржи активов
+</li>
+</ul>
+</li>
+<li>SUBTYPE субтип транзакции:
+<ul>
+<li>Для альясов/произвольных сообщений:
+<ul>
+<li>0 транзакция произвольного сообщения
+</li>
+<li>1 транзакция альяса
+</li>
+</ul>
+</li>
+<li>Для биржи активов:
+<ul>
+<li>0 выпуск актива
+</li>
+<li>1 трансфер актива
+</li>
+<li>2 запрос на размещение заказа на покупку
+</li>
+<li>3 запрос на размещение заказа на продажу
+</li>
+<li>4 отмена ордера на покупку
+</li>
+<li>5 отмена ордера на продажу
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>BLOCKID ID идентификатор блока содержащий данную транзакцию
+</li>
+<li>ATTACHMENT суб-бъект, представляющий любые дополнительные данные, необходимые для транзакции. Будет присутствовать только если применимо к транзакции.
+</li>
+<li>PUBKEY публичный ключ отправляющего аккаунта для транзакции
+</li>
+<li>DEADLINE дедлайн транзакции, указывается в минутах
+</li>
+<li>SIGNATURE цифровая подпись транзакции transaction
+</li>
+<li>SIGHASH хэш sha256 подписи транзакции. Используется для условного операций депонирования.
+</li>
+<li>RECIPACCOUNT номер аккаунта получателя
+</li>
+<li>RECIPACCOUNTRS адрес получателя в кодировке Reed-Solomon
+</li>
+</ul>
+<p><b>Внимание</b>: Данные о неподтвержденной транзакции не содержат параметров "block" и/или "confirmations". Данные double-spending транзакций не возвращаются.
+</p>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_54"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=parseTransaction&amp;
+     transactionBytes=000022e22800e8036653833f4272604d5d3ef39...
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;sender&quot;:       &quot;14336428216306750617&quot;,
+     &quot;senderRS&quot;:     &quot;NXT-6DWM-GFYD-A7PS-72P3P&quot;,
+     &quot;feeNQT&quot;:       &quot;100000000&quot;,
+     &quot;amountNQT&quot;:       &quot;0&quot;,
+     &quot;timestamp&quot;:       7376798,
+     &quot;referencedTransaction&quot;:       &quot;0&quot;,
+     &quot;confirmations&quot;:       6,
+     &quot;subtype&quot;:       1,
+     &quot;block&quot;:       &quot;16385359704305994802&quot;,
+     &quot;blockTimestamp&quot;:       7376860,
+     &quot;senderPublicKey&quot;:       &quot;64f103fbf0cc41045b1544cda6624eecfb8212b021fba22029a461c4b40c5d79&quot;,
+     &quot;type&quot;:       1,
+     &quot;deadline&quot;:       1,
+     &quot;signature&quot;:       &quot;0cdf64cb06ea21396180a6f201b6a...&quot;,
+     &quot;recipient&quot;:       &quot;1739068987193023818&quot;,
+     &quot;recipientRS&quot;:     &quot;NXT-BK2J-ZMY4-93UY-8EM9V&quot;,
+     &quot;fullHash&quot;: &quot;a3c47c4a2e60c2907efc9c4b9310066cabdf3e2137e67814aa57cb960ad2dfe1&quot;, 
+     &quot;signatureHash&quot;: &quot;95cc276d1608dc0c14942a5efc82ccc701a56e873746ef1bfd37995c37ef5991&quot;, 
+     &quot;hash&quot;: &quot;15a86f71e1ac267dce35791cefafb71460f458920784ea0d10894844f05894b0&quot;, 
+     &quot;transaction&quot;: &quot;10431005438877942947&quot;
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_Transaction_Bytes"><b>Get Transaction Bytes</b></span></h3>
+<p>Возвращает байт-код транзакции.
+</p>
+<h3><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_57"><b>Запрос</b></span></h3>
+<pre>http://localhost:7876/nxt?
+     requestType=getTransactionBytes&amp;
+     transaction=TXID</pre>
+<p>Где: 
+</p>
+<ul>
+<li> TXID - идентификатор транзакции (ID)
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_45"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;confirmations&quot;:            CONFS,
+     &quot;transactionBytes&quot;:         &quot;BYTECODE&quot;,
+     &quot;unsignedTransactionBytes&quot;: &quot;UNBYTECODE&quot;
+}
+</pre>
+<p>Где: 
+</p>
+<ul>
+<li> CONFS количество подтверждений транзакции
+</li>
+<li> BYTECODE запрашиваемый байт-код транзакции
+</li>
+<li> BYTECODE неподписанные байты, включенные в транзакцию
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_55"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=getTransactionBytes&amp;
+     transaction=17484500871708980634
+</pre>
+<p>Ответ:
+</p>
+<pre>{
+     &quot;confirmations&quot;:       4462,
+     &quot;transactionBytes&quot;:         &quot;000022e22800e8036653833f4272604d5...&quot;,
+     &quot;unsignedTransactionBytes&quot;: &quot;000022e22800e8036653833f42...&quot; 
+}
+</pre>
+<p><small><i>Проверено 18/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Send_Nxt"><b>Send Nxt</b></span></h3>
+<p>Переслать указанное количество Nxt на указанный аккаунт.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_58"><b>Запрос</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=sendMoney&amp;
+     secretPhrase=SECRET&amp;
+     recipient=RECIPACCOUNT&amp; 
+     amountNQT=AMOUNT&amp; 
+     feeNQT=FEE&amp; 
+     deadline=DEADLINE&amp; 
+     referencedTransaction=REFTRANSACTION&amp;
+     publicKey=PUBKEY
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>SECRET - секретная фраза/пароль для аккаунта с которого будут отправлены средства
+</li>
+<li>RECIPACCOUNT - аккаунт получателя
+</li>
+<li>AMOUNT - Количество Nxt передаваемых в данной транзакции (в NQT)
+</li>
+<li>FEE - комиссия (в NQT) для этой транзакции
+</li>
+<li>DEADLINE - deadline для транзакции, в минутах
+</li>
+<li>REFTRANSACTION - опционально: ссылка на идентификатор (ID) предыдущей транзакции (основная транзакция не подтвердится, пока не подтвердилась предыдущая)
+</li>
+<li>PUBKEY 64-битный публичный ключ ассоциированный с аккаунтом и дополняет поле SECRET.
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_46"><b>Ответ</b></span></h4>
+<pre>
+{ 
+     &quot;transaction&quot;:        &quot;TRANSACTIONID&quot; 
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>TRANSACTIONID - идентификатор только что созданной транзакции.
+</li>
+</ul>
+<p>'<i>Внимание!</i> "deadline" указывается в минутах. "referencedTransaction" не обязательный параметр, может не использоваться.
+</p>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_56"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=sendMoney&amp;
+     secretPhrase=IWontTellYou&amp;
+     recipient=398532577100249608&amp;
+     amount=1500&amp;
+     fee=5&amp;
+     deadline=900&amp;
+     referencedTransaction=13689168149259791567
+</pre>
+<p>Результат:
+</p>
+<pre>
+{ 
+     &quot;transaction&quot;:        &quot;16244659048134841060&quot; 
+}
+</pre>
+<p><small><i>Проверено 18/05/14</i></small>
+</p><p><br />
+</p>
+<h3><span class="mw-headline" id="Sign_Transation"><b>Sign Transation</b></span></h3>
+<p>Рассчитать полный хэш (full hash), хэш подписи (signature hash), и транзакцию из неподписанной транзакции
+</p>
+<h4><span class="mw-headline" id="Request_4"><b>Request</b></span></h4>
+<pre>http://localhost:7876/nxt?
+     requestType=signTransaction&amp;
+     unsignedTransactionBytes=UNTXBYTES&amp;
+     secretPhrase=SECRET
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>UNTXBYTES неподписанные байты в транзакции 
+</li>
+<li>SECRET секретная фраза аккаунта
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_47"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;fullHash&quot;:                 &quot;FULLHASH&quot;, 
+     &quot;signatureHash&quot;:            &quot;SIGHASH&quot;, 
+     &quot;transactionBytes&quot;:         &quot;TXBYTES&quot;, 
+     &quot;transaction&quot;:              &quot;TX&quot;, 
+     &quot;verify&quot;:                   &quot;VERIFY&quot;
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>FULLHASH полный хэш транзакции
+</li>
+<li>SIGHASH sha256 хэш подписи транзакции. Используется для транзакций условного депонирования
+</li>
+<li>TXBYTES байткод транзакции
+</li>
+<li>TX ID транзакции
+</li>
+<li>VERIFY если верифицировано (true/false)
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_57"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:7876/nxt?
+     requestType=signTransaction&amp;
+     unsignedTransactionBytes=01016e23d700a005668683e673274c67...&amp;
+     secretPhrase=0123456789
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{ 
+     &quot;fullHash&quot;:         &quot;d56ade2c322083d76ebcdb9f9ef18d7d52c6d105f67be040cc423c7a41a47aea&quot;, 
+     &quot;signatureHash&quot;:    &quot;458514e72f4272c789f99201c27cff611460de10fe484b474166c1199c23e754&quot;, 
+     &quot;transactionBytes&quot;: &quot;0100471ddb00a005668683e673274c67180240...&quot;, 
+     &quot;transaction&quot;:      &quot;15529291339976829653&quot;, 
+     &quot;verify&quot;:           true 
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h2><span class="mw-headline" id=".22.22.D0.9A.D0.BE.D0.B4.D1.8B_.D0.BE.D1.88.D0.B8.D0.B1.D0.BE.D0.BA.22.22">""Коды ошибок""</span></h2>
+<ul>
+<li>Код ошибки: 1 - Incorrect request. Неверный запрос. Скорее всего вы допустили ошибку при написании/копировании запроса. 
+</li>
+</ul>
+<p>Внимательно смотрите запрос к серверу <a rel="nofollow" class="external free" href="http://localhost:7874/nxt?requestType=здесь_должна_быть_введена_корректная_функция">http://localhost:7874/nxt?requestType=здесь_должна_быть_введена_корректная_функция</a> системы&amp;...
+</p>
+<ul>
+<li>Код ошибки: 2 - Blockchain not up to date. Blockchain не обновлен, т.е. находится в неактуальном состоянии.
+</li>
+</ul>
+<ul>
+<li>Код ошибки: 3 - Parameter not specified. Параметр не определен. Скорее всего вы указали в запросе параметр, которого не должно быть (лишний, некорректный)
+</li>
+</ul>
+<ul>
+<li>Код ошибки: 4 - Incorrect parameter. Некорректный параметр. Т.е. вы ввели неправильные данные, например вместо числа - цифру. Будьте внимательны при вводе данных!
+</li>
+</ul>
+<ul>
+<li>Код ошибки: 5 - Unknown object (block, transaction, etc.) Неизвестный объект (блок, транзакция...). В случае если это аккаунт, это может говорить также и о том, что данный аккаунт не активен (т.е. с ним не производилось никаких операций по перемещению средств) 
+</li>
+</ul>
+<ul>
+<li>Код ошибки: 6 - Not enough funds. Недостаточно средств. Скорее всего вы указали в операции больше средств чем у вас есть, или что-то не учли (например комиссию)
+</li>
+</ul>
+
+</body>
+</html>

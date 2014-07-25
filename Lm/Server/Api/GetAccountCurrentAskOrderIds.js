@@ -1,43 +1,41 @@
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
-import nxt.NxtException;
 import nxt.Order;
-import nxt.util.Convert;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONStreamAware;
 */
 
-function Main(req, res) {
-	//static final GetAccountCurrentAskOrderIds instance = new GetAccountCurrentAskOrderIds();
-	res.send('This is not implemented');
+var Convert = require(__dirname + '/../../Util/Convert');
+var JsonResponses = require(__dirname + '/../JsonResponses');
+var ParameterParser = require(__dirname + '/../ParameterParser');
+
+
+//super("account", "asset");
+function GetAccountCurrentAskOrderIds(req, res) {
+	var accountId = ParameterParser.GetAccount(req).GetId();
+	var assetId;
+	try {
+		assetId = Convert.parseUnsignedLong(req.query.asset);
+	} catch (e) {
+		// ignore
+	}
 
 	/*
-	private GetAccountCurrentAskOrderIds() {
-		super("account", "asset");
+	var orderIds = new Array();
+	for (Order.Ask askOrder : Order.Ask.getAllAskOrders()) {
+		if ((assetId == null || askOrder.getAssetId().equals(assetId)) && askOrder.getAccount().getId().equals(accountId)) {
+			orderIds.add(Convert.toUnsignedLong(askOrder.getId()));
+		}
 	}
 
-	JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
-
-		Long accountId = ParameterParser.getAccount(req).getId();
-		Long assetId = null;
-		try {
-			assetId = Convert.parseUnsignedLong(req.getParameter("asset"));
-		} catch (RuntimeException e) {
-			// ignore
-		}
-
-		JSONArray orderIds = new JSONArray();
-		for (Order.Ask askOrder : Order.Ask.getAllAskOrders()) {
-			if ((assetId == null || askOrder.getAssetId().equals(assetId)) && askOrder.getAccount().getId().equals(accountId)) {
-				orderIds.add(Convert.toUnsignedLong(askOrder.getId()));
-			}
-		}
-
-		JSONObject response = new JSONObject();
-		response.put("askOrderIds", orderIds);
-		return response;
-	}
+	JSONObject response = new JSONObject();
+	response.put("askOrderIds", orderIds);
+	return response;
 	*/
+	res.send('This is not implemented');
 }
 
-module.exports = Main;
+module.exports = GetAccountCurrentAskOrderIds;

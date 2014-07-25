@@ -1,37 +1,35 @@
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 import nxt.Token;
-import org.json.simple.JSONStreamAware;
-import static nxt.http.JSONResponses.INCORRECT_WEBSITE;
-import static nxt.http.JSONResponses.MISSING_TOKEN;
-import static nxt.http.JSONResponses.MISSING_WEBSITE;
 */
 
-function Main(req, res) {
-	res.send('This is not implemented');    
+var JsonData = require(__dirname + '/../JsonData');
+var JsonResponses = require(__dirname + '/../JsonResponses');
+var Tokens = require(__dirname + '/../../Tokens');
 
-	/*
-	static final DecodeToken instance = new DecodeToken();
 
-	private DecodeToken() {
-		super("website", "token");
+//super("website", "token");
+function DecodeToken(req, res) {
+	var website = req.query.website;
+	var tokenString = req.query.token;
+	if (!website) {
+		res.send(JsonResponses.MissingWebsite);
+		return;
+	} else if (!tokenString) {
+		res.send(JsonResponses.MissingToken);
+		return;
 	}
-
-	public JSONStreamAware processRequest(HttpServletRequest req) {
-		String website = req.getParameter("website");
-		String tokenString = req.getParameter("token");
-		if (website == null) {
-			return MISSING_WEBSITE;
-		} else if (tokenString == null) {
-			return MISSING_TOKEN;
-		}
-		try {
-			Token token = Token.parseToken(tokenString, website.trim());
-			return JSONData.token(token);
-		} catch (RuntimeException e) {
-			return INCORRECT_WEBSITE;
-		}
+	try {
+		var token = Tokens.ParseToken(tokenString, website.trim());
+		res.send(JsonData.Token(token));
+	} catch (e) {
+		res.send(JsonResponses.IncorrectWebsite);
 	}
-*/
 }
 
-module.exports = Main;
+module.exports = DecodeToken;

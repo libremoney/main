@@ -1,3 +1,9 @@
+/**!
+ * LibreMoney Hallmark 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 import nxt.Account;
 import nxt.Constants;
@@ -116,58 +122,42 @@ function Hallmark(hallmarkString, publicKey, signature, host, weight, date, isVa
 }
 
 function GetAccountId() {
-	/*
-	return accountId;
-	*/
+	return this.accountId;
 }
 
 function GetDate() {
-	/*
-	return date;
-	*/
+	return this.date;
 }
 
 function GetHallmarkString() {
-	/*
-	return hallmarkString;
-	*/
+	return this.hallmarkString;
 }
 
 function GetHost() {
-	/*
-	return host;
-	*/
+	return this.host;
 }
 
 function GetPublicKey() {
-	/*
-	return publicKey;
-	*/
+	return this.publicKey;
 }
 
 function GetSignature() {
-	/*
-	return signature;
-	*/
+	return this.signature;
 }
 
 function GetWeight() {
-	/*
-	return weight;
-	*/
+	return this.weight;
 }
 
 function IsValid() {
-	/*
-	return isValid;
-	*/
+	return this.isValid;
 }
 
 
 Hallmark.prototype.GetHallmarkString = GetHallmarkString;
 Hallmark.prototype.GetHost = GetHost;
 Hallmark.prototype.GetWeight = GetWeight;
-Hallmarl.prototype.GetDate = GetDate;
+Hallmark.prototype.GetDate = GetDate;
 Hallmark.prototype.GetSignature = GetSignature;
 Hallmark.prototype.GetPublicKey = GetPublicKey;
 Hallmark.prototype.GetAccountId = GetAccountId;
