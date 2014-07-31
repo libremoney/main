@@ -25,7 +25,7 @@ JSONStreamAware processRequest(JSONObject request, Peer peer) {
 		if (lastBlockIdString != null) {
 			Long lastBlockId = Convert.parseUnsignedLong(lastBlockIdString);
 			Long myLastBlockId = Nxt.getBlockchain().getLastBlock().getId();
-			if (myLastBlockId.equals(lastBlockId) || Nxt.getBlockchain().hasBlock(lastBlockId)) {
+			if (myLastBlockId.equals(lastBlockId) || Blockchain.HasBlock(lastBlockId, xxxx)) {
 				milestoneBlockIds.add(lastBlockIdString);
 				response.put("milestoneBlockIds", milestoneBlockIds);
 				if (myLastBlockId.equals(lastBlockId)) {

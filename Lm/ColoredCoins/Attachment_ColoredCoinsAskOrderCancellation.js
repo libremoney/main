@@ -1,19 +1,23 @@
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-/*
+var Constants = require(__dirname + '/../Constants');
 
-    public final static class Attachment_ColoredCoinsAskOrderCancellation extends ColoredCoinsOrderCancellation {
 
-        static final long serialVersionUID = 0;
+//static final long serialVersionUID = 0;
 
-        public ColoredCoinsAskOrderCancellation(Long orderId) {
-            super(orderId);
-        }
+function ColoredCoinsAskOrderCancellation(orderId) {
+	var obj = new ColoredCoinsOrderCancellation(orderId);
 
-        @Override
-        public TransactionType getTransactionType() {
-            return TransactionType.ColoredCoins.ASK_ORDER_CANCELLATION;
-        }
+	function GetTransactionType() {
+		return Constants.SUBTYPE_COLORED_COINS_ASK_ORDER_CANCELLATION; //Transactions.Types.ColoredCoins.ASK_ORDER_CANCELLATION;
+	}
 
-    }
+	obj.GetTransactionType = GetTransactionType;
+}
 
-*/
+
+module.exports = ColoredCoinsAskOrderCancellation;

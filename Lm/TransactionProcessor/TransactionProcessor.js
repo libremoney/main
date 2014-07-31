@@ -4,28 +4,15 @@
  * CC0 license
  */
 
-/*
-import nxt.util.Observable;
-import org.json.simple.JSONObject;
-
-import nxt.peer.Peer;
-import nxt.peer.Peers;
-import nxt.util.Convert;
-import nxt.util.JSON;
-import nxt.util.Listener;
-import nxt.util.Listeners;
-import nxt.util.Logger;
-import nxt.util.ThreadPool;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONStreamAware;
-*/
-
+var Convert = require(__dirname + '/../Util/Convert');
+//var Core = require(__dirname + '/../Core');
 var Listeners = require(__dirname + '/../Util/Listeners');
+var Logger = require(__dirname + '/../Logger').GetLogger(module);
+var ThreadPool = require(__dirname + '/../ThreadPool');
+var Transactions = require(__dirname + '/../Transactions');
 
 var ProcessTransactionsThread = require(__dirname + '/ProcessTransactionsThread');
 var RebroadcastTransactionsThread = require(__dirname + '/RebroadcastTransactionsThread');
-var RemoveUnconfirmedTransactionsThread = require(__dirname + '/RemoveUnconfirmedTransactionsThread');
 
 
 var Event = {
@@ -42,14 +29,54 @@ var nonBroadcastedTransactions = new Array(); //ConcurrentHashMap<>();
 var transactionListeners = new Listeners();
 
 
-function Init() {
-	ThreadPool.ScheduleThread(ProcessTransactionsThread.Run, 5);
-	ThreadPool.ScheduleThread(RemoveUnconfirmedTransactionsThread.Run, 1);
-	ThreadPool.ScheduleThread(RebroadcastTransactionsThread.Run, 60);
+function AddListener(eventType, listener) {
+	return transactionListeners.AddListener(eventType, listener);
 }
 
-function AddListener(listener, eventType) {
-	return transactionListeners.AddListener(listener, eventType);
+function Apply(block) {
+	throw new Error('Not implemented');
+	/*
+	block.apply();
+	for (TransactionImpl transaction : block.getTransactions()) {
+		transaction.apply();
+	}
+	*/
+}
+
+function ApplyUnconfirmed(unapplied) {
+	throw new Error('Not implemented');
+	/*
+	List<Transaction> removedUnconfirmedTransactions = new ArrayList<>();
+	for (Long transactionId : unapplied) {
+		TransactionImpl transaction = unconfirmedTransactions.get(transactionId);
+		if (! transaction.applyUnconfirmed()) {
+			unconfirmedTransactions.remove(transactionId);
+			removedUnconfirmedTransactions.add(transaction);
+		}
+	}
+	if (removedUnconfirmedTransactions.size() > 0) {
+		transactionListeners.Notify(TransactionProcessor.Event.REMOVED_UNCONFIRMED_TRANSACTIONS, removedUnconfirmedTransactions);
+	}
+	*/
+}
+
+function Broadcast(transaction) {
+	if (!transaction.Verify()) {
+		throw new Error("ValidationException: Transaction signature verification failed");
+	}
+	var validTransactions = ProcessTransactions(Collections.SingletonList(transaction), true);
+	if (validTransactions.indexOf(transaction) >= 0) {
+		nonBroadcastedTransactions[transaction.GetId()] = transaction;
+		Logger.debug("Accepted new transaction " + transaction.GetStringId());
+	} else {
+		Logger.debug("Rejecting double spending transaction " + transaction.GetStringId());
+		throw new Error("ValidationException: Double spending transaction");
+	}
+}
+
+function Clear() {
+	unconfirmedTransactions.length = 0;
+	nonBroadcastedTransactions.length = 0;
 }
 
 function GetAllUnconfirmedTransactions() {
@@ -57,82 +84,23 @@ function GetAllUnconfirmedTransactions() {
 }
 
 function GetUnconfirmedTransaction(transactionId) {
-	return unconfirmedTransactions[transactionId]; //get(transactionId);
+	return unconfirmedTransactions[transactionId];
 }
 
-function RemoveListener(listener, eventType) {
-	return transactionListeners.RemoveListener(listener, eventType);
-}
-
-function NewTransaction(deadline, senderPublicKey, recipientId, amountNQT, feeNQT, referencedTransactionFullHash, attachment) {
-	throw new Error('Not implemented');
+function Init(callback) {
 	/*
-	TransactionImpl transaction = new TransactionImpl(TransactionType.Payment.ORDINARY, Convert.getEpochTime(), deadline, senderPublicKey,
-			recipientId, amountNQT, feeNQT, referencedTransactionFullHash, null);
-	transaction.validateAttachment();
-	return transaction;
+	Core.AddListener(Core.Event.Shutdown, function() {
+		Shutdown();
+	});
 	*/
-
-
-	/*
-	TransactionImpl transaction = new TransactionImpl(attachment.getTransactionType(), Convert.getEpochTime(), deadline,
-			senderPublicKey, recipientId, amountNQT, feeNQT, referencedTransactionFullHash, null);
-	transaction.setAttachment(attachment);
-	transaction.validateAttachment();
-	return transaction;
-	*/
-}
-
-function Broadcast(transaction) {
-	throw new Error('Not implemented');
-	/*
-	if (! transaction.verify()) {
-		throw new NxtException.ValidationException("Transaction signature verification failed");
-	}
-	List<Transaction> validTransactions = processTransactions(Collections.singletonList((TransactionImpl) transaction), true);
-	if (validTransactions.contains(transaction)) {
-		nonBroadcastedTransactions.put(transaction.getId(), (TransactionImpl) transaction);
-		Logger.logDebugMessage("Accepted new transaction " + transaction.getStringId());
-	} else {
-		Logger.logDebugMessage("Rejecting double spending transaction " + transaction.getStringId());
-		throw new NxtException.ValidationException("Double spending transaction");
-	}
-	*/
-}
-
-function ProcessPeerTransactions1(request) {
-	throw new Error('Not implemented');
-	/*
-	JSONArray transactionsData = (JSONArray)request.get("transactions");
-	processPeerTransactions(transactionsData, true);
-	*/
-}
-
-function ProcessPeerTransactions2(transactionsData, sendToPeers) {
-	throw new Error('Not implemented');
-	/*
-	List<TransactionImpl> transactions = new ArrayList<>();
-	for (Object transactionData : transactionsData) {
-		try {
-			TransactionImpl transaction = parseTransaction((JSONObject)transactionData);
-			transaction.validateAttachment();
-			transactions.add(transaction);
-		} catch (NxtException.ValidationException e) {
-			//if (! (e instanceof TransactionType.NotYetEnabledException)) {
-			//    Logger.logDebugMessage("Dropping invalid transaction: " + e.getMessage());
-			//}
-		}
-	}
-	processTransactions(transactions, sendToPeers);
-	for (TransactionImpl transaction : transactions) {
-		nonBroadcastedTransactions.remove(transaction.getId());
-	}
-	*/
+	ThreadPool.ScheduleThread(ProcessTransactionsThread.Run, 5000, 'ProcessTransactionsThread');
+	ThreadPool.ScheduleThread(RemoveUnconfirmedTransactionsThread, 1000, 'RemoveUnconfirmedTransactionsThread');
+	ThreadPool.ScheduleThread(RebroadcastTransactionsThread.Run, 60000, 'RebroadcastTransactionsThread');
+	if (callback) callback();
 }
 
 // value = bytes or transactionData
 function ParseTransaction(value) {
-	throw new Error('Not implemented');
 	/*
 	ByteBuffer buffer = ByteBuffer.wrap(bytes);
 	buffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -186,24 +154,138 @@ function ParseTransaction(value) {
 	transactionType.loadAttachment(transaction, attachmentData);
 	return transaction;
 	*/
+	throw new Error('Not implemented');
 }
 
-function Clear() {
-	throw new Error('Not implemented');
+function ProcessPeerTransactions1(request) {
 	/*
-	unconfirmedTransactions.clear();
-	nonBroadcastedTransactions.clear();
+	JSONArray transactionsData = (JSONArray)request.get("transactions");
+	processPeerTransactions(transactionsData, true);
 	*/
+	throw new Error('Not implemented');
 }
 
-function Apply(block) {
+function ProcessPeerTransactions2(transactionsData, sendToPeers) {
 	throw new Error('Not implemented');
 	/*
-	block.apply();
-	for (TransactionImpl transaction : block.getTransactions()) {
-		transaction.apply();
+	List<TransactionImpl> transactions = new ArrayList<>();
+	for (Object transactionData : transactionsData) {
+		try {
+			TransactionImpl transaction = parseTransaction((JSONObject)transactionData);
+			transaction.validateAttachment();
+			transactions.add(transaction);
+		} catch (NxtException.ValidationException e) {
+			//if (! (e instanceof TransactionType.NotYetEnabledException)) {
+			//    Logger.logDebugMessage("Dropping invalid transaction: " + e.getMessage());
+			//}
+		}
+	}
+	processTransactions(transactions, sendToPeers);
+	for (TransactionImpl transaction : transactions) {
+		nonBroadcastedTransactions.remove(transaction.getId());
 	}
 	*/
+}
+
+function ProcessTransactions(transactions, sendToPeers) {
+	var sendToPeersTransactions = [];
+	var addedUnconfirmedTransactions = [];
+	var addedDoubleSpendingTransactions = [];
+
+	for (var transaction in transactions) {
+		//try {
+			var curTime = Convert.GetEpochTime();
+			if (transaction.GetTimestamp() > curTime + 15 || transaction.GetExpiration() < curTime || transaction.GetDeadline() > 1440) {
+				continue;
+			}
+
+			var id = transaction.GetId();
+			if (Transactions.HasTransaction(id) || unconfirmedTransactions.ContainsKey(id) || ! transaction.Verify()) {
+				continue;
+			}
+
+			if (transaction.ApplyUnconfirmed()) {
+				if (sendToPeers) {
+					if (nonBroadcastedTransactions.indexOf(id) >= 0) { // containsKey
+						Logger.debug("Received back transaction " + transaction.GetStringId()
+								+ " that we generated, will not forward to peers");
+						var i = nonBroadcastedTransactions.indexOf(id);
+						if (i >= 0)
+							nonBroadcastedTransactions[i] = null;
+					} else {
+						sendToPeersTransactions.push(transaction);
+					}
+				}
+				unconfirmedTransactions[id] = transaction;
+				addedUnconfirmedTransactions.push(transaction);
+			} else {
+				addedDoubleSpendingTransactions.push(transaction);
+			}
+		//} catch (RuntimeException e) {
+		//	Logger.logMessage("Error processing transaction", e);
+		//}
+	}
+
+	if (sendToPeersTransactions.length > 0) {
+		Peers.SendToSomePeers(sendToPeersTransactions);
+	}
+
+	if (addedUnconfirmedTransactions.length > 0) {
+		transactionListeners.Notify(Event.ADDED_UNCONFIRMED_TRANSACTIONS, addedUnconfirmedTransactions);
+	}
+	if (addedDoubleSpendingTransactions.length > 0) {
+		transactionListeners.Notify(Event.ADDED_DOUBLESPENDING_TRANSACTIONS, addedDoubleSpendingTransactions);
+	}
+	return addedUnconfirmedTransactions;
+}
+
+function RemoveListener(eventType, listener) {
+	return transactionListeners.RemoveListener(eventType, listener);
+}
+
+function RemoveUnconfirmedTransactions(transactions) {
+	throw new Error('Not implemented');
+	/*
+	List<Transaction> removedList = new ArrayList<>();
+	for (TransactionImpl transaction : transactions) {
+		if (unconfirmedTransactions.remove(transaction.getId()) != null) {
+			transaction.undoUnconfirmed();
+			removedList.add(transaction);
+		}
+	}
+	transactionListeners.Notify(Event.REMOVED_UNCONFIRMED_TRANSACTIONS, removedList);
+	*/
+}
+
+function RemoveUnconfirmedTransactionsThread() {
+	var curTime = Convert.GetEpochTime();
+	var removedUnconfirmedTransactions = [];
+
+	for (var transaction in unconfirmedTransactions) {
+		if (transaction.GetExpiration() < curTime) {
+			unconfirmedTransactions.splice(unconfirmedTransactions.indexOf(transaction), 1); // remove
+			transaction.UndoUnconfirmed();
+			removedUnconfirmedTransactions.push(transaction);
+		}
+	}
+	if (removedUnconfirmedTransactions.length > 0) {
+		transactionListeners.Notify(Event.REMOVED_UNCONFIRMED_TRANSACTIONS, removedUnconfirmedTransactions);
+	}
+
+	/*
+		} catch (Exception e) {
+			Logger.logDebugMessage("Error removing unconfirmed transactions", e);
+		}
+	} catch (Throwable t) {
+		Logger.logMessage("CRITICAL ERROR. PLEASE REPORT TO THE DEVELOPERS.\n" + t.toString());
+		t.printStackTrace();
+		System.exit(1);
+	}
+	*/
+}
+
+function Shutdown() {
+	RemoveUnconfirmedTransactions(unconfirmedTransactions);
 }
 
 function Undo(block) {
@@ -217,24 +299,7 @@ function Undo(block) {
 		addedUnconfirmedTransactions.add(transaction);
 	}
 	if (addedUnconfirmedTransactions.size() > 0) {
-		transactionListeners.notify(addedUnconfirmedTransactions, TransactionProcessor.Event.ADDED_UNCONFIRMED_TRANSACTIONS);
-	}
-	*/
-}
-
-function ApplyUnconfirmed(unapplied) {
-	throw new Error('Not implemented');
-	/*
-	List<Transaction> removedUnconfirmedTransactions = new ArrayList<>();
-	for (Long transactionId : unapplied) {
-		TransactionImpl transaction = unconfirmedTransactions.get(transactionId);
-		if (! transaction.applyUnconfirmed()) {
-			unconfirmedTransactions.remove(transactionId);
-			removedUnconfirmedTransactions.add(transaction);
-		}
-	}
-	if (removedUnconfirmedTransactions.size() > 0) {
-		transactionListeners.notify(removedUnconfirmedTransactions, TransactionProcessor.Event.REMOVED_UNCONFIRMED_TRANSACTIONS);
+		transactionListeners.Notify(TransactionProcessor.Event.ADDED_UNCONFIRMED_TRANSACTIONS, addedUnconfirmedTransactions);
 	}
 	*/
 }
@@ -266,113 +331,31 @@ function UpdateUnconfirmedTransactions(block) {
 	}
 
 	if (removedUnconfirmedTransactions.size() > 0) {
-		transactionListeners.notify(removedUnconfirmedTransactions, TransactionProcessor.Event.REMOVED_UNCONFIRMED_TRANSACTIONS);
+		transactionListeners.Notify(TransactionProcessor.Event.REMOVED_UNCONFIRMED_TRANSACTIONS, removedUnconfirmedTransactions);
 	}
 	if (addedConfirmedTransactions.size() > 0) {
-		transactionListeners.notify(addedConfirmedTransactions, TransactionProcessor.Event.ADDED_CONFIRMED_TRANSACTIONS);
+		transactionListeners.Notify(TransactionProcessor.Event.ADDED_CONFIRMED_TRANSACTIONS, addedConfirmedTransactions);
 	}
 	*/
 }
 
-function RemoveUnconfirmedTransactions(transactions) {
-	throw new Error('Not implemented');
-	/*
-	List<Transaction> removedList = new ArrayList<>();
-	for (TransactionImpl transaction : transactions) {
-		if (unconfirmedTransactions.remove(transaction.getId()) != null) {
-			transaction.undoUnconfirmed();
-			removedList.add(transaction);
-		}
-	}
-	transactionListeners.notify(removedList, Event.REMOVED_UNCONFIRMED_TRANSACTIONS);
-	*/
-}
 
-function Shutdown() {
-	throw new Error('Not implemented');
-	/*
-	removeUnconfirmedTransactions(new ArrayList<>(unconfirmedTransactions.values()));
-	*/
-}
-
-function ProcessTransactions(transactions, sendToPeers) {
-	throw new Error('Not implemented');
-	/*
-	List<Transaction> sendToPeersTransactions = new ArrayList<>();
-	List<Transaction> addedUnconfirmedTransactions = new ArrayList<>();
-	List<Transaction> addedDoubleSpendingTransactions = new ArrayList<>();
-
-	for (TransactionImpl transaction : transactions) {
-
-		try {
-
-			int curTime = Convert.getEpochTime();
-			if (transaction.getTimestamp() > curTime + 15 || transaction.getExpiration() < curTime
-					|| transaction.getDeadline() > 1440) {
-				continue;
-			}
-
-			synchronized (BlockchainImpl.getInstance()) {
-				Long id = transaction.getId();
-				if (TransactionDb.hasTransaction(id) || unconfirmedTransactions.containsKey(id)
-						|| ! transaction.verify()) {
-					continue;
-				}
-
-				if (transaction.applyUnconfirmed()) {
-					if (sendToPeers) {
-						if (nonBroadcastedTransactions.containsKey(id)) {
-							Logger.logDebugMessage("Received back transaction " + transaction.getStringId()
-									+ " that we generated, will not forward to peers");
-							nonBroadcastedTransactions.remove(id);
-						} else {
-							sendToPeersTransactions.add(transaction);
-						}
-					}
-					unconfirmedTransactions.put(id, transaction);
-					addedUnconfirmedTransactions.add(transaction);
-				} else {
-					addedDoubleSpendingTransactions.add(transaction);
-				}
-			}
-
-		} catch (RuntimeException e) {
-			Logger.logMessage("Error processing transaction", e);
-		}
-
-	}
-
-	if (sendToPeersTransactions.size() > 0) {
-		Peers.sendToSomePeers(sendToPeersTransactions);
-	}
-
-	if (addedUnconfirmedTransactions.size() > 0) {
-		transactionListeners.notify(addedUnconfirmedTransactions, Event.ADDED_UNCONFIRMED_TRANSACTIONS);
-	}
-	if (addedDoubleSpendingTransactions.size() > 0) {
-		transactionListeners.notify(addedDoubleSpendingTransactions, Event.ADDED_DOUBLESPENDING_TRANSACTIONS);
-	}
-	return addedUnconfirmedTransactions;
-	*/
-}
-
-
-exports.Event = Event;
 exports.AddListener = AddListener;
+exports.Apply = Apply;
+exports.ApplyUnconfirmed = ApplyUnconfirmed;
+exports.Broadcast = Broadcast;
+exports.Clear = Clear;
+exports.Event = Event;
 exports.GetAllUnconfirmedTransactions = GetAllUnconfirmedTransactions;
 exports.GetUnconfirmedTransaction = GetUnconfirmedTransaction;
-exports.RemoveListener = RemoveListener;
-exports.NewTransaction = NewTransaction;
-exports.Broadcast = Broadcast;
+exports.Init = Init;
+exports.ParseTransaction = ParseTransaction;
 exports.ProcessPeerTransactions1 = ProcessPeerTransactions1;
 exports.ProcessPeerTransactions2 = ProcessPeerTransactions2;
-exports.ParseTransaction = ParseTransaction;
-exports.Clear = Clear;
-exports.Apply = Apply;
-exports.Undo = Undo;
-exports.ApplyUnconfirmed = ApplyUnconfirmed;
-exports.UndoAllUnconfirmed = UndoAllUnconfirmed;
-exports.UpdateUnconfirmedTransactions = UpdateUnconfirmedTransactions;
+exports.ProcessTransactions = ProcessTransactions;
+exports.RemoveListener = RemoveListener;
 exports.RemoveUnconfirmedTransactions = RemoveUnconfirmedTransactions;
 exports.Shutdown = Shutdown;
-exports.ProcessTransactions = ProcessTransactions;
+exports.Undo = Undo;
+exports.UndoAllUnconfirmed = UndoAllUnconfirmed;
+exports.UpdateUnconfirmedTransactions = UpdateUnconfirmedTransactions;

@@ -1,15 +1,21 @@
+/*!
+ * LibreMoney 0.0
+ * Copyright(c) 2014 LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-var LmTrType = require(__dirname + '/../Transactions/TransactionType');
+var Constants = require(__dirname + '/../Constants');
+var Transactions = require(__dirname + '/../Transactions');
 
 
 var GroupCreateTrType;
 
 
 function CreateGroupTrType() {
-	var obj = LmTrType.CreateTransactionType();
+	var obj = Transactions.CreateTransactionType();
 
 	function GetType() {
-		return LmTrType.TYPE_Group;
+		return Constants.TYPE_Group;
 	}
 
 	obj.GetType = GetType;
@@ -24,7 +30,7 @@ function CreateGroupCreateTrType() {
 	}
 
 	function GetSubtype() {
-		return LmTrType.SUBTYPE_GROUP_CREATE;
+		return Constants.SUBTYPE_GROUP_CREATE;
 	}
 
 	function DoLoadAttachment_Buf(Transaction, Buffer) {

@@ -4,18 +4,18 @@
  * CC0 license
  */
 
-var Constants = require(__dirname + '/../../Constants');
-var Convert = require(__dirname + '/../../Util/Convert');
-var Crypto = require(__dirname + '/../../Crypto/Crypto');
-var JsonResponses = require(__dirname + '/../JsonResponses');
-var Logger = require(__dirname + '/../../Logger').GetLogger(module);
-var ParameterParser = require(__dirname + '/../ParameterParser');
-var TransactionProcessor = require(__dirname + '/../../TransactionProcessor');
+var Constants = require(__dirname + '/../Constants');
+var Convert = require(__dirname + '/../Util/Convert');
+var Crypto = require(__dirname + '/../Crypto/Crypto');
+var JsonResponses = require(__dirname + '/JsonResponses');
+var Logger = require(__dirname + '/../Logger').GetLogger(module);
+var ParameterParser = require(__dirname + '/ParameterParser');
+var TransactionProcessor = require(__dirname + '/../TransactionProcessor');
 
 
+/*
 var commonParameters = ["secretPhrase", "publicKey", "feeMilliLm", "deadline", "referencedTransactionFullHash", "broadcast"];
-
-
+// deprecated
 function AddCommonParameters(parameters) {
 	var result = [];
 	for (var i = 0; i < commonParameters.length; i++) { result.push(commonParameters); }
@@ -23,19 +23,20 @@ function AddCommonParameters(parameters) {
 	//System.arraycopy(commonParameters, 0, result, parameters.length, commonParameters.length);
 	return result;
 }
+*/
 
 /*
-final JSONStreamAware createTransaction(req, senderAccount, attachment)
-	throws NxtException {
+final JSONStreamAware createTransaction(req, senderAccount, attachment) {
 	return createTransaction(req, senderAccount, Genesis.CREATOR_ID, 0, attachment);
 }
+}
 */
+// TODO: secretPhrase -> signature
 function CreateTransaction(req, res, senderAccount, recipientId, amountMilliLm, attachment) {
-	/*
-	CreateTransaction(String... parameters) {
-		super(addCommonParameters(parameters));
-	}
-	*/
+	if (!recipientId)
+		recipientId = Genesis.CREATOR_ID;
+	if (!amountMilliLm)
+		amountMilliLm = 0;
 
 	var deadlineValue = req.query.deadline;
 	var referencedTransactionFullHash = Convert.EmptyToNull(req.query.referencedTransactionFullHash);
@@ -46,10 +47,10 @@ function CreateTransaction(req, res, senderAccount, recipientId, amountMilliLm, 
 
 	if (!secretPhrase && !publicKeyValue) {
 		res.send(JsonResponses.MissingSecretPhrase);
-		return;
+		return false;
 	} else if (!deadlineValue) {
 		res.send(JsonResponses.MissingDeadline);
-		return;
+		return false;
 	}
 
 	var deadline;
@@ -57,46 +58,48 @@ function CreateTransaction(req, res, senderAccount, recipientId, amountMilliLm, 
 		deadline = parseInt(deadlineValue); // parseShort
 		if (deadline < 1 || deadline > 1440) {
 			res.send(JsonResponses.IncorrectDeadline);
-			return;
+			return false;
 		}
 	} catch (e) {
 		Logger.error(e);
 		res.send(JsonResponses.IncorrectDeadline);
-		return;
+		return false;
 	}
 
 	var feeMilliLm = ParameterParser.GetFeeMilliLm(req);
 	if (feeMilliLm < Constants.OneLm/*minimumFeeMilliLm()*/) {
 		res.send(JsonResponses.IncorrectFee);
-		return;
+		return false;
 	}
 
 	try {
 		if (Convert.SafeAdd(amountMilliLm, feeMilliLm) > senderAccount.GetUnconfirmedBalanceMilliLm()) {
 			res.send(JsonResponses.NotEnoughFunds);
-			return;
+			return false;
 		}
 	} catch (e) {
 		res.send(JsonResponses.NotEnoughFunds);
-		return;
+		return false;
 	}
 
 	if (referencedTransactionId != null) {
 		res.send(JsonResponses.IncorrectReferencedTransaction);
-		return;
+		return false;
 	}
 
 	// shouldn't try to get publicKey from senderAccount as it may have not been set yet
 	var publicKey = secretPhrase != null ? Crypto.GetPublicKey(secretPhrase) : Convert.ParseHexString(publicKeyValue);
 
 	try {
-		if (!attachment) {
-			var transaction = TransactionProcessor.NewTransaction(deadline, publicKey, recipientId,
-						amountMilliLm, feeMilliLm, referencedTransactionFullHash)
-		} else {
-			var transaction = TransactionProcessor.NewTransaction(deadline, publicKey, recipientId,
-						amountMilliLm, feeMilliLm, referencedTransactionFullHash, attachment);
-		}
+		var transaction = Transactions.NewOrdinaryPaymentTransaction({
+			deadline: deadline,
+			senderPublicKey: publicKey,
+			recipientId: recipientId,
+			amountMilliLm: amountMilliLm,
+			feeMilliLm: feeMilliLm,
+			referencedTransactionFullHash: referencedTransactionFullHash,
+			attachment: attachment
+		});
 
 		if (secretPhrase != null) {
 			transaction.Sign(secretPhrase);
@@ -111,7 +114,7 @@ function CreateTransaction(req, res, senderAccount, recipientId, amountMilliLm, 
 				response.broadcasted = false;
 			}
 		} else {
-			response.put("broadcasted", false);
+			response.broadcasted = false;
 		}
 		response.unsignedTransactionBytes = Convert.ToHexString(transaction.GetUnsignedBytes());
 	} catch (e) {
@@ -119,18 +122,8 @@ function CreateTransaction(req, res, senderAccount, recipientId, amountMilliLm, 
 		response.error = e;
 	}
 	res.send(response);
-}
-
-/*
-final boolean requirePost() {
 	return true;
 }
-*/
 
-/*
-long minimumFeeMilliLm() {
-	return Constants.OneLm;
-}
-*/
 
 module.exports = CreateTransaction;

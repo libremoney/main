@@ -5,33 +5,24 @@
  */
 
 /*
-import nxt.peer.Peer;
 import nxt.util.Observable;
-import org.json.simple.JSONObject;
-*/
-/*
-import nxt.crypto.Crypto;
 import nxt.peer.Peer;
 import nxt.peer.Peers;
 import nxt.util.Convert;
 import nxt.util.DbIterator;
-import nxt.util.JSON;
-import nxt.util.Listener;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONStreamAware;
 */
 
 var GetMoreBlocksThread = require(__dirname + '/GetMoreBlocksThread');
 var Config = require(__dirname + '/../Config');
+var Crypto = require(__dirname + '/../Crypto/Crypto');
 var Blockchain = require(__dirname + '/../Blockchain');
-var BlockDb = require(__dirname + '/../BlockDb');
+var Blocks = require(__dirname + '/../Blocks');
 var Constants = require(__dirname + '/../Constants');
 var Genesis = require(__dirname + '/../Genesis');
 var Listeners = require(__dirname + '/../Util/Listeners');
 var Logger = require(__dirname + '/../Logger').GetLogger(module);
-var ThreadPool = require(__dirname + '/../Util/ThreadPool');
-//var Transaction = require(__dirname + '/../Transaction');
+var ThreadPool = require(__dirname + '/../ThreadPool');
+var Transactions = require(__dirname + '/../Transactions');
 //var TransactionType = require(__dirname + '/LmTransactionType');
 var TransactionProcessor = require(__dirname + '/../TransactionProcessor');
 
@@ -74,7 +65,8 @@ public static class BlockOutOfOrderException extends BlockNotAcceptedException {
 
 
 
-var CHECKSUM_TRANSPARENT_FORGING = new Array(27, -54, -59, -98, 49, -42, 48, -68, -112, 49, 41, 94, -41, 78, -84, 27, -87, -22, -28, 36, -34, -90, 112, -50, -9, 5, 89, -35, 80, -121, -128, 112);
+var CHECKSUM_TRANSPARENT_FORGING = new Array(27, -54, -59, -98, 49, -42, 48, -68, -112, 49, 41, 94,
+	-41, 78, -84, 27, -87, -22, -28, 36, -34, -90, 112, -50, -9, 5, 89, -35, 80, -121, -128, 112);
 
 var blockListeners = new Listeners();
 var lastBlockchainFeeder;
@@ -84,60 +76,68 @@ var validateAtScan;
 
 
 function AddBlock(block) {
-	throw new Error('Not implementted');
-	/*
-	try (Connection con = Db.getConnection()) {
-		try {
-			BlockDb.saveBlock(con, block);
-			blockchain.setLastBlock(block);
-			con.commit();
-		} catch (SQLException e) {
-			con.rollback();
-			throw e;
-		}
-	} catch (SQLException e) {
-		throw new RuntimeException(e.toString(), e);
-	}
-	*/
+	Blocks.SaveBlock(block);
+	Blockchain.SetLastBlock(block);
 }
 
-function AddGenesisBlock() {
-	if (BlockDb.HasBlock(Genesis.GENESIS_BLOCK_ID)) {
-		Logger.info("Genesis block already in database");
-		return;
-	}
-	Logger.info("Genesis block not in database, starting from scratch");
-	//try {
-		/*
-		var transactionsMap = new Array(); //TreeMap<>();
+function AddGenesisBlock(callback) {
+	Blocks.HasBlock(Genesis.GENESIS_BLOCK_ID, function(err, res) {
+		Logger.info('AddGenesisBlock: err='+err+' res='+res);
+		if (res) {
+			Logger.info("AddGenesisBlock: Genesis block already in database");
+			return;
+		} else {
+			Logger.info("AddGenesisBlock: Genesis block not in database, starting from scratch");
+			var transactionsMap = [];
 
-		for (var i = 0; i < Genesis.GenesisRecipients.length; i++) {
-			var transaction = new LmTransaction(LmTransactionType.Payment.Ordinary, 0, 0, Genesis.CreatorPublicKey,
-					Genesis.GenesisRecipients[i], Genesis.GENESIS_AMOUNTS[i] * Constants.OneLm, 0, (String)null, Genesis.GENESIS_SIGNATURES[i]);
-			transactionsMap.put(transaction.getId(), transaction);
+			for (var i = 0; i < Genesis.Recipients.length; i++) {
+				var transaction = Transactions.NewOrdinaryPaymentTransaction({
+					timestamp: 0,
+					deadline: 0,
+					senderPublicKey: Genesis.CreatorPublicKey,
+					recipientId: Genesis.Recipients[i],
+					amountMilliLm: Genesis.Amounts[i] * Constants.OneLm,
+					feeMilliLm: 0,
+					referencedTransactionFullHash: null,
+					signature: Genesis.Signatures[i]
+				});
+				var id = transaction.GetId();
+				transactionsMap[id] = transaction;
+			}
+
+			var digest = Crypto.Sha256();
+			for (var id in transactionsMap) {
+				var transaction = transactionsMap[id];
+				digest.update(transaction.GetBytes());
+			}
+
+			var genesisBlock = Blocks.NewBlock({
+				version: -1,
+				timestamp: 0,
+				previousBlockId: null,
+				totalAmountMilliLm: Constants.MaxBalanceMilliLm,
+				totalFeeMilliLm: 0,
+				payloadLength: transactionsMap.length * 128,
+				payloadHash: digest.digest(),
+				generatorPublicKey: Genesis.CreatorPublicKey,
+				generationSignature: null, //new byte[64],
+				blockSignature: Genesis.BlockSignature,
+				previousBlockHash: null,
+				transactions: transactionsMap
+			});
+			genesisBlock.SetPrevious(null);
+			AddBlock(genesisBlock);
 		}
+	});
 
-		MessageDigest digest = Crypto.sha256();
-		for (Transaction transaction : transactionsMap.values()) {
-			digest.update(transaction.getBytes());
-		}
-
-		BlockImpl genesisBlock = new BlockImpl(-1, 0, null, Constants.MaxBalanceMilliLm, 0, transactionsMap.size() * 128, digest.digest(),
-				Genesis.CreatorPublicKey, new byte[64], Genesis.GENESIS_BLOCK_SIGNATURE, null, new ArrayList<>(transactionsMap.values()));
-
-		genesisBlock.setPrevious(null);
-
-		addBlock(genesisBlock);
-		*/
 	//} catch (e) {
 	//	Logger.logMessage(e.getMessage());
 	//	throw new RuntimeException(e.toString(), e);
 	//}
-	throw new Error('Not implementted');
 }
 
-function AddListener(listener, eventType) {
-	return blockListeners.AddListener(listener, eventType);
+function AddListener(eventType, listener) {
+	return blockListeners.AddListener(eventType, listener);
 }
 
 function CalculateTransactionsChecksum() {
@@ -158,33 +158,32 @@ function CalculateTransactionsChecksum() {
 	*/
 }
 
-function Init() {
+function Init(callback) {
 	validateAtScan = Config.GetBooleanProperty("forceValidate");
-	blockListeners.AddListener(function(block) {
-		if (block.GetHeight() % 5000 == 0) {
+	blockListeners.AddListener(Event.BLOCK_SCANNED, function(block) {
+		if (block.GetHeight() % 1 == 0) {
 			Logger.info("processed block " + block.GetHeight());
 		}
-	}, Event.BLOCK_SCANNED);
-
-	ThreadPool.RunBeforeStart(function() {
-		AddGenesisBlock();
-		Scan();
 	});
 
-	ThreadPool.ScheduleThread(GetMoreBlocksThread, 1);
+	ThreadPool.RunBeforeStart(function() {
+		AddGenesisBlock(function() {
+			Scan();
+		});
+	});
+
+	//ThreadPool.ScheduleThread(GetMoreBlocksThread.Run, 1000, 'GetMoreBlocksThread');
+
+	if (callback) callback(null);
 }
 
 function FullReset() {
-	throw new Error('Not implementted');
-	/*
-	synchronized (blockchain) {
-		Logger.logMessage("Deleting blockchain...");
-		//BlockDb.deleteBlock(Genesis.GENESIS_BLOCK_ID); // fails with stack overflow in H2
-		BlockDb.deleteAll();
-		addGenesisBlock();
-		scan();
-	}
-	*/
+	Logger.info("Deleting blockchain...");
+	//Blocks.deleteBlock(Genesis.GENESIS_BLOCK_ID); // fails with stack overflow in H2
+	Blocks.DeleteAll();
+	AddGenesisBlock(function() {
+		Scan();
+	});
 }
 
 function GenerateBlock(secretPhrase) {
@@ -286,7 +285,7 @@ function GenerateBlock(secretPhrase) {
 
 	try {
 		pushBlock(block);
-		blockListeners.notify(block, Event.BLOCK_GENERATED);
+		blockListeners.Notify(Event.BLOCK_GENERATED, block);
 		Logger.logDebugMessage("Account " + Convert.toUnsignedLong(block.getGeneratorId()) + " generated block " + block.getStringId());
 	} catch (TransactionNotAcceptedException e) {
 		Logger.logDebugMessage("Generate block failed: " + e.getMessage());
@@ -300,17 +299,11 @@ function GenerateBlock(secretPhrase) {
 }
 
 function GetLastBlockchainFeeder() {
-	throw new Error('Not implementted');
-	/*
 	return lastBlockchainFeeder;
-	*/
 }
 
 function GetLastBlockchainFeederHeight() {
-	throw new Error('Not implementted');
-	/*
 	return lastBlockchainFeederHeight;
-	*/
 }
 
 function HasAllReferencedTransactions(transaction, timestamp, count) {
@@ -319,7 +312,7 @@ function HasAllReferencedTransactions(transaction, timestamp, count) {
 	if (transaction.getReferencedTransactionFullHash() == null) {
 		return timestamp - transaction.getTimestamp() < 60 * 1440 * 60 && count < 10;
 	}
-	transaction = TransactionDb.findTransactionByFullHash(transaction.getReferencedTransactionFullHash());
+	transaction = Transactions.FindTransactionByFullHash(transaction.getReferencedTransactionFullHash());
 	return transaction != null && hasAllReferencedTransactions(transaction, timestamp, count + 1);
 	*/
 }
@@ -364,7 +357,7 @@ function PushBlock(block) {
 				throw new BlockOutOfOrderException("Invalid timestamp: " + block.getTimestamp()
 						+ " current time is " + curTime + ", previous block timestamp is " + previousLastBlock.getTimestamp());
 			}
-			if (block.getId().equals(Long.valueOf(0L)) || BlockDb.hasBlock(block.getId())) {
+			if (block.getId().equals(Long.valueOf(0L)) || Blocks.HasBlock(block.GetId(), xxxx)) {
 				throw new BlockNotAcceptedException("Duplicate block or invalid id");
 			}
 			if (! block.verifyGenerationSignature()) {
@@ -393,7 +386,7 @@ function PushBlock(block) {
 								+ " for transaction " + transaction.getStringId() + ", current time is " + curTime
 								+ ", block timestamp is " + block.getTimestamp(), transaction);
 					}
-					if (TransactionDb.hasTransaction(transaction.getId())) {
+					if (Transactions.HasTransaction(transaction.getId())) {
 						throw new TransactionNotAcceptedException("Transaction " + transaction.getStringId()
 								+ " is already in the blockchain", transaction);
 					}
@@ -452,15 +445,15 @@ function PushBlock(block) {
 				transactionProcessor.applyUnconfirmed(unappliedUnconfirmed);
 			}
 
-			blockListeners.notify(block, Event.BEFORE_BLOCK_APPLY);
+			blockListeners.Notify(Event.BEFORE_BLOCK_APPLY, block);
 			transactionProcessor.apply(block);
-			blockListeners.notify(block, Event.AFTER_BLOCK_APPLY);
-			blockListeners.notify(block, Event.BLOCK_PUSHED);
+			blockListeners.Notify(Event.AFTER_BLOCK_APPLY, block);
+			blockListeners.Notify(Event.BLOCK_PUSHED, block);
 			transactionProcessor.updateUnconfirmedTransactions(block);
 
 		} catch (RuntimeException e) {
 			Logger.logMessage("Error pushing block", e);
-			BlockDb.deleteBlocksFrom(block.getId());
+			Blocks.deleteBlocksFrom(block.getId());
 			scan();
 			throw new BlockNotAcceptedException(e.toString());
 		}
@@ -474,24 +467,20 @@ function PushBlock(block) {
 }
 
 function PopLastBlock() {
-	throw new Error('Not implementted');
-	/*
-	try {
-		synchronized (blockchain) {
-			BlockImpl block = blockchain.getLastBlock();
-			Logger.logDebugMessage("Will pop block " + block.getStringId() + " at height " + block.getHeight());
-			if (block.getId().equals(Genesis.GENESIS_BLOCK_ID)) {
-				throw new RuntimeException("Cannot pop off genesis block");
-			}
-			BlockImpl previousBlock = BlockDb.findBlock(block.getPreviousBlockId());
-			blockListeners.notify(block, Event.BEFORE_BLOCK_UNDO);
-			blockchain.setLastBlock(block, previousBlock);
-			transactionProcessor.undo(block);
-			BlockDb.deleteBlocksFrom(block.getId());
-			blockListeners.notify(block, Event.BLOCK_POPPED);
-			return previousBlock.getId();
-		} // synchronized
+	var block = Blockchain.GetLastBlock();
+	Logger.LogDebugMessage("Will pop block " + block.GetStringId() + " at height " + block.GetHeight());
+	if (block.GetId() == Genesis.GENESIS_BLOCK_ID) {
+		throw new Error("Cannot pop off genesis block");
+	}
+	var previousBlock = Blocks.FindBlock(block.GetPreviousBlockId());
+	blockListeners.Notify(Event.BEFORE_BLOCK_UNDO, block);
+	Blockchain.SetLastBlock(block, previousBlock);
+	TransactionProcessor.Undo(block);
+	Blocks.DeleteBlocksFrom(block.getId());
+	blockListeners.Notify(Event.BLOCK_POPPED, block);
+	return previousBlock.GetId();
 
+	/*
 	} catch (RuntimeException e) {
 		Logger.logDebugMessage("Error popping last block: " + e.getMessage());
 		throw new TransactionType.UndoNotSupportedException(e.getMessage());
@@ -499,11 +488,8 @@ function PopLastBlock() {
 	*/
 }
 
-function RemoveListener(listener, eventType) {
-	throw new Error('Not implementted');
-	/*
-	return blockListeners.removeListener(listener, eventType);
-	*/
+function RemoveListener(eventType, listener) {
+	return blockListeners.RemoveListener(eventType, listener);
 }
 
 function ParseBlock(blockData) {
@@ -536,80 +522,79 @@ function ParseBlock(blockData) {
 }
 
 function Scan() {
-	throw new Error('Not implementted');
+	isScanning = true;
+	Logger.LogMessage("Scanning blockchain...");
+	if (validateAtScan) {
+		Logger.LogDebugMessage("Also verifying signatures and validating transactions...");
+	}
+	Core.Clear();
 	/*
-	synchronized (blockchain) {
-		isScanning = true;
-		Logger.logMessage("Scanning blockchain...");
-		if (validateAtScan) {
-			Logger.logDebugMessage("Also verifying signatures and validating transactions...");
-		}
-		Account.clear();
-		Alias.clear();
-		Asset.clear();
-		Order.clear();
-		Poll.clear();
-		Trade.clear();
-		Vote.clear();
-		DigitalGoodsStore.clear();
-		transactionProcessor.clear();
-		Generator.clear();
-		blockchain.setLastBlock(BlockDb.findBlock(Genesis.GENESIS_BLOCK_ID));
-		Account.addOrGetAccount(Genesis.CREATOR_ID).apply(Genesis.CreatorPublicKey, 0);
-		try (Connection con = Db.getConnection(); PreparedStatement pstmt = con.prepareStatement("SELECT * FROM block ORDER BY db_id ASC")) {
-			Long currentBlockId = Genesis.GENESIS_BLOCK_ID;
-			BlockImpl currentBlock;
-			ResultSet rs = pstmt.executeQuery();
-			try {
-				while (rs.next()) {
-					currentBlock = BlockDb.loadBlock(con, rs);
-					if (! currentBlock.getId().equals(currentBlockId)) {
-						throw new NxtException.ValidationException("Database blocks in the wrong order!");
-					}
-					if (validateAtScan && ! currentBlockId.equals(Genesis.GENESIS_BLOCK_ID)) {
-						if (!currentBlock.verifyBlockSignature() || !currentBlock.verifyGenerationSignature()) {
-							throw new NxtException.ValidationException("Invalid block signature");
-						}
-						if (! verifyVersion(currentBlock, blockchain.getHeight())) {
-							throw new NxtException.ValidationException("Invalid block version");
-						}
-						for (TransactionImpl transaction : currentBlock.getTransactions()) {
-							if (!transaction.verify()) {
-								throw new NxtException.ValidationException("Invalid transaction signature");
-							}
-							transaction.validateAttachment();
-						}
-					}
-					for (TransactionImpl transaction : currentBlock.getTransactions()) {
-						if (! transaction.applyUnconfirmed()) {
-							throw new TransactionNotAcceptedException("Double spending transaction: "
-									+ transaction.getStringId(), transaction);
-						}
-					}
-					blockchain.setLastBlock(currentBlock);
-					blockListeners.notify(currentBlock, Event.BEFORE_BLOCK_APPLY);
-					currentBlock.apply();
-					for (TransactionImpl transaction : currentBlock.getTransactions()) {
-						transaction.apply();
-					}
-					blockListeners.notify(currentBlock, Event.AFTER_BLOCK_APPLY);
-					blockListeners.notify(currentBlock, Event.BLOCK_SCANNED);
-					currentBlockId = currentBlock.getNextBlockId();
+xx
+	Alias.clear();
+	Asset.clear();
+	Order.clear();
+	Poll.clear();
+	Trade.clear();
+	Vote.clear();
+	DigitalGoodsStore.clear();
+	transactionProcessor.clear();
+	Generator.clear();
+	blockchain.setLastBlock(Blocks.FindBlock(Genesis.GENESIS_BLOCK_ID));
+	Account.addOrGetAccount(Genesis.CREATOR_ID).apply(Genesis.CreatorPublicKey, 0);
+	try (Connection con = Db.getConnection(); PreparedStatement pstmt = con.prepareStatement("SELECT * FROM block ORDER BY db_id ASC")) {
+		Long currentBlockId = Genesis.GENESIS_BLOCK_ID;
+		BlockImpl currentBlock;
+		ResultSet rs = pstmt.executeQuery();
+		try {
+			while (rs.next()) {
+				currentBlock = Blocks.LoadBlock(con, rs);
+				if (! currentBlock.getId().equals(currentBlockId)) {
+					throw new NxtException.ValidationException("Database blocks in the wrong order!");
 				}
-			} catch (NxtException|RuntimeException e) {
-				Logger.logDebugMessage(e.toString(), e);
-				Logger.logDebugMessage("Applying block " + Convert.toUnsignedLong(currentBlockId) + " failed, deleting from database");
-				BlockDb.deleteBlocksFrom(currentBlockId);
-				scan();
+				if (validateAtScan && ! currentBlockId.equals(Genesis.GENESIS_BLOCK_ID)) {
+					if (!currentBlock.verifyBlockSignature() || !currentBlock.verifyGenerationSignature()) {
+						throw new NxtException.ValidationException("Invalid block signature");
+					}
+					if (! verifyVersion(currentBlock, blockchain.getHeight())) {
+						throw new NxtException.ValidationException("Invalid block version");
+					}
+					for (TransactionImpl transaction : currentBlock.getTransactions()) {
+						if (!transaction.verify()) {
+							throw new NxtException.ValidationException("Invalid transaction signature");
+						}
+						transaction.validateAttachment();
+					}
+				}
+				for (TransactionImpl transaction : currentBlock.getTransactions()) {
+					if (! transaction.applyUnconfirmed()) {
+						throw new TransactionNotAcceptedException("Double spending transaction: "
+								+ transaction.getStringId(), transaction);
+					}
+				}
+				blockchain.setLastBlock(currentBlock);
+				blockListeners.Notify(Event.BEFORE_BLOCK_APPLY, currentBlock);
+				currentBlock.apply();
+				for (TransactionImpl transaction : currentBlock.getTransactions()) {
+					transaction.apply();
+				}
+				blockListeners.Notify(Event.AFTER_BLOCK_APPLY, currentBlock);
+				blockListeners.Notify(Event.BLOCK_SCANNED, currentBlock);
+				currentBlockId = currentBlock.getNextBlockId();
 			}
-		} catch (SQLException e) {
-			throw new RuntimeException(e.toString(), e);
+		} catch (NxtException|RuntimeException e) {
+			Logger.logDebugMessage(e.toString(), e);
+			Logger.logDebugMessage("Applying block " + Convert.toUnsignedLong(currentBlockId) + " failed, deleting from database");
+			Blocks.DeleteBlocksFrom(currentBlockId);
+			scan();
 		}
-		validateAtScan = false;
-		Logger.logMessage("...done");
-		isScanning = false;
-	} // synchronized
+	} catch (SQLException e) {
+		throw new RuntimeException(e.toString(), e);
+	}
+	validateAtScan = false;
+	Logger.logMessage("...done");
+	isScanning = false;
 	*/
+	throw new Error('Not implementted');
 }
 
 function ValidateAtNextScan() {
@@ -638,9 +623,3 @@ exports.IsScanning = IsScanning;
 exports.ProcessPeerBlock = ProcessPeerBlock;
 exports.RemoveListener = RemoveListener;
 exports.ValidateAtNextScan = ValidateAtNextScan;
-
-
-// ---- Init ----
-
-//Init();
-//Logger.info('init ok');

@@ -1,3 +1,12 @@
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
+var Constants = require(__dirname + '/../Constants');
+
+
 function TransactionType_Messaging() {
 	/*
 	private Messaging() {}
@@ -403,3 +412,10 @@ function TransactionType_Messaging() {
 
 	*/
 }
+
+function Init() {
+	// xxxx
+}
+
+
+exports.Init = Init;

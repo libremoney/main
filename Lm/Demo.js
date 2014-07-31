@@ -1,5 +1,5 @@
 /*!
- * LibreMoney Core Library 0.0
+ * LibreMoney 0.0
  * Copyright(c) 2014 LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -8,29 +8,119 @@
 //var LmAlias = require(__dirname + '/LmAlias');
 //var LmAliases = require(__dirname + '/LmAliases');
 //var LmAttachment = require(__dirname + '/LmAttachment');
-var LmAttachmentGroupCreate = require(__dirname + '/Groups/Attachment_GroupCreate');
-var LmAttachmentUserCreate = require(__dirname + '/Users/Attachment_UserCreate');
+var AttachmentGroupCreate = require(__dirname + '/Groups/Attachment_GroupCreate');
 var Blocks = require(__dirname + '/Blocks');
 var LmBlock = require(__dirname + '/Blocks/Block');
 //var LmBlockchainProcessor = require(__dirname + '/LmBlockchainProcessor');
-var Groups = require(__dirname + '/Groups');
-//var LmConstants = require(__dirname + '/LmConstants');
-//var LmDb = require(__dirname + '/LmDb');
-//var LmDbVersion = require(__dirname + '/LmDbVersion');
+var Constants = require(__dirname + '/Constants');
+var Convert = require(__dirname + '/Util/Convert');
+var Crypto = require(__dirname + '/Crypto/Crypto');
+var Db = require(__dirname + '/Db');
 //var LmGenerator = require(__dirname + '/LmGenerator');
+var Groups = require(__dirname + '/Groups');
+var JsonResponses = require(__dirname + '/Server/JsonResponses');
 var Logger = require(__dirname + '/Logger').GetLogger(module);
+var ParameterParser = require(__dirname + '/Server/ParameterParser');
 var Projects = require(__dirname + '/Projects');
+var TransactionProcessor = require(__dirname + '/TransactionProcessor');
 var Transactions = require(__dirname + '/Transactions');
-var LmTrType = require(__dirname + '/Transactions/TransactionType');
+//var LmTrType = require(__dirname + '/Transactions/TransactionType');
 //var LmTrTypeAccountControl = require(__dirname + '/LmTransactionType_AccountControl');
 //var LmTrTypeColoredCoins = require(__dirname + '/LmTransactionType_ColoredCoins');
 var LmTrTypeGroup = require(__dirname + '/Groups/TransactionType_Group');
 //var LmTrTypeDigitalGoods = require(__dirname + '/LmTransactionType_DigitalGoods');
 //var LmTrTypeMessaging = require(__dirname + '/LmTransactionType_Messaging');
 //var LmTrTypePayment = require(__dirname + '/LmTransactionType_Payment');
-var LmTrTypeUser = require(__dirname + '/Users/TransactionType_User');
 var Users = require(__dirname + '/Users');
 
+
+/*
+data.senderAccount
+data.recipientId
+data.amountMilliLm
+data.deadline
+data.referencedTransactionFullHash
+data.referencedTransaction
+data.publicKey
+data.broadcast
+data.feeMilliLm
+data.attachment
+data.signature = Crypto.Sign(GetBytes(), data.secretPhrase);
+*/
+function CreateTransaction2(data) {
+	if (!data.recipientId)
+		data.recipientId = Genesis.CREATOR_ID;
+	if (!data.amountMilliLm)
+		data.amountMilliLm = 0;
+
+	var deadlineValue = data.deadline;
+	var referencedTransactionFullHash = Convert.EmptyToNull(data.referencedTransactionFullHash);
+	var referencedTransactionId = Convert.EmptyToNull(data.referencedTransaction);
+	var publicKeyValue = Convert.EmptyToNull(data.publicKey);
+	var broadcast = true; //!"false".equalsIgnoreCase(data.broadcast);
+
+	if (!publicKeyValue) {
+		return JsonResponses.MissingPublicKey;
+	} else if (!deadlineValue) {
+		return JsonResponses.MissingDeadline;
+	}
+
+	var deadline;
+	try {
+		deadline = parseInt(deadlineValue); // parseShort
+		if (deadline < 1 || deadline > 1440) {
+			return JsonResponses.IncorrectDeadline;
+		}
+	} catch (e) {
+		Logger.error(e);
+		return JsonResponses.IncorrectDeadline;
+	}
+
+	var feeValueMilliLm = Convert.EmptyToNull(data.feeMilliLm);
+	var feeMilliLm = ParameterParser.ParseFeeMilliLm(feeValueMilliLm);
+	if (feeMilliLm < Constants.OneLm/*minimumFeeMilliLm()*/) {
+		return JsonResponses.IncorrectFee;
+	}
+
+	try {
+		if (Convert.SafeAdd(data.amountMilliLm, feeMilliLm) > data.senderAccount.GetUnconfirmedBalanceMilliLm()) {
+			return JsonResponses.NotEnoughFunds;
+		}
+	} catch (e) {
+		return JsonResponses.NotEnoughFunds;
+	}
+
+	if (referencedTransactionId != null) {
+		return JsonResponses.IncorrectReferencedTransaction;
+	}
+
+	// shouldn't try to get publicKey from senderAccount as it may have not been set yet
+	var publicKey = Convert.ParseHexString(publicKeyValue);
+
+	try {
+		var transaction = TransactionProcessor.NewTransaction(deadline, publicKey, data.recipientId,
+					data.amountMilliLm, feeMilliLm, referencedTransactionFullHash, data.attachment, data.signature);
+
+		if (data.signature != null) {
+			response.transaction = transaction.GetStringId();
+			response.fullHash = transaction.GetFullHash();
+			response.transactionBytes = Convert.ToHexString(transaction.GetBytes());
+			response.signatureHash = Convert.ToHexString(Crypto.Sha256().digest(transaction.GetSignature()));
+			if (broadcast) {
+				TransactionProcessor.Broadcast(transaction);
+				response.broadcasted = true;
+			} else {
+				response.broadcasted = false;
+			}
+		} else {
+			response.broadcasted = false;
+		}
+		response.unsignedTransactionBytes = Convert.ToHexString(transaction.GetUnsignedBytes());
+	} catch (e) {
+		return JsonResponses.FEATURE_NOT_AVAILABLE;
+	}
+	return response;
+}
 
 function PrintTrInfo(Tr) {
 	Logger.info('---- Transaction info begin ----');
@@ -57,44 +147,131 @@ function Init(callback) {
 	var UserProf1983 = Users.AddNewUser('Prof1983');
 	Groups.AddNewGroup('LibreMoney Team', 'LibreMoney developer team', 'Prof1983');
 
+
 	// ---- LmTransaction ----
 
-	LmTrType.Init();
+	Init0(function(err) {
+		Init1(function(err, genesisTr0) {
+			console.log('err='+err+' genesisTr0='+genesisTr0);
+			Init2(function(err, genesisUser) {
+				console.log('err='+err+' genesisUser='+genesisUser);
+				Init3(function(err) {
+					console.log(err);
+					// ---- LmBlock ----
 
+					var Transactions0 = new Array();
+					Transactions0.push(genesisTr0);
+
+					var Block0 = Blocks.AddNewBlock(0/*Version*/, 1400000000/*Timestamp*/, 0/*PreviousBlockId*/, 1000000000/*TotalAmountMilliLm*/,
+						0/*TotalFeeMilliLm*/, 0/*PayloadLength*/, 0/*PayloadHash*/,
+						0/*GeneratorPublicKey*/, 0/*GenerationSignature*/, 0/*BlockSignature*/, 0/*PreviousBlockHash*/, Transactions0);
+
+					Logger.info('Block #0 is created');
+
+					InitProjects(UserProf1983, function() {
+						// Load configuration
+						//InitialiseLm();
+						if (callback)
+							callback(null);
+					});
+				});
+			});
+		});
+	});
+}
+
+function Init0(callback) {
+	var trModel = Db.GetModel('transaction');
+	trModel.find().exec(function(err, data) {
+		if (!err) {
+			for (var i in data) {
+				console.log('Remove transaction id='+data[i].id);
+				data[i].remove();
+			}
+		}
+		callback(err);
+	});
+}
+
+function Init1(callback) {
 	// First emmitting (1 MLm)
-	var Tr0 = Transactions.AddNewTransaction(LmTrType.Payment.Ordinary, 1400000000, 255, 0/*SenderPublicKey*/, 0/*RecipientId*/,
-		1000000000/*AmountMilliLm*/, 1/*FeeMilliLm*/, 0/*ReferencedTransactionFullHash*/, 0/*Signature*/,
-		0/*BlockId*/, 0/*Height*/, 0/*Id*/, 0/*SenderId*/, 0/*BlockTimestamp*/, 0/*FullHash*/);
+	var genesisTr0 = Transactions.CreateTransaction({
+		type: Transactions.Types.Payment.Ordinary,
+		timestamp: 0,
+		deadline: 255,
+		senderPublicKey: [],
+		recipientId: 0,
+		amountMilliLm: 1000000000,
+		feeMilliLm: 1,
+		referencedTransactionFullHash: 0,
+		signature: null,
+		blockId: 0,
+		height: 0,
+		id: 1,
+		senderId: 0,
+		blockTimestamp: 0,
+		fullHash: 0
+	});
+	//PrintTrInfo(genesisTr0);
+	Transactions.SaveTransaction(genesisTr0, function(err) {
+		callback(err, genesisTr0);
+	});
+}
 
-	//PrintTrInfo(Tr0);
-
+function Init2(callback) {
 	// Create user "LibreMoney"
-	var Tr1 = Transactions.AddNewTransaction(LmTrTypeUser.GetUserCreate(), 1400000001, 255, 0/*SenderPublicKey*/, 0/*RecipientId*/,
-		1/*AmountMilliLm*/, 1/*FeeMilliLm*/, 0/*ReferencedTransactionFullHash*/, 0/*Signature*/,
-		0/*BlockId*/, 0/*Height*/, 0/*Id*/, 0/*SenderId*/, 0/*BlockTimestamp*/, 0/*FullHash*/);
-	Tr1.SetAttachment(LmAttachmentUserCreate.Create('LibreMoney', '{"uri": "http://libremoney.org/"}'));
+	var genesisUser = Users.AddNewUserEx({
+		name: 'LibreMoney',
+		description: '{"uri": "http://libremoney.org/"}',
+		timestamp: 1000,
+		deadline: 255,
+		senderPublicKey: new Array(),
+		recipientId: 0,
+		amountMilliLm: 1,
+		feeMilliLm: 1,
+		referencedTransactionFullHash: 0,
+		signature: null,
+		blockId: 0,
+		height: 0,
+		id: 2,
+		senderId: 0,
+		blockTimestamp: 0,
+		fullHash: 0
+		});
+	var tr1 = genesisUser.transaction;
+	//PrintTrInfo(tr1);
+	Transactions.SaveTransaction(tr1, function(err) {
+		callback(err, genesisUser);
+	});
+}
 
-	//PrintTrInfo(Tr1);
-
+function Init3(callback) {
 	// Create community "LibreMoney Team"
-	var Tr2 = Transactions.AddNewTransaction(LmTrTypeGroup.GetGroupCreate(), 1400000002, 255, 0/*SenderPublicKey*/, 0/*RecipientId*/,
-		1/*AmountMilliLm*/, 1/*FeeMilliLm*/, 0/*ReferencedTransactionFullHash*/, 0/*Signature*/,
-		0/*BlockId*/, 0/*Height*/, 0/*Id*/, 0/*SenderId*/, 0/*BlockTimestamp*/, 0/*FullHash*/);
-	Tr2.SetAttachment(LmAttachmentGroupCreate.Create('LibreMoney Team', '{"uri": "http://libremoney.org/"}'));
+	var tr2 = Transactions.CreateTransaction({
+		type: LmTrTypeGroup.GetGroupCreate(),
+		timestamp: 2000,
+		deadline: 255,
+		senderPublicKey: new Array(),
+		recipientId: 0,
+		amountMilliLm: 1,
+		feeMilliLm: 1,
+		referencedTransactionFullHash: 0,
+		signature: null,
+		blockId: 0,
+		height: 0,
+		id: 3,
+		senderId: 0,
+		blockTimestamp: 0,
+		fullHash: 0
+	});
+	tr2.SetAttachment(AttachmentGroupCreate.Create('LibreMoney Team', '{"uri": "http://libremoney.org/"}'));
+	//PrintTrInfo(tr2);
+	Transactions.SaveTransaction(tr2, function(err) {
+		callback(err, tr2);
+	});
+}
 
-	//PrintTrInfo(Tr2);
-
-	// ---- LmBlock ----
-
-	var Transactions0 = new Array();
-	Transactions0.push(Tr0);
-
-	var Block0 = Blocks.AddNewBlock(0/*Version*/, 1400000000/*Timestamp*/, 0/*PreviousBlockId*/, 1000000000/*TotalAmountMilliLm*/,
-		0/*TotalFeeMilliLm*/, 0/*PayloadLength*/, 0/*PayloadHash*/,
-		0/*GeneratorPublicKey*/, 0/*GenerationSignature*/, 0/*BlockSignature*/, 0/*PreviousBlockHash*/, Transactions0);
-
-	Logger.info('Block #0 is created');
-
+function InitProjects(UserProf1983, callback) {
 	// ==== Stage 0 (06.2014) ====
 	// ---- Develop ----
 	Projects.AddNewProject(1, 1, 'LibreMoney:Start0', 'Доменные имена, Хостинг, Движок сайта', UserProf1983, 3, '2 000', '2 000', 0, 0, 0, 0);
@@ -152,12 +329,7 @@ function Init(callback) {
 	ArtInGlass
 	*/
 
-	// Load configuration
-	//InitialiseLm();
-
-	if (callback)
-		callback(null);
+	callback(null);
 }
-
 
 exports.Init = Init;

@@ -10,30 +10,23 @@ var Blockchain = require(__dirname + '/../../Blockchain');
 
 
 //super("account", "timestamp", "type", "subtype");
-function Main(req, res) {
+function GetAccountTransactionIds(req, res) {
 	var account = ParameterParser.GetAccount(req);
-	if (account == null) {
-		res.send({
-			transactionIds: []
-		});
-	}
-
 	var timestamp = ParameterParser.GetTimestamp(req);
-
 	var type = req.query.type;
 	var subtype = req.query.subtype;
-
-	var transactionIds = new Array();
-	var iterator = Blockchain.GetTransactions1(account, type, subtype, timestamp);
-	while (iterator.HasNext()) {
-		var transaction = iterator.Next();
-		transactionIds.push(transaction.GetStringId());
-	}
-
-	res.send({
-		transactionIds: transactionIds
+	var transactionIds = [];
+	Blockchain.GetTransactions3(account, type, subtype, timestamp, null, function(err, transactions) {
+		for (var i in transactions) {
+			transaction = transactions[i];
+			transactionIds.push(transaction.GetStringId());
+		}
+		console.log('GetAccountTransactionIds: transactionIds='+transactionIds);
+		res.send({
+			transactionIds: transactionIds
+		});
 	});
 }
 
 
-module.exports = Main;
+module.exports = GetAccountTransactionIds;

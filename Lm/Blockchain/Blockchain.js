@@ -4,298 +4,307 @@
  * CC0 license
  */
 
-/*
-import nxt.util.DbIterator;
-import nxt.util.DbUtils;
-*/
+var Blocks = require(__dirname + '/../Blocks');
+var Db = require(__dirname + '/../Db');
+var DbIterator = require(__dirname + '/../Util/DbIterator');
+var Logger = require(__dirname + '/../Logger').GetLogger(module);
+var Transactions = require(__dirname + '/../Transactions');
 
 
 var lastBlock; // AtomicReference<BlockImpl>
 
 
-function GetLastBlock() {
-	return lastBlock;
-}
-
-function SetLastBlock(block) {
-	lastBlock = block;
-}
-
-function SetLastBlock(previousBlock, block) {
-	throw new Error('Not implementted');
-	/*
-	if (! lastBlock.compareAndSet(previousBlock, block)) {
-		throw new IllegalStateException("Last block is no longer previous block");
+function GetAllBlocks() {
+	var con = null;
+	try {
+		con = Db.GetConnection();
+		var pstmt = con.PrepareStatement("SELECT * FROM block ORDER BY db_id ASC");
+		return GetBlocks(con, pstmt);
+	} catch (e) {
+		con.close();
+		throw new Error(e);
 	}
-	*/
 }
 
-function GetHeight() {
-	throw new Error('Not implementted');
-	/*
-	BlockImpl last = lastBlock.get();
-	return last == null ? 0 : last.getHeight();
-	*/
+function GetAllTransactions() {
+	var con = null;
+	try {
+		con = Db.GetConnection();
+		var pstmt = con.PrepareStatement("SELECT * FROM transaction ORDER BY db_id ASC");
+		return GetTransactions(con, pstmt);
+	} catch (e) {
+		con.close();
+		throw new Error(e);
+	}
 }
 
 function GetBlock(blockId) {
-	throw new Error('Not implementted');
-	/*
-	return BlockDb.findBlock(blockId);
-	*/
+	return Blocks.FindBlock(blockId);
 }
 
-function HasBlock(blockId) {
-	throw new Error('Not implementted');
-	/*
-	return BlockDb.hasBlock(blockId);
-	*/
-}
-
-function GetAllBlocks() {
-	throw new Error('Not implementted');
-	/*
-	Connection con = null;
-	try {
-		con = Db.getConnection();
-		PreparedStatement pstmt = con.prepareStatement("SELECT * FROM block ORDER BY db_id ASC");
-		return getBlocks(con, pstmt);
-	} catch (SQLException e) {
-		DbUtils.close(con);
-		throw new RuntimeException(e.toString(), e);
+function GetBlockIdAtHeight(height) {
+	var block = lastBlock;
+	if (height > block.GetHeight()) {
+		throw new Error("IllegalArgumentException: Invalid height " + height + ", current blockchain is at " + block.GetHeight());
 	}
-	*/
-}
-
-function GetBlocks1(account, timestamp) {
-	throw new Error('Not implementted');
-	/*
-	Connection con = null;
-	try {
-		con = Db.getConnection();
-		PreparedStatement pstmt = con.prepareStatement("SELECT * FROM block WHERE timestamp >= ? AND generator_id = ? ORDER BY db_id ASC");
-		pstmt.setInt(1, timestamp);
-		pstmt.setLong(2, account.getId());
-		return getBlocks(con, pstmt);
-	} catch (SQLException e) {
-		DbUtils.close(con);
-		throw new RuntimeException(e.toString(), e);
+	if (height == block.GetHeight()) {
+		return block.GetId();
 	}
-	*/
-}
-
-function GetBlocks2(con, pstmt) {
-	throw new Error('Not implementted');
-	/*
-	return new DbIterator<>(con, pstmt, new DbIterator.ResultSetReader<BlockImpl>() {
-		@Override
-		public BlockImpl get(Connection con, ResultSet rs) throws NxtException.ValidationException {
-			return BlockDb.loadBlock(con, rs);
-		}
-	});
-	*/
+	return Blocks.FindBlockIdAtHeight(height);
 }
 
 function GetBlockIdsAfter(blockId, limit) {
-	throw new Error('Not implementted');
-	/*
 	if (limit > 1440) {
-		throw new IllegalArgumentException("Can't get more than 1440 blocks at a time");
+		throw new Error("IllegalArgumentException: Can't get more than 1440 blocks at a time");
 	}
-	try (Connection con = Db.getConnection();
-		 PreparedStatement pstmt1 = con.prepareStatement("SELECT db_id FROM block WHERE id = ?");
-		 PreparedStatement pstmt2 = con.prepareStatement("SELECT id FROM block WHERE db_id > ? ORDER BY db_id ASC LIMIT ?")) {
-		pstmt1.setLong(1, blockId);
-		ResultSet rs = pstmt1.executeQuery();
-		if (! rs.next()) {
+	var con = Db.GetConnection();
+	var pstmt1 = con.PrepareStatement("SELECT db_id FROM block WHERE id = ?");
+	var pstmt2 = con.PrepareStatement("SELECT id FROM block WHERE db_id > ? ORDER BY db_id ASC LIMIT ?");
+
+	try {
+		pstmt1.SetLong(1, blockId);
+		var rs = pstmt1.ExecuteQuery();
+		if (!rs.next()) {
 			rs.close();
-			return Collections.emptyList();
+			return []; //Collections.emptyList();
 		}
-		List<Long> result = new ArrayList<>();
-		int dbId = rs.getInt("db_id");
+		var result = [];
+		var dbId = rs.getInt("db_id");
 		pstmt2.setInt(1, dbId);
 		pstmt2.setInt(2, limit);
 		rs = pstmt2.executeQuery();
 		while (rs.next()) {
-			result.add(rs.getLong("id"));
+			result.push(rs.getLong("id"));
 		}
 		rs.close();
 		return result;
-	} catch (SQLException e) {
-		throw new RuntimeException(e.toString(), e);
+	} catch (e) {
+		throw new Error(e);
 	}
-	*/
+}
+
+function GetBlocks1(account, timestamp) {
+	var con = null;
+	try {
+		con = Db.GetConnection();
+		var pstmt = con.PrepareStatement("SELECT * FROM block WHERE timestamp >= ? AND generator_id = ? ORDER BY db_id ASC");
+		pstmt.setInt(1, timestamp);
+		pstmt.setLong(2, account.getId());
+		return getBlocks(con, pstmt);
+	} catch (e) {
+		con.close();
+		throw new Error(e);
+	}
+}
+
+function GetBlocks2(con, pstmt) {
+	return new DbIterator(con, pstmt, function(con, rs) {
+		return Blocks.LoadBlock(con, rs);
+	});
 }
 
 function GetBlocksAfter(blockId, limit) {
-	throw new Error('Not implementted');
-	/*
 	if (limit > 1440) {
-		throw new IllegalArgumentException("Can't get more than 1440 blocks at a time");
+		throw new Error("IllegalArgumentException: Can't get more than 1440 blocks at a time");
 	}
-	try (Connection con = Db.getConnection();
-		 PreparedStatement pstmt = con.prepareStatement("SELECT * FROM block WHERE db_id > (SELECT db_id FROM block WHERE id = ?) ORDER BY db_id ASC LIMIT ?")) {
-		List<BlockImpl> result = new ArrayList<>();
+	var con = Db.GetConnection();
+	var pstmt = con.PrepareStatement("SELECT * FROM block WHERE db_id > (SELECT db_id FROM block WHERE id = ?) ORDER BY db_id ASC LIMIT ?");
+	try {
+		var result = [];
 		pstmt.setLong(1, blockId);
 		pstmt.setInt(2, limit);
-		ResultSet rs = pstmt.executeQuery();
+		var rs = pstmt.ExecuteQuery();
 		while (rs.next()) {
-			result.add(BlockDb.loadBlock(con, rs));
+			result.push(Blocks.LoadBlock(con, rs));
 		}
 		rs.close();
 		return result;
-	} catch (NxtException.ValidationException|SQLException e) {
-		throw new RuntimeException(e.toString(), e);
+	} catch (e) {
+		throw new Error(e);
 	}
-	*/
-}
-
-function GetBlockIdAtHeight(height) {
-	throw new Error('Not implementted');
-	/*
-	Block block = lastBlock.get();
-	if (height > block.getHeight()) {
-		throw new IllegalArgumentException("Invalid height " + height + ", current blockchain is at " + block.getHeight());
-	}
-	if (height == block.getHeight()) {
-		return block.getId();
-	}
-	return BlockDb.findBlockIdAtHeight(height);
-	*/
 }
 
 function GetBlocksFromHeight(height) {
-	throw new Error('Not implementted');
-	/*
-	if (height < 0 || lastBlock.get().getHeight() - height > 1440) {
-		throw new IllegalArgumentException("Can't go back more than 1440 blocks");
+	if (height < 0 || lastBlock.GetHeight() - height > 1440) {
+		throw new Error("IllegalArgumentException: Can't go back more than 1440 blocks");
 	}
-	try (Connection con = Db.getConnection();
-		 PreparedStatement pstmt = con.prepareStatement("SELECT * FROM block WHERE height >= ? ORDER BY height ASC")) {
+	var con = Db.GetConnection();
+	var pstmt = con.PrepareStatement("SELECT * FROM block WHERE height >= ? ORDER BY height ASC");
+	try {
 		pstmt.setInt(1, height);
-		ResultSet rs = pstmt.executeQuery();
-		List<BlockImpl> result = new ArrayList<>();
+		var rs = pstmt.ExecuteQuery();
+		var result = [];
 		while (rs.next()) {
-			result.add(BlockDb.loadBlock(con, rs));
+			result.push(Blocks.LoadBlock(con, rs));
 		}
 		return result;
-	} catch (SQLException|NxtException.ValidationException e) {
-		throw new RuntimeException(e.toString(), e);
+	} catch (e) {
+		throw new Error(e);
 	}
-	*/
 }
 
-function GetTransaction(transactionId) {
-	throw new Error('Not implementted');
-	/*
-	return TransactionDb.findTransaction(transactionId);
-	*/
+function GetHeight() {
+	var last = lastBlock;
+	return last == null ? 0 : last.GetHeight();
 }
 
-function GetTransactionByFullHash(fullHash) {
-	throw new Error('Not implementted');
-	/*
-	return TransactionDb.findTransactionByFullHash(fullHash);
-	*/
+function GetLastBlock() {
+	return lastBlock;
 }
 
-function HasTransaction(transactionId) {
-	throw new Error('Not implementted');
-	/*
-	return TransactionDb.hasTransaction(transactionId);
-	*/
+function GetTransaction(transactionId, callback) {
+	return Transactions.FindTransaction(transactionId, callback);
 }
 
-function HasTransactionByFullHash(fullHash) {
-	throw new Error('Not implementted');
-	/*
-	return TransactionDb.hasTransactionByFullHash(fullHash);
-	*/
+function GetTransactionByFullHash(fullHash, callback) {
+	return Transactions.FindTransactionByFullHash(fullHash, callback);
 }
 
-function GetTransactionCount() {
-	throw new Error('Not implementted');
-	/*
-	try (Connection con = Db.getConnection(); PreparedStatement pstmt = con.prepareStatement("SELECT COUNT(*) FROM transaction")) {
-		ResultSet rs = pstmt.executeQuery();
-		rs.next();
-		return rs.getInt(1);
-	} catch (SQLException e) {
-		throw new RuntimeException(e.toString(), e);
-	}
-	*/
-}
-
-function GetAllTransactions() {
-	throw new Error('Not implementted');
-	/*
-	Connection con = null;
-	try {
-		con = Db.getConnection();
-		PreparedStatement pstmt = con.prepareStatement("SELECT * FROM transaction ORDER BY db_id ASC");
-		return getTransactions(con, pstmt);
-	} catch (SQLException e) {
-		DbUtils.close(con);
-		throw new RuntimeException(e.toString(), e);
-	}
-	*/
+function GetTransactionCount(callback) {
+	Db.GetModel('transaction').count({}, function(err, count) {
+		callback(err, count);
+	});
 }
 
 function GetTransactions1(account, type, subtype, timestamp, orderAscending) {
+	throw 'Not implemented';
+	//Logger.info('GetTransactions1: account='+account+' type='+type+' subtype='+subtype+' timestamp='+timestamp+' orderAscending='+orderAscending);
 	if (typeof orderAscending == 'undefined') orderAscending = true;
-	/*
-	Connection con = null;
+	var con = Db.GetConnection();
 	try {
-		StringBuilder buf = new StringBuilder();
-		buf.append("SELECT * FROM transaction WHERE (recipient_id = ? OR sender_id = ?) ");
+		console.log('GetTransactions1: 1');
+		/*
+		var buf = '';
+		buf += "SELECT * FROM transaction WHERE (recipient_id = ? OR sender_id = ?) ";
 		if (timestamp > 0) {
-			buf.append("AND timestamp >= ? ");
+			buf += "AND timestamp >= ? ";
 		}
 		if (type >= 0) {
-			buf.append("AND type = ? ");
+			buf += "AND type = ? ";
 			if (subtype >= 0) {
-				buf.append("AND subtype = ? ");
+				buf += "AND subtype = ? ";
 			}
 		}
-		if (Boolean.TRUE.equals(orderAscending)) {
-			buf.append("ORDER BY timestamp ASC");
-		} else if (Boolean.FALSE.equals(orderAscending)) {
-			buf.append("ORDER BY timestamp DESC");
+		if (orderAscending == true) {
+			buf += "ORDER BY timestamp ASC";
+		} else if (orderAscending == false) {
+			buf += "ORDER BY timestamp DESC";
 		}
-		con = Db.getConnection();
-		PreparedStatement pstmt;
-		int i = 0;
-		pstmt = con.prepareStatement(buf.toString());
-		pstmt.setLong(++i, account.getId());
+		con = Db.GetConnection();
+		var pstmt;
+		var i = 0;
+		pstmt = con.PrepareStatement(buf);
+		pstmt.SetLong(++i, account.GetId());
 		if (timestamp > 0) {
-			pstmt.setInt(++i, timestamp);
+			pstmt.SetInt(++i, timestamp);
 		}
 		if (type >= 0) {
-			pstmt.setByte(++i, type);
+			pstmt.SetByte(++i, type);
 			if (subtype >= 0) {
-				pstmt.setByte(++i, subtype);
+				pstmt.SetByte(++i, subtype);
 			}
 		}
-		pstmt.setLong(++i, account.getId());
-		return getTransactions(con, pstmt);
-	} catch (SQLException e) {
-		DbUtils.close(con);
-		throw new RuntimeException(e.toString(), e);
+		pstmt.SetLong(++i, account.GetId());
+		return GetTransactions(con, pstmt);
+		*/
+	} catch (e) {
+		con.close();
+		throw new Error(e);
 	}
-	*/
-	throw new Error('Not implementted');
 }
 
 function GetTransactions2(con, pstmt) {
-	throw new Error('Not implementted');
-	/*
-	return new DbIterator<>(con, pstmt, new DbIterator.ResultSetReader<TransactionImpl>() {
-		@Override
-		public TransactionImpl get(Connection con, ResultSet rs) throws NxtException.ValidationException {
-			return TransactionDb.loadTransaction(con, rs);
-		}
+	return new DbIterator(con, pstmt, function(con, rs) {
+		return Transactions.LoadTransaction(con, rs);
 	});
+}
+
+function GetTransactions3(account, type, subtype, timestamp, orderAscending, work) {
+	if (typeof orderAscending == 'undefined') orderAscending = true;
+
+	trModel = Db.GetModel('transaction');
+
+
+	q = trModel.find().exec(function(err, data) {
+		if (err){
+			work(err);
+			return;
+		}
+		var transactions = [];
+		for (var i in data) {
+			transactions.push(Transactions.LoadTransaction(data[i]));
+		}
+		work(null, transactions);
+	});
+
+	/*
+	q = trModel.where();
+	if (account) {
+		var accId = account.GetId();
+		q = trModel.or([{recipient_id: accId}, {sender_id: accId}]); //buf += "SELECT * FROM transaction WHERE (recipient_id = ? OR sender_id = ?) ";
+	}
+	var accId = 1;
+	console.log('GetTransactions3: accId='+accId);
+	q = q.or([{recipient_id: accId}, {sender_id: accId}]);
+	console.log('GetTransactions3: q='+q);
+
+	if (timestamp > 0) {
+		q = q.and('timestamp').gte(timestamp); //buf += "AND timestamp >= ? ";
+	}
+
+	if (type >= 0) {
+		q = q.and('type').equals(type); //buf += "AND type = ? ";
+		if (subtype >= 0) {
+			q = q.and('subtype').equals(0); //buf += "AND subtype = ? ";
+		}
+	}
+
+	if (orderAscending == true) {
+		q = q.sort({timestamp:'asc'}); //buf += "ORDER BY timestamp ASC";
+	} else if (orderAscending == false) {
+		q = q.sort({timestamp:'desc'}); //buf += "ORDER BY timestamp DESC";
+	}
+
+	var promise = q.exec(function(err, data) {
+		console.log('GetTransactions3: err='+err+' data='+data);
+		work(err, data);
+	});
+	return promise;
+
+	console.log('GetTransactions3: 2');
 	*/
+
+	/*
+	while (iterator.HasNext()) {
+		var transaction = iterator.Next();
+		transactionIds.push(transaction.GetStringId());
+	}
+	*/
+}
+
+function HasBlock(blockId, callback) {
+	return Blocks.HasBlock(blockId, callback);
+}
+
+function HasTransaction(transactionId) {
+	return Transactions.HasTransaction(transactionId);
+}
+
+function HasTransactionByFullHash(fullHash) {
+	return Transactions.HasTransactionByFullHash(fullHash);
+}
+
+function Init() {
+}
+
+function SetLastBlock1(block) {
+	lastBlock = block;
+}
+
+function SetLastBlock2(previousBlock, block) {
+	if (!lastBlock.CompareAndSet(previousBlock, block)) {
+		throw new Error("IllegalStateException: Last block is no longer previous block");
+	}
 }
 
 
@@ -315,6 +324,10 @@ exports.GetTransactionByFullHash = GetTransactionByFullHash;
 exports.GetTransactionCount = GetTransactionCount;
 exports.GetTransactions1 = GetTransactions1;
 exports.GetTransactions2 = GetTransactions2;
+exports.GetTransactions3 = GetTransactions3;
 exports.HasBlock = HasBlock;
 exports.HasTransaction = HasTransaction;
 exports.HasTransactionByFullHash = HasTransactionByFullHash;
+exports.Init = Init;
+exports.SetLastBlock1 = SetLastBlock1;
+exports.SetLastBlock2 = SetLastBlock2;

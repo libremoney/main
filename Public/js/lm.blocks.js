@@ -32,7 +32,7 @@ var Lm = (function(Lm, $, undefined) {
 			Lm.LastBlockHeight = Lm.Blocks[0].height;
 
 			//if no new blocks in 24 hours, show blockchain download progress..
-			if (Lm.State && Lm.State.time - Lm.Blocks[0].timestamp > 60 * 60 * 24) {
+			if (Lm.State && Lm.State.time - Lm.Blocks[0].timestamp > 1000 * 60 * 60 * 24) {
 				Lm.DownloadingBlockchain = true;
 				$("#lm_update_explanation span").hide();
 				$("#downloading_blockchain, #lm_update_explanation_blockchain_sync").show();
@@ -106,7 +106,7 @@ var Lm = (function(Lm, $, undefined) {
 		}
 
 		if (Lm.DownloadingBlockchain) {
-			if (Lm.State && Lm.State.time - Lm.Blocks[0].timestamp < 60 * 60 * 24) {
+			if (Lm.State && Lm.State.time - Lm.Blocks[0].timestamp < 1000 * 60 * 60 * 24) {
 				Lm.DownloadingBlockchain = false;
 				$("#dashboard_message").hide();
 				$("#downloading_blockchain, #lm_update_explanation_blockchain_sync").hide();

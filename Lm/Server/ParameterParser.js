@@ -60,7 +60,6 @@ function GetAccounts(req) {
 	*/
 }
 
-// GetAmountNQT
 function GetAmountMilliLm(req) {
 	throw new Error('Not implementted');
 	/*
@@ -102,25 +101,9 @@ function GetAsset(req) {
 	*/
 }
 
-// GetFeeNQT
 function GetFeeMilliLm(req) {
-	throw new Error('Not implementted');
-	/*
-	String feeValueNQT = Convert.emptyToNull(req.getParameter("feeNQT"));
-	if (feeValueNQT == null) {
-		throw new ParameterException(MISSING_FEE);
-	}
-	long feeNQT;
-	try {
-		feeNQT = Long.parseLong(feeValueNQT);
-	} catch (RuntimeException e) {
-		throw new ParameterException(INCORRECT_FEE);
-	}
-	if (feeNQT <= 0 || feeNQT >= Constants.MaxBalanceMilliLm) {
-		throw new ParameterException(INCORRECT_FEE);
-	}
-	return feeNQT;
-	*/
+	var feeValueMilliLm = Convert.EmptyToNull(req.query.feeMilliLm);
+	return ParseFeeMilliLm(feeValueMilliLm);
 }
 
 function GetOrderId(req) {
@@ -236,6 +219,22 @@ function GetTimestamp(req) {
 	return timestamp;
 }
 
+function ParseFeeMilliLm(feeValueMilliLm) {
+	if (!feeValueMilliLm) {
+		throw new Error(JsonResponses.MissingFee);
+	}
+	var feeMilliLm;
+	try {
+		feeMilliLm = parseInt(feeValueMilliLm);
+	} catch (e) {
+		throw new Error(JsonResponses.IncorrectFee);
+	}
+	if (feeMilliLm <= 0 || feeMilliLm >= Constants.MaxBalanceMilliLm) {
+		throw new Error(JsonResponses.IncorrectFee);
+	}
+	return feeMilliLm;
+}
+
 
 exports.GetAccount = GetAccount;
 exports.GetAccounts = GetAccounts;
@@ -248,3 +247,4 @@ exports.GetQuantityMilliLm = GetQuantityMilliLm;
 exports.GetRecipientId = GetRecipientId;
 exports.GetSenderAccount = GetSenderAccount;
 exports.GetTimestamp = GetTimestamp;
+exports.ParseFeeMilliLm = ParseFeeMilliLm;

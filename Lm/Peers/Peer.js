@@ -33,12 +33,6 @@ private volatile long downloadedVolume;
 private volatile long uploadedVolume;
 */
 
-var State = {
-	NON_CONNECTED:0,
-	CONNECTED:1,
-	DISCONNECTED:2
-	}
-
 
 function Peer(peerAddress, announcedAddress) {
 	this.peerAddress = peerAddress;
@@ -54,99 +48,113 @@ function Peer(peerAddress, announcedAddress) {
 }
 
 function GetPeerAddress() {
+	throw new Error('This is not implemented');
 	/*
 	return peerAddress;
 	*/
 }
 
 function GetState() {
+	throw new Error('This is not implemented');
 	/*
 	return state;
 	*/
 }
 
 function SetState(state) {
+	throw new Error('This is not implemented');
 	/*
 	if (this.state == state) {
 		return;
 	}
 	if (this.state == State.NON_CONNECTED) {
 		this.state = state;
-		Peers.notifyListeners(this, Peers.Event.ADDED_ACTIVE_PEER);
+		Peers.NotifyListeners(Peers.Event.ADDED_ACTIVE_PEER, this);
 	} else if (state != State.NON_CONNECTED) {
 		this.state = state;
-		Peers.notifyListeners(this, Peers.Event.CHANGED_ACTIVE_PEER);
+		Peers.NotifyListeners(Peers.Event.CHANGED_ACTIVE_PEER, this);
 	}
 	*/
 }
 
 function GetDownloadedVolume() {
+	throw new Error('This is not implemented');
 	/*
 	return downloadedVolume;
 	*/
 }
 
 function UpdateDownloadedVolume(volume) {
+	throw new Error('This is not implemented');
 	/*
 	synchronized (this) {
 		downloadedVolume += volume;
 	}
-	Peers.notifyListeners(this, Peers.Event.DOWNLOADED_VOLUME);
+	Peers.NotifyListeners(Peers.Event.DOWNLOADED_VOLUME, this);
 	*/
 }
 
 function GetUploadedVolume() {
+	throw new Error('This is not implemented');
 	/*
 	return uploadedVolume;
 	*/
 }
 
 function UpdateUploadedVolume(volume) {
+	throw new Error('This is not implemented');
 	/*
 	synchronized (this) {
 		uploadedVolume += volume;
 	}
-	Peers.notifyListeners(this, Peers.Event.UPLOADED_VOLUME);
+	Peers.NotifyListeners(Peers.Event.UPLOADED_VOLUME, this);
 	*/
 }
 
 function GetVersion() {
+	throw new Error('This is not implemented');
 	/*
 	return version;
 	*/
 }
 
 function SetVersion(version) {
+	throw new Error('This is not implemented');
 	/*
 	this.version = version;
 	*/
 }
 
 function GetApplication() {
+	throw new Error('This is not implemented');
 	/*
 	return application;
 	*/
 }
 
 function SetApplication(application) {
+	throw new Error('This is not implemented');
 	/*
 	this.application = application;
 	*/
 }
 
 function GetPlatform() {
+	throw new Error('This is not implemented');
 	/*
 	return platform;
 	*/
 }
 
 function SetPlatform(platform) {
+	throw new Error('This is not implemented');
 	/*
 	this.platform = platform;
 	*/
 }
 
 function GetSoftware() {
+	throw new Error('This is not implemented');
 	/*
 	return Convert.truncate(application, "?", 10, false)
 			+ " (" + Convert.truncate(version, "?", 10, false) + ")"
@@ -155,24 +163,28 @@ function GetSoftware() {
 }
 
 function ShareAddress() {
+	throw new Error('This is not implemented');
 	/*
 	return shareAddress;
 	*/
 }
 
 function SetShareAddress(shareAddress) {
+	throw new Error('This is not implemented');
 	/*
 	this.shareAddress = shareAddress;
 	*/
 }
 
 function GetAnnouncedAddress() {
+	throw new Error('This is not implemented');
 	/*
 	return announcedAddress;
 	*/
 }
 
 function SetAnnouncedAddress(announcedAddress) {
+	throw new Error('This is not implemented');
 	/*
 	String announcedPeerAddress = Peers.normalizeHostAndPort(announcedAddress);
 	if (announcedPeerAddress != null) {
@@ -185,24 +197,28 @@ function SetAnnouncedAddress(announcedAddress) {
 }
 
 function GetPort() {
+	throw new Error('This is not implemented');
 	/*
 	return port;
 	*/
 }
 
 function IsWellKnown() {
+	throw new Error('This is not implemented');
 	/*
 	return announcedAddress != null && Peers.wellKnownPeers.contains(announcedAddress);
 	*/
 }
 
 function GetHallmark() {
+	throw new Error('This is not implemented');
 	/*
 	return hallmark;
 	*/
 }
 
 function GetWeight() {
+	throw new Error('This is not implemented');
 	/*
 	if (hallmark == null) {
 		return 0;
@@ -216,17 +232,19 @@ function GetWeight() {
 }
 
 function IsBlacklisted() {
+	throw new Error('This is not implemented');
 	/*
 	return blacklistingTime > 0 || Peers.knownBlacklistedPeers.contains(peerAddress);
 	*/
 }
 
 function Blacklist(cause) {
+	throw new Error('This is not implemented');
 	if (!cause) {
 		/*
 		blacklistingTime = System.currentTimeMillis();
 		setState(State.NON_CONNECTED);
-		Peers.notifyListeners(this, Peers.Event.BLACKLIST);
+		Peers.NotifyListeners(Peers.Event.BLACKLIST, this);
 		*/
 	} else {
 		/*
@@ -244,14 +262,16 @@ function Blacklist(cause) {
 }
 
 function UnBlacklist() {
+	throw new Error('This is not implemented');
 	/*
 	setState(State.NON_CONNECTED);
 	blacklistingTime = 0;
-	Peers.notifyListeners(this, Peers.Event.UNBLACKLIST);
+	Peers.NotifyListeners(Peers.Event.UNBLACKLIST, this);
 	*/
 }
 
 function UpdateBlacklistedStatus(curTime) {
+	throw new Error('This is not implemented');
 	/*
 	if (blacklistingTime > 0 && blacklistingTime + Peers.blacklistingPeriod <= curTime) {
 		unBlacklist();
@@ -260,20 +280,23 @@ function UpdateBlacklistedStatus(curTime) {
 }
 
 function Deactivate() {
+	throw new Error('This is not implemented');
 	/*
 	setState(State.NON_CONNECTED);
-	Peers.notifyListeners(this, Peers.Event.DEACTIVATE);
+	Peers.NotifyListeners(Peers.Event.DEACTIVATE, this);
 	*/
 }
 
 function Remove() {
+	throw new Error('This is not implemented');
 	/*
 	Peers.removePeer(this);
-	Peers.notifyListeners(this, Peers.Event.REMOVE);
+	Peers.NotifyListeners(Peers.Event.REMOVE, this);
 	*/
 }
 
 function Send(request) {
+	throw new Error('This is not implemented');
 	/*
 	JSONObject response;
 
@@ -374,6 +397,7 @@ function Send(request) {
 }
 
 function CompareTo(o) {
+	throw new Error('This is not implemented');
 	/*
 	if (getWeight() > o.getWeight()) {
 		return -1;
@@ -385,6 +409,7 @@ function CompareTo(o) {
 }
 
 function Connect() {
+	throw new Error('This is not implemented');
 	/*
 	JSONObject response = send(Peers.myPeerInfoRequest);
 	if (response != null) {
@@ -408,6 +433,7 @@ function Connect() {
 }
 
 function AnalyzeHallmark(address, hallmarkString) {
+	throw new Error('This is not implemented');
 	/*
 	if (hallmarkString == null && this.hallmark == null) {
 		return true;
@@ -454,7 +480,7 @@ function AnalyzeHallmark(address, hallmarkString) {
 
 		for (PeerImpl peer : groupedPeers) {
 			peer.adjustedWeight = Constants.MaxBalanceLm * peer.getHallmarkWeight(mostRecentDate) / totalWeight;
-			Peers.notifyListeners(peer, Peers.Event.WEIGHT);
+			Peers.NotifyListeners(Peers.Event.WEIGHT, peer);
 		}
 
 		return true;
@@ -467,6 +493,7 @@ function AnalyzeHallmark(address, hallmarkString) {
 }
 
 function GetHallmarkWeight(date) {
+	throw new Error('This is not implemented');
 	/*
 	if (hallmark == null || ! hallmark.isValid() || hallmark.getDate() != date) {
 		return 0;
@@ -511,5 +538,4 @@ Peer.prototype.AnalyzeHallmark = AnalyzeHallmark;
 Peer.prototype.GetHallmarkWeight = GetHallmarkWeight;
 
 
-exports.State = State;
-exports.Create = Peer;
+module.exports = Peer;

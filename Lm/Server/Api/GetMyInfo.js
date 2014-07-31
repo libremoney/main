@@ -1,15 +1,17 @@
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-function Main(req, res) {
-	//static final GetMyInfo instance = new GetMyInfo();
-	res.send('This is not implemented');
-	/*
-	JSONStreamAware processRequest(HttpServletRequest req) {
-		JSONObject response = new JSONObject();
-		response.put("host", req.getRemoteHost());
-		response.put("address", req.getRemoteAddr());
-		return response;
-	}
-	*/
+
+function GetMyInfo(req, res) {
+	var response = {};
+	response.host = req.getRemoteHost();
+	response.address = req.getRemoteAddr();
+	res.send(response);
+	return true;
 }
 
-module.exports = Main;
+
+module.exports = GetMyInfo;

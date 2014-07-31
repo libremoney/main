@@ -1,25 +1,26 @@
-/*
-import nxt.crypto.XoredData;
-import nxt.util.Convert;
-import nxt.util.Logger;
-*/
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 
 function Attachment() {
 	obj = {};
 
 
-	function GetSize() {}
-
 	function GetBytes() {}
 
 	function GetJsonObject() {}
 
+	function GetSize() {}
+
 	function GetTransactionType() {}
 
 
-	obj.GetSize = GetSize;
 	obj.GetBytes = GetBytes;
 	obj.GetJsonObject = GetJsonObject;
+	obj.GetSize = GetSize;
 	obj.GetTransactionType = GetTransactionType;
 	return obj;
 }

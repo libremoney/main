@@ -1,32 +1,15 @@
-/*
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Iterator;
-*/
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-/*
-public interface ResultSetReader<T> {
-	public T get(Connection con, ResultSet rs) throws Exception;
-}
-*/
-
-/*
-private final Connection con;
-private final PreparedStatement pstmt;
-private final ResultSetReader<T> rsReader;
-private final ResultSet rs;
-private boolean hasNext;
-*/
 
 function Close() {
-	throw new Error('Not implementted');
-	/*
-	DbUtils.close(rs, pstmt, con);
-	*/
+	this.con.close(rs, pstmt);
 }
 
+// rsReader - function(con, rs)
 function DbIterator(con, pstmt, rsReader) {
 	this.con = con;
 	this.pstmt = pstmt;

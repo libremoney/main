@@ -11,7 +11,7 @@ function Listeners() {
 }
 
 
-function AddListener(listener, eventType) {
+function AddListener(eventType, listener) {
 	var listeners = this.listenersMap[eventType];
 	if (listeners == null) {
 		listeners = new Array(); //CopyOnWriteArrayList<>();
@@ -20,29 +20,27 @@ function AddListener(listener, eventType) {
 	return listeners.push(listener);
 }
 
-function Notify(t, eventType) {
-	throw new Error('Not implemented');
-	/*
-	List<Listener<T>> listeners = listenersMap.get(eventType);
+function Notify(eventType, t) {
+	var listeners = this.listenersMap[eventType];
 	if (listeners != null) {
-		for (Listener<T> listener : listeners) {
-			listener.notify(t);
+		for (var i in listeners) {
+			listener = listeners[i];
+			if (listener)
+				listener(t);
 		}
 	}
-	*/
 }
 
-function RemoveListener(listener, eventType) {
-	throw new Error('Not implemented');
-	/*
-	synchronized (eventType) {
-		List<Listener<T>> listeners = listenersMap.get(eventType);
-		if (listeners != null) {
-			return listeners.remove(listener);
+function RemoveListener(eventType, listener) {
+	var listeners = listenersMap[eventType];
+	if (listeners != null) {
+		var i = listeners.indexOf(listener);
+		if (i >= 0) {
+			listeners[i] = null;
+			return true;
 		}
 	}
 	return false;
-	*/
 }
 
 

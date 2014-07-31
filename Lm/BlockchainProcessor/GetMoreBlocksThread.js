@@ -1,119 +1,29 @@
-// from BlockchainProcessor.js
+/*!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-//private final Runnable getMoreBlocksThread = new Runnable() {
+var Blocks = require(__dirname + '/../Blocks');
 
-/*
-private final JSONStreamAware getCumulativeDifficultyRequest;
-*/
 
-/*
-{
-	JSONObject request = new JSONObject();
-	request.put("requestType", "getCumulativeDifficulty");
-	getCumulativeDifficultyRequest = JSON.prepareRequest(request);
-}
-*/
+var getCumulativeDifficultyRequest = {};
+var peerHasMore;
 
-/*
-private boolean peerHasMore;
-*/
+
+getCumulativeDifficultyRequest.requestType = "getCumulativeDifficulty";
+
 
 function Run() {
+	/*
+	if (Run1())
+		Run2();
+	*/
 	throw new Error('Not implementted');
 	/*
 	try {
 		try {
-			peerHasMore = true;
-			Peer peer = Peers.getAnyPeer(Peer.State.CONNECTED, true);
-			if (peer == null) {
-				return;
-			}
-			lastBlockchainFeeder = peer;
-			JSONObject response = peer.send(getCumulativeDifficultyRequest);
-			if (response == null) {
-				return;
-			}
-			BigInteger curCumulativeDifficulty = blockchain.getLastBlock().getCumulativeDifficulty();
-			String peerCumulativeDifficulty = (String) response.get("cumulativeDifficulty");
-			if (peerCumulativeDifficulty == null) {
-				return;
-			}
-			BigInteger betterCumulativeDifficulty = new BigInteger(peerCumulativeDifficulty);
-			if (betterCumulativeDifficulty.compareTo(curCumulativeDifficulty) <= 0) {
-				return;
-			}
-			if (response.get("blockchainHeight") != null) {
-				lastBlockchainFeederHeight = ((Long) response.get("blockchainHeight")).intValue();
-			}
 
-			Long commonBlockId = Genesis.GENESIS_BLOCK_ID;
-
-			if (! blockchain.getLastBlock().getId().equals(Genesis.GENESIS_BLOCK_ID)) {
-				commonBlockId = getCommonMilestoneBlockId(peer);
-			}
-			if (commonBlockId == null || !peerHasMore) {
-				return;
-			}
-
-			commonBlockId = getCommonBlockId(peer, commonBlockId);
-			if (commonBlockId == null || !peerHasMore) {
-				return;
-			}
-
-			final Block commonBlock = BlockDb.findBlock(commonBlockId);
-			if (blockchain.getLastBlock().getHeight() - commonBlock.getHeight() >= 720) {
-				return;
-			}
-
-			Long currentBlockId = commonBlockId;
-			List<BlockImpl> forkBlocks = new ArrayList<>();
-
-			boolean processedAll = true;
-			outer:
-			while (true) {
-				JSONArray nextBlocks = getNextBlocks(peer, currentBlockId);
-				if (nextBlocks == null || nextBlocks.size() == 0) {
-					break;
-				}
-				synchronized (blockchain) {
-					for (Object o : nextBlocks) {
-						JSONObject blockData = (JSONObject) o;
-						BlockImpl block;
-						try {
-							block = parseBlock(blockData);
-						} catch (NxtException.ValidationException e) {
-							Logger.logDebugMessage("Cannot validate block: " + e.toString()
-									+ ", will try again later", e);
-							processedAll = false;
-							break outer;
-						} catch (RuntimeException e) {
-							Logger.logDebugMessage("Failed to parse block: " + e.toString(), e);
-							peer.blacklist();
-							return;
-						}
-						currentBlockId = block.getId();
-
-						if (blockchain.getLastBlock().getId().equals(block.getPreviousBlockId())) {
-							try {
-								pushBlock(block);
-							} catch (BlockNotAcceptedException e) {
-								peer.blacklist(e);
-								return;
-							}
-						} else if (! BlockDb.hasBlock(block.getId())) {
-							forkBlocks.add(block);
-						}
-					}
-				} //synchronized
-			}
-
-			if (forkBlocks.size() > 0) {
-				processedAll = false;
-			}
-
-			if (! processedAll && blockchain.getLastBlock().getHeight() - commonBlock.getHeight() < 720) {
-				processFork(peer, forkBlocks, commonBlock);
-			}
 
 		} catch (Exception e) {
 			Logger.logDebugMessage("Error in milestone blocks processing thread", e);
@@ -122,6 +32,106 @@ function Run() {
 		Logger.logMessage("CRITICAL ERROR. PLEASE REPORT TO THE DEVELOPERS.\n" + t.toString());
 		t.printStackTrace();
 		System.exit(1);
+	}
+	*/
+}
+
+function Run1() {
+	/*
+	peerHasMore = true;
+	var peer = Peers.GetAnyPeer(Peer.State.CONNECTED, true);
+	if (!peer) {
+		return false;
+	}
+	lastBlockchainFeeder = peer;
+	var response = peer.Send(getCumulativeDifficultyRequest);
+	if (!response) {
+		return false;
+	}
+	var curCumulativeDifficulty = Blockchain.GetLastBlock().GetCumulativeDifficulty();
+	String peerCumulativeDifficulty = (String) response.get("cumulativeDifficulty");
+	if (peerCumulativeDifficulty == null) {
+		return;
+	}
+	BigInteger betterCumulativeDifficulty = new BigInteger(peerCumulativeDifficulty);
+	if (betterCumulativeDifficulty.compareTo(curCumulativeDifficulty) <= 0) {
+		return;
+	}
+	if (response.get("blockchainHeight") != null) {
+		lastBlockchainFeederHeight = ((Long) response.get("blockchainHeight")).intValue();
+	}
+
+	Long commonBlockId = Genesis.GENESIS_BLOCK_ID;
+
+	if (! blockchain.getLastBlock().getId().equals(Genesis.GENESIS_BLOCK_ID)) {
+		commonBlockId = getCommonMilestoneBlockId(peer);
+	}
+	if (commonBlockId == null || !peerHasMore) {
+		return;
+	}
+
+	commonBlockId = getCommonBlockId(peer, commonBlockId);
+	if (commonBlockId == null || !peerHasMore) {
+		return;
+	}
+
+	final Block commonBlock = Blocks.FindBlock(commonBlockId);
+	if (blockchain.getLastBlock().getHeight() - commonBlock.getHeight() >= 720) {
+		return;
+	}
+
+	Long currentBlockId = commonBlockId;
+	List<BlockImpl> forkBlocks = new ArrayList<>();
+	*/
+}
+
+function Run2() {
+	/*
+	boolean processedAll = true;
+	outer:
+	while (true) {
+		JSONArray nextBlocks = getNextBlocks(peer, currentBlockId);
+		if (nextBlocks == null || nextBlocks.size() == 0) {
+			break;
+		}
+		synchronized (blockchain) {
+			for (Object o : nextBlocks) {
+				JSONObject blockData = (JSONObject) o;
+				BlockImpl block;
+				try {
+					block = parseBlock(blockData);
+				} catch (NxtException.ValidationException e) {
+					Logger.logDebugMessage("Cannot validate block: " + e.toString()
+							+ ", will try again later", e);
+					processedAll = false;
+					break outer;
+				} catch (RuntimeException e) {
+					Logger.logDebugMessage("Failed to parse block: " + e.toString(), e);
+					peer.blacklist();
+					return;
+				}
+				currentBlockId = block.getId();
+
+				if (blockchain.getLastBlock().getId().equals(block.getPreviousBlockId())) {
+					try {
+						pushBlock(block);
+					} catch (BlockNotAcceptedException e) {
+						peer.blacklist(e);
+						return;
+					}
+				} else if (!Blocks.HasBlock(block.GetId(), xxxx)) {
+					forkBlocks.add(block);
+				}
+			}
+		} //synchronized
+	}
+
+	if (forkBlocks.size() > 0) {
+		processedAll = false;
+	}
+
+	if (! processedAll && blockchain.getLastBlock().getHeight() - commonBlock.getHeight() < 720) {
+		processFork(peer, forkBlocks, commonBlock);
 	}
 	*/
 }
@@ -162,7 +172,7 @@ function GetCommonMilestoneBlockId(peer) {
 		}
 		for (Object milestoneBlockId : milestoneBlockIds) {
 			Long blockId = Convert.parseUnsignedLong((String) milestoneBlockId);
-			if (BlockDb.hasBlock(blockId)) {
+			if (Blocks.HasBlock(blockId, xxxx)) {
 				if (lastMilestoneBlockId == null && milestoneBlockIds.size() > 1) {
 					peerHasMore = false;
 				}
@@ -198,7 +208,7 @@ function GetCommonBlockId(peer, commonBlockId) {
 
 		for (Object nextBlockId : nextBlockIds) {
 			Long blockId = Convert.parseUnsignedLong((String) nextBlockId);
-			if (! BlockDb.hasBlock(blockId)) {
+			if (!Blocks.HasBlock(blockId, xxxx)) {
 				return commonBlockId;
 			}
 			commonBlockId = blockId;
@@ -280,12 +290,12 @@ function ResetTo(commonBlock) {
 	if (commonBlock.getNextBlockId() != null) {
 		Logger.logDebugMessage("Last block is " + blockchain.getLastBlock().getStringId() + " at " + blockchain.getLastBlock().getHeight());
 		Logger.logDebugMessage("Deleting blocks after height " + commonBlock.getHeight());
-		BlockDb.deleteBlocksFrom(commonBlock.getNextBlockId());
+		Blocks.DeleteBlocksFrom(commonBlock.getNextBlockId());
 	}
 	Logger.logMessage("Will do a re-scan");
-	blockListeners.notify(commonBlock, BlockchainProcessor.Event.RESCAN_BEGIN);
+	blockListeners.Notify(BlockchainProcessor.Event.RESCAN_BEGIN, commonBlock);
 	scan();
-	blockListeners.notify(commonBlock, BlockchainProcessor.Event.RESCAN_END);
+	blockListeners.Notify(BlockchainProcessor.Event.RESCAN_END, commonBlock);
 	Logger.logDebugMessage("Last block is " + blockchain.getLastBlock().getStringId() + " at " + blockchain.getLastBlock().getHeight());
 	*/
 }

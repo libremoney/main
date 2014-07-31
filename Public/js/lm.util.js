@@ -569,7 +569,7 @@ var Lm = (function(Lm, $, undefined) {
 	}
 
 	function FormatTimestamp(timestamp, date_only) {
-		var date = new Date(Date.UTC(2014, 05, 13, 16, 53, 20, 0) + timestamp * 1000);
+		var date = new Date(Date.UTC(2014, 05, 13, 16, 53, 20, 0) + timestamp);
 
 		if (!isNaN(date) && typeof(date.getFullYear) == 'function') {
 			var d = date.getDate();
@@ -613,7 +613,7 @@ var Lm = (function(Lm, $, undefined) {
 	}
 
 	function FormatTime(timestamp) {
-		var date = new Date(Date.UTC(2014, 05, 13, 16, 53, 20, 0) + timestamp * 1000);
+		var date = new Date(Date.UTC(2014, 05, 13, 16, 53, 20, 0) + timestamp);
 
 		if (!isNaN(date) && typeof(date.getFullYear) == 'function') {
 			var res = "";

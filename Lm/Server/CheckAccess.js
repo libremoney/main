@@ -56,7 +56,7 @@ function Process(req, res) {
 			return;
 		}
 
-		if (enforcePost && apiRequestHandler.requirePost() && ! "POST".equals(req.getMethod())) {
+		if (Server.enforcePost1 && apiRequestHandler.requirePost() && ! "POST".equals(req.getMethod())) {
 			response = JsonResponses.POST_REQUIRED;
 			return;
 		}

@@ -68,9 +68,9 @@ var Lm = (function(Lm, $, undefined) {
 
 				var account = (receiving ? "sender" : "recipient");
 
-				if (transaction.AmountMilliLm) {
-					transaction.Amount = new BigInteger(transaction.AmountMilliLm);
-					transaction.Fee = new BigInteger(transaction.FeeMilliLm);
+				if (transaction.amountMilliLm) {
+					transaction.amount = new BigInteger(transaction.amountMilliLm);
+					transaction.fee = new BigInteger(transaction.feeMilliLm);
 				}
 
 				rows += "<tr class='" + (!transaction.confirmed ? "tentative" : "confirmed") + "'>"+
@@ -280,9 +280,9 @@ var Lm = (function(Lm, $, undefined) {
 					onlyUnconfirmed = false;
 				}
 
-				if (transaction.AmountMilliLm) {
-					transaction.Amount = new BigInteger(transaction.AmountMilliLm);
-					transaction.Fee = new BigInteger(transaction.FeeMilliLm);
+				if (transaction.amountMilliLm) {
+					transaction.amount = new BigInteger(transaction.amountMilliLm);
+					transaction.fee = new BigInteger(transaction.feeMilliLm);
 				}
 
 				rows += "<tr class='" + (!transaction.confirmed ? "tentative" : "confirmed") + "'>"+
@@ -580,9 +580,9 @@ var Lm = (function(Lm, $, undefined) {
 		var receiving = transaction.recipient == Lm.Account;
 		var account = (receiving ? "sender" : "recipient");
 
-		if (transaction.AmountMilliLm) {
-			transaction.Amount = new BigInteger(transaction.AmountMilliLm);
-			transaction.Fee = new BigInteger(transaction.FeeMilliLm);
+		if (transaction.amountMilliLm) {
+			transaction.amount = new BigInteger(transaction.amountMilliLm);
+			transaction.fee = new BigInteger(transaction.feeMilliLm);
 		}
 
 		return "<tr " + (!transaction.confirmed && (transaction.recipient == Lm.Account || transaction.sender == Lm.Account) ? " class='tentative'" : "") + ">"+

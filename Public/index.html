@@ -26,7 +26,7 @@
 	</a>
 
 	<ul class="nav navbar-nav" id="version">
-		<li class="dropdown"><a href="#" style="font-weight:bold;">v.0.0.6</a></li>
+		<li class="dropdown"><a href="#" id="lm_version_header" style="font-weight:bold;">v.X.X.X</a></li>
 	</ul>
 
 	<ul class="nav navbar-nav" id="billing" style="display:none;">
@@ -50,6 +50,7 @@
 			<li class="dropdown"><a href="#about" class="goto-page" data-page="about" style="font-weight:bold;">About</a></li>
 			<li class="dropdown"><a href="#groups" class="goto-page" data-page="groups" style="font-weight:bold;">Groups</a></li>
 			<li class="dropdown"><a href="#projects" class="goto-page" data-page="projects" style="font-weight:bold;">Projects</a></li>
+			<li class="dropdown"><a href="#transactions" class="goto-page" data-page="transactions" style="font-weight:bold;">Transactions</a></li>
 			<li class="dropdown" id="nav_login"><a href="#login" class="goto-page" data-page="login" style="font-weight:bold;">Login</a></li>
 			<li class="dropdown" id="nav_logout" style="display:none;"><a href="#logout" class="goto-page" style="font-weight:bold;" onclick="Lm.Logout();return false;"><i class="fa fa-power-off"></i> Logout</a></li>
 		</ul>
@@ -211,7 +212,7 @@
 		<h2>Финансовые ожидания</h2>
 
 		<p>
-		Монетизация осуществляется за счет процента за размещение CwowdFunding проектов, за счет комиссии при переводе средств с кошелька и за счет дополнительных услуг. Предоставляемые услуги:
+		Монетизация осуществляется за счет процента за размещение CrowdFunding проектов, за счет комиссии при переводе средств с кошелька и за счет дополнительных услуг. Предоставляемые услуги:
 		<br/>
 		- Размещение проекта совместного финансирования: первоначально 10% от собранных средств, в дальнейшем будет уменьшаться.
 		<br/>
@@ -405,7 +406,8 @@
 				<center><img src="img/lm_logo.png" alt="Lm" width="320" height="88" style="margin-bottom:40px;opacity: 0.5;;" /></center>
 					 
 				<div id="login_panel">
-					<div class="callout callout-danger" id="testnet_login" style="max-width:400px;min-width:400px;display:none;">Log in with your <strong>TestNet</strong> account - not your real one!</div>
+					<!-- Prof1983 -->
+					<!--div class="callout callout-danger" id="testnet_login" style="max-width:400px;min-width:400px;display:none;">Log in with your <strong>TestNet</strong> account - not your real one!</div-->
 												
 					<div class="lockscreen-item">
 						<div class="lockscreen-credentials">
@@ -915,6 +917,7 @@ function AddToLog(Text) {
 $('.left-side').toggleClass("collapse-left");
 $(".right-side").toggleClass("strech");
 //$("#billing").hide();
+Lm.GetVersion();
 </script>
 
 </body>

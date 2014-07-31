@@ -1,41 +1,37 @@
-/*
-import nxt.Asset;
-import nxt.util.Convert;
-import static nxt.http.JSONResponses.INCORRECT_ASSET;
-import static nxt.http.JSONResponses.UNKNOWN_ASSET;
-*/
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-function Main(req, res) {
-	res.send('This is not implemented');
-	/*
-	static final GetAssets instance = new GetAssets();
+var Assets = require(__dirname + '/../../Assets');
+var Convert = require(__dirname + '/../../Util/Convert');
+var JsonResponses = require(__dirname + '/../JsonResponses');
 
-	private GetAssets() {
-		super("assets", "assets", "assets"); // limit to 3 for testing
-	}
 
-	JSONStreamAware processRequest(HttpServletRequest req) {
-		String[] assets = req.getParameterValues("assets");
-		JSONObject response = new JSONObject();
-		JSONArray assetsJSONArray = new JSONArray();
-		response.put("assets", assetsJSONArray);
-		for (String assetIdString : assets) {
-			if (assetIdString == null || assetIdString.equals("")) {
-				continue;
-			}
-			try {
-				Asset asset = Asset.getAsset(Convert.parseUnsignedLong(assetIdString));
-				if (asset == null) {
-					return UNKNOWN_ASSET;
-				}
-				assetsJSONArray.add(JSONData.asset(asset));
-			} catch (RuntimeException e) {
-				return INCORRECT_ASSET;
-			}
+//super("assets", "assets", "assets"); // limit to 3 for testing
+function GetAssets(req, res) {
+	var assets = req.query.assets;
+	var response = {};
+	var assetsJsonArray = [];
+	response.assets = assetsJsonArray;
+	for (var assetIdString in assets) {
+		if (!assetIdString || assetIdString == "") {
+			continue;
 		}
-		return response;
+		try {
+			var asset = Assets.GetAsset(Convert.ParseUnsignedLong(assetIdString));
+			if (!asset) {
+				return JsonResponses.UnknownAsset;
+			}
+			assetsJsonArray.push(JsonData.Asset(asset));
+		} catch (e) {
+			return JsonResponses.IncorrectAsset;
+		}
 	}
-	*/
+	res.send(response);
+	return true;
 }
 
-module.exports = Main;
+
+module.exports = GetAssets;

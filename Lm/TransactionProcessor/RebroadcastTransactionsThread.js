@@ -13,7 +13,7 @@ function Run() {
 			List<Transaction> transactionList = new ArrayList<>();
 			int curTime = Convert.getEpochTime();
 			for (TransactionImpl transaction : nonBroadcastedTransactions.values()) {
-				if (TransactionDb.hasTransaction(transaction.getId()) || transaction.getExpiration() < curTime) {
+				if (Transactions.HasTransaction(transaction.getId()) || transaction.getExpiration() < curTime) {
 					nonBroadcastedTransactions.remove(transaction.getId());
 				} else if (transaction.getTimestamp() < curTime - 30) {
 					transactionList.add(transaction);

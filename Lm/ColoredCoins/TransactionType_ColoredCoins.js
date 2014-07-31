@@ -1,3 +1,8 @@
+/*!
+ * LibreMoney 0.0
+ * Copyright(c) 2014 LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
 var LmTrType = require(__dirname + '/LmTransactionType');
 

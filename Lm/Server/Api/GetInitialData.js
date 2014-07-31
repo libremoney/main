@@ -4,135 +4,123 @@
  * CC0 license
  */
 
-/*
-import nxt.Block;
-import nxt.Constants;
-import nxt.Nxt;
-import nxt.Transaction;
-import nxt.peer.Peer;
-import nxt.peer.Peers;
-import nxt.util.Convert;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONStreamAware;
-*/
+var BigInteger = require(__dirname + '/../../Util/BigInteger');
+var Blockchain = require(__dirname + '/../../Blockchain');
+var Constants = require(__dirname + '/../../Constants');
+var Convert = require(__dirname + '/../../Util/Convert');
+var Core = require(__dirname + '/../../Core');
+var Logger = require(__dirname + '/../../Logger').GetLogger(module);
+var Peers = require(__dirname + '/../../Peers');
+var TransactionProcessor = require(__dirname + '/../../TransactionProcessor');
+
+var UserServer = require(__dirname + '/../UserServer');
 
 
 // res = user
 function GetInitialData(req, res) {
-	res.send('This is not implemented');
 	//return UserRequestHandler.Create();
 
-	/*
-	JSONArray unconfirmedTransactions = new JSONArray();
-	JSONArray activePeers = new JSONArray(), knownPeers = new JSONArray(), blacklistedPeers = new JSONArray();
-	JSONArray recentBlocks = new JSONArray();
+	var unconfirmedTransactions = new Array();
+	var activePeers = new Array();
+	var knownPeers = new Array();
+	var blacklistedPeers = new Array();
+	var recentBlocks = new Array();
 
-	for (Transaction transaction : Nxt.getTransactionProcessor().getAllUnconfirmedTransactions()) {
-
-		JSONObject unconfirmedTransaction = new JSONObject();
-		unconfirmedTransaction.put("index", Users.getIndex(transaction));
-		unconfirmedTransaction.put("timestamp", transaction.getTimestamp());
-		unconfirmedTransaction.put("deadline", transaction.getDeadline());
-		unconfirmedTransaction.put("recipient", Convert.toUnsignedLong(transaction.getRecipientId()));
-		unconfirmedTransaction.put("amountNQT", transaction.getAmountNQT());
-		unconfirmedTransaction.put("feeNQT", transaction.getFeeNQT());
-		unconfirmedTransaction.put("sender", Convert.toUnsignedLong(transaction.getSenderId()));
-		unconfirmedTransaction.put("id", transaction.getStringId());
-
-		unconfirmedTransactions.add(unconfirmedTransaction);
-
+	var trs = TransactionProcessor.GetAllUnconfirmedTransactions();
+	for (var transaction in trs) {
+		var unconfirmedTransaction = {};
+		unconfirmedTransaction.index = UserServer.GetIndexByTransaction(transaction);
+		unconfirmedTransaction.timestamp = transaction.GetTimestamp();
+		unconfirmedTransaction.deadline = transaction.GetDeadline();
+		unconfirmedTransaction.recipient = Convert.ToUnsignedLong(transaction.GetRecipientId());
+		unconfirmedTransaction.amountMilliLm = transaction.GetAmountMilliLm();
+		unconfirmedTransaction.feeMilliLm = transaction.GetFeeMilliLm();
+		unconfirmedTransaction.sender = Convert.ToUnsignedLong(transaction.GetSenderId());
+		unconfirmedTransaction.id = transaction.GetStringId();
+		unconfirmedTransactions.push(unconfirmedTransaction);
 	}
 
-	for (Peer peer : Peers.getAllPeers()) {
-
-		if (peer.isBlacklisted()) {
-
-			JSONObject blacklistedPeer = new JSONObject();
-			blacklistedPeer.put("index", Users.getIndex(peer));
-			blacklistedPeer.put("address", peer.getPeerAddress());
-			blacklistedPeer.put("announcedAddress", Convert.truncate(peer.getAnnouncedAddress(), "-", 25, true));
-			blacklistedPeer.put("software", peer.getSoftware());
-			if (peer.isWellKnown()) {
-				blacklistedPeer.put("wellKnown", true);
+	for (var peer in Peers.GetAllPeers()) {
+		if (peer.IsBlacklisted()) {
+			var blacklistedPeer = {};
+			blacklistedPeer.index = UserServer.GetIndexByPeer(peer);
+			blacklistedPeer.address = peer.GetPeerAddress();
+			blacklistedPeer.announcedAddress = Convert.Truncate(peer.GetAnnouncedAddress(), "-", 25, true);
+			blacklistedPeer.software = peer.GetSoftware();
+			if (peer.IsWellKnown()) {
+				blacklistedPeer.wellKnown = true;
 			}
-			blacklistedPeers.add(blacklistedPeer);
-
-		} else if (peer.getState() == Peer.State.NON_CONNECTED) {
-
-			JSONObject knownPeer = new JSONObject();
-			knownPeer.put("index", Users.getIndex(peer));
-			knownPeer.put("address", peer.getPeerAddress());
-			knownPeer.put("announcedAddress", Convert.truncate(peer.getAnnouncedAddress(), "-", 25, true));
-			knownPeer.put("software", peer.getSoftware());
-			if (peer.isWellKnown()) {
-				knownPeer.put("wellKnown", true);
+			blacklistedPeers.push(blacklistedPeer);
+		} else if (peer.GetState() == Peers.State.NON_CONNECTED) {
+			var knownPeer = {};
+			knownPeer.index = Users.GetIndex(peer);
+			knownPeer.address = peer.GetPeerAddress();
+			knownPeer.announcedAddress = Convert.Truncate(peer.GetAnnouncedAddress(), "-", 25, true);
+			knownPeer.software = peer.GetSoftware();
+			if (peer.IsWellKnown()) {
+				knownPeer.wellKnown = true;
 			}
 			knownPeers.add(knownPeer);
-
 		} else {
-
-			JSONObject activePeer = new JSONObject();
-			activePeer.put("index", Users.getIndex(peer));
-			if (peer.getState() == Peer.State.DISCONNECTED) {
-				activePeer.put("disconnected", true);
+			var activePeer = {};
+			activePeer.index = Users.GetIndex(peer);
+			if (peer.GetState() == Peers.State.DISCONNECTED) {
+				activePeer.disconnected = true;
 			}
-			activePeer.put("address", peer.getPeerAddress());
-			activePeer.put("announcedAddress", Convert.truncate(peer.getAnnouncedAddress(), "-", 25, true));
-			activePeer.put("weight", peer.getWeight());
-			activePeer.put("downloaded", peer.getDownloadedVolume());
-			activePeer.put("uploaded", peer.getUploadedVolume());
-			activePeer.put("software", peer.getSoftware());
-			if (peer.isWellKnown()) {
-				activePeer.put("wellKnown", true);
+			activePeer.address = peer.GetPeerAddress();
+			activePeer.announcedAddress = Convert.Truncate(peer.GetAnnouncedAddress(), "-", 25, true);
+			activePeer.weight = peer.GetWeight();
+			activePeer.downloaded = peer.GetDownloadedVolume();
+			activePeer.uploaded = peer.GetUploadedVolume();
+			activePeer.software = peer.GetSoftware();
+			if (peer.IsWellKnown()) {
+				activePeer.wellKnown = true;
 			}
 			activePeers.add(activePeer);
 		}
 	}
 
-	int height = Nxt.getBlockchain().getLastBlock().getHeight();
-	List<? extends Block> lastBlocks = Nxt.getBlockchain().getBlocksFromHeight(Math.max(0, height - 59));
+	var height = Blockchain.GetLastBlock().GetHeight();
+	var lastBlocks = Blockchain.GetBlocksFromHeight(Math.max(0, height - 59));
 
-	for (int i = lastBlocks.size() - 1; i >=0; i--) {
-		Block block = lastBlocks.get(i);
-		JSONObject recentBlock = new JSONObject();
-		recentBlock.put("index", Users.getIndex(block));
-		recentBlock.put("timestamp", block.getTimestamp());
-		recentBlock.put("numberOfTransactions", block.getTransactionIds().size());
-		recentBlock.put("totalAmountNQT", block.getTotalAmountNQT());
-		recentBlock.put("totalFeeNQT", block.getTotalFeeNQT());
-		recentBlock.put("payloadLength", block.getPayloadLength());
-		recentBlock.put("generator", Convert.toUnsignedLong(block.getGeneratorId()));
-		recentBlock.put("height", block.getHeight());
-		recentBlock.put("version", block.getVersion());
-		recentBlock.put("block", block.getStringId());
-		recentBlock.put("baseTarget", BigInteger.valueOf(block.getBaseTarget()).multiply(BigInteger.valueOf(100000))
-				.divide(BigInteger.valueOf(Constants.InitialBaseTarget)));
-
-		recentBlocks.add(recentBlock);
+	for (var i = lastBlocks.size() - 1; i >= 0; i--) {
+		var block = lastBlocks[i];
+		var recentBlock = {};
+		recentBlock.index = Users.GetIndex(block);
+		recentBlock.timestamp = block.GetTimestamp();
+		recentBlock.numberOfTransactions = block.GetTransactionIds().length;
+		recentBlock.totalAmountMilliLm = block.GetTotalAmountMilliLm();
+		recentBlock.totalFeeMilliLm = block.GetTotalFeeMilliLm();
+		recentBlock.payloadLength = block.GetPayloadLength();
+		recentBlock.generator = Convert.ToUnsignedLong(block.GetGeneratorId());
+		recentBlock.height = block.GetHeight();
+		recentBlock.version = block.GetVersion();
+		recentBlock.block = block.GetStringId();
+		recentBlock.baseTarget = BigInteger.valueOf(block.GetBaseTarget()).multiply(BigInteger.valueOf(100000))
+				.divide(BigInteger.valueOf(Constants.InitialBaseTarget));
+		recentBlocks.push(recentBlock);
 	}
 
-	JSONObject response = new JSONObject();
-	response.put("response", "processInitialData");
-	response.put("version", Nxt.VERSION);
-	if (unconfirmedTransactions.size() > 0) {
-		response.put("unconfirmedTransactions", unconfirmedTransactions);
+	var response = {};
+	response.response = "processInitialData";
+	response.version = Core.GetVersion();
+	if (unconfirmedTransactions.length > 0) {
+		response.unconfirmedTransactions = unconfirmedTransactions;
 	}
-	if (activePeers.size() > 0) {
-		response.put("activePeers", activePeers);
+	if (activePeers.length > 0) {
+		response.activePeers = activePeers;
 	}
-	if (knownPeers.size() > 0) {
-		response.put("knownPeers", knownPeers);
+	if (knownPeers.length > 0) {
+		response.knownPeers = knownPeers;
 	}
-	if (blacklistedPeers.size() > 0) {
-		response.put("blacklistedPeers", blacklistedPeers);
+	if (blacklistedPeers.length > 0) {
+		response.blacklistedPeers = blacklistedPeers;
 	}
-	if (recentBlocks.size() > 0) {
-		response.put("recentBlocks", recentBlocks);
+	if (recentBlocks.length > 0) {
+		response.recentBlocks = recentBlocks;
 	}
 
 	return response;
-	*/
 }
 
 

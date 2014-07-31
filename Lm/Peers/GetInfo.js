@@ -41,7 +41,7 @@ JSONStreamAware processRequest(JSONObject request, Peer peer) {
 	peerImpl.setShareAddress(Boolean.TRUE.equals(request.get("shareAddress")));
 
 	//peerImpl.setState(Peer.State.CONNECTED);
-	Peers.notifyListeners(peerImpl, Peers.Event.ADDED_ACTIVE_PEER);
+	Peers.NotifyListeners(Peers.Event.ADDED_ACTIVE_PEER, peerImpl);
 
 	return Peers.myPeerInfoResponse;
 }

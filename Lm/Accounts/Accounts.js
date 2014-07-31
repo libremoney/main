@@ -6,7 +6,7 @@
 
 var Convert = require(__dirname + '/../Util/Convert');
 var Crypto = require(__dirname + '/../Crypto/Crypto');
-var BlockchainProcessor = require(__dirname + '/../BlockchainProcessor');
+var BlockchainProcessor = require(__dirname + '/../BlockchainProcessor/BlockchainProcessor');
 var Listeners = require(__dirname + '/../Util/Listeners');
 
 
@@ -31,16 +31,16 @@ var Event = {
 	};
 
 
-function AddAssetListener(listener, eventType) {
-	return assetListeners.AddListener(listener, eventType);
+function AddAssetListener(eventType, listener) {
+	return assetListeners.AddListener(eventType, listener);
 }
 
-function AddLeaseListener(listener, eventType) {
-	return leaseListeners.AddListener(listener, eventType);
+function AddLeaseListener(eventType, listener) {
+	return leaseListeners.AddListener(eventType, listener);
 }
 
-function AddListener(listener, eventType) {
-	return listeners.AddListener(listener, eventType);
+function AddListener(eventType, listener) {
+	return listeners.AddListener(eventType, listener);
 }
 
 function AddOrGetAccount(id) {
@@ -94,20 +94,18 @@ function GetId(publicKey) {
 }
 
 function Init() {
-	BlockchainProcessor.AddListener(function(block) {
+	BlockchainProcessor.AddListener(BlockchainProcessor.Event.AFTER_BLOCK_APPLY, function(block) {
 		var height = block.GetHeight();
 		for (account in leasingAccounts) {
 			/*
 			if (height == account.GetCurrentLeasingHeightFrom()) {
 				Accounts.GetAccount(account.GetCurrentLesseeId()).GetLessorIds().Add(account.getId());
-				leaseListeners.notify(
-						new AccountLease(account.getId(), account.currentLesseeId, height, account.currentLeasingHeightTo),
-						Event.LEASE_STARTED);
+				leaseListeners.Notify(Event.LEASE_STARTED,
+						new AccountLease(account.getId(), account.currentLesseeId, height, account.currentLeasingHeightTo));
 			} else if (height == account.currentLeasingHeightTo) {
 				Account.getAccount(account.currentLesseeId).lessorIds.remove(account.getId());
-				leaseListeners.notify(
-						new AccountLease(account.getId(), account.currentLesseeId, account.currentLeasingHeightFrom, height),
-						Event.LEASE_ENDED);
+				leaseListeners.Notify(Event.LEASE_ENDED,
+						new AccountLease(account.getId(), account.currentLesseeId, account.currentLeasingHeightFrom, height));
 				if (account.nextLeasingHeightFrom == Integer.MAX_VALUE) {
 					account.currentLeasingHeightFrom = Integer.MAX_VALUE;
 					account.currentLesseeId = null;
@@ -120,9 +118,8 @@ function Init() {
 					account.nextLesseeId = null;
 					if (height == account.currentLeasingHeightFrom) {
 						Account.getAccount(account.currentLesseeId).lessorIds.add(account.getId());
-						leaseListeners.notify(
-								new AccountLease(account.getId(), account.currentLesseeId, height, account.currentLeasingHeightTo),
-								Event.LEASE_STARTED);
+						leaseListeners.Notify(Event.LEASE_STARTED,
+								new AccountLease(account.getId(), account.currentLesseeId, height, account.currentLeasingHeightTo));
 					}
 				}
 			} else if (height == account.currentLeasingHeightTo + 1440) {
@@ -131,9 +128,9 @@ function Init() {
 			}
 			*/
 		}
-	}, BlockchainProcessor.Event.AFTER_BLOCK_APPLY);
+	});
 
-	BlockchainProcessor.AddListener(function(block) {
+	BlockchainProcessor.AddListener(BlockchainProcessor.Event.BLOCK_POPPED, function(block) {
 		/*
 		int height = block.getHeight();
 		for (Account account : leasingAccounts.values()) {
@@ -143,19 +140,19 @@ function Init() {
 			}
 		}
 		*/
-	}, BlockchainProcessor.Event.BLOCK_POPPED);
+	});
 }
 
-function RemoveAssetListener(listener, eventType) {
-	return assetListeners.RemoveListener(listener, eventType);
+function RemoveAssetListener(eventType, listener) {
+	return assetListeners.RemoveListener(eventType, listener);
 }
 
-function RemoveLeaseListener(listener, eventType) {
-	return leaseListeners.RemoveListener(listener, eventType);
+function RemoveLeaseListener(eventType, listener) {
+	return leaseListeners.RemoveListener(eventType, listener);
 }
 
-function RemoveListener(listener, eventType) {
-	return listeners.RemoveListener(listener, eventType);
+function RemoveListener(eventType, listener) {
+	return listeners.RemoveListener(eventType, listener);
 }
 
 
@@ -166,6 +163,9 @@ exports.AllAccounts = allAccounts;
 exports.LeasingAccounts = leasingAccounts;
 exports.MaxTrackedBalanceConfirmations = MaxTrackedBalanceConfirmations;
 
+exports.AddAssetListener = AddAssetListener;
+exports.AddLeaseListener = AddLeaseListener;
+exports.AddListener = AddListener;
 exports.AddOrGetAccount = AddOrGetAccount;
 exports.Clear = Clear;
 //exports.GetAccount = GetAccount;
@@ -174,3 +174,6 @@ exports.GetAccountByPublicKey = GetAccountByPublicKey;
 exports.GetAllAccounts = GetAllAccounts;
 exports.GetId = GetId;
 exports.Init = Init;
+exports.RemoveAssetListener = RemoveAssetListener;
+exports.RemoveLeaseListener = RemoveLeaseListener;
+exports.RemoveListener = RemoveListener;

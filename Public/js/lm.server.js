@@ -318,16 +318,17 @@ var Lm = (function(Lm, $, undefined) {
 
 		var byteArray = converters.hexStringToByteArray(transactionBytes);
 
-		transaction.Type = byteArray[0];
-		transaction.Subtype = byteArray[1];
-		transaction.Timestamp = String(converters.byteArrayToSignedInt32(byteArray, 2));
-		transaction.Deadline = String(converters.byteArrayToSignedShort(byteArray, 6));
-		transaction.SenderPublicKey = converters.byteArrayToHexString(byteArray.slice(8, 40));
-		transaction.Recipient = String(converters.byteArrayToBigInteger(byteArray, 40));
-		transaction.AmountMilliLm = String(converters.byteArrayToBigInteger(byteArray, 48));
-		transaction.FeeMilliLm = String(converters.byteArrayToBigInteger(byteArray, 56));
+		var pos = 0;
+		transaction.Type = byteArray[pos]; pos += 1;
+		transaction.Subtype = byteArray[pos]; pos += 1;
+		transaction.Timestamp = String(converters.byteArrayToSignedInt64(byteArray, pos)); pos += 8;
+		transaction.Deadline = String(converters.byteArrayToSignedShort(byteArray, pos)); pos += 2;
+		transaction.SenderPublicKey = converters.byteArrayToHexString(byteArray.slice(pos, pos+32)); pos += 32;
+		transaction.Recipient = String(converters.byteArrayToBigInteger(byteArray, pos)); pos += 8;
+		transaction.AmountMilliLm = String(converters.byteArrayToBigInteger(byteArray, pos)); pos += 8;
+		transaction.FeeMilliLm = String(converters.byteArrayToBigInteger(byteArray, pos)); pos += 8;
 
-		var refHash = byteArray.slice(64, 96);
+		var refHash = byteArray.slice(pos, pos+32); pos += 32;
 		transaction.referencedTransactionFullHash = converters.byteArrayToHexString(refHash);
 		if (transaction.referencedTransactionFullHash == "0") {
 			transaction.referencedTransactionFullHash = null;
@@ -342,8 +343,8 @@ var Lm = (function(Lm, $, undefined) {
 
 		if (!("recipient" in data)) {
 			//recipient == genesis
-			data.recipient = "1739068987193023818";
-			data.recipientRS = "LMA-MRCC-2YLS-8M54-3CMAJ";
+			data.recipient = "2391470422895685625";
+			data.recipientRS = "LMA-TVZT-PRDS-FB8M-4P3E4";
 		}
 
 		if (transaction.SenderPublicKey != Lm.AccountInfo.PublicKey) {
@@ -365,7 +366,7 @@ var Lm = (function(Lm, $, undefined) {
 			return false;
 		}
 
-		var pos = 160;
+		pos = 160;
 
 		switch (requestType) {
 			case "sendMoney":

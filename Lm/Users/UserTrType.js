@@ -1,15 +1,21 @@
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-var LmTrType = require(__dirname + '/../Transactions/TransactionType');
+var Constants = require(__dirname + '/../Constants');
+var Transactions = require(__dirname + '/../Transactions');
 
 
-var UserCreate;
+var userCreate;
 
 
 function CreateUser() {
-	var obj = LmTrType.CreateTransactionType();
+	var obj = Transactions.CreateTransactionType();
 
 	function GetType() {
-		return LmTrType.TYPE_USER;
+		return Constants.TYPE_USER;
 	}
 
 	obj.GetType = GetType;
@@ -24,7 +30,7 @@ function CreateUserCreate() {
 	}
 
 	function GetSubtype() {
-		return LmTrType.SUBTYPE_USER_CREATE;
+		return Constants.SUBTYPE_USER_CREATE;
 	}
 
 	function DoLoadAttachment_Buf(Transaction, Buffer) {
@@ -121,14 +127,19 @@ function CreateUserCreate() {
 	obj.UndoAttachmentUnconfirmed = UndoAttachmentUnconfirmed;
 	obj.ValidateAttachment = ValidateAttachment;
 	return obj;
-};
+}
 
 
 function GetUserCreate() {
-	if (!UserCreate)
-		UserCreate = CreateUserCreate();
-	return UserCreate;
+	if (!userCreate)
+		Init();
+	return userCreate;
+}
+
+function Init() {
+	userCreate = CreateUserCreate();
 }
 
 
 exports.GetUserCreate = GetUserCreate;
+exports.Init = Init;

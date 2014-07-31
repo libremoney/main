@@ -1,47 +1,40 @@
-/*
-import nxt.util.Convert;
-*/
+/*!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-function FindTransaction(transactionId) {
-	throw new Error('Not implemented');
-	/*
-	try (Connection con = Db.getConnection();
-		 PreparedStatement pstmt = con.prepareStatement("SELECT * FROM transaction WHERE id = ?")) {
-		pstmt.setLong(1, transactionId);
-		ResultSet rs = pstmt.executeQuery();
-		Transaction transaction = null;
-		if (rs.next()) {
-			transaction = loadTransaction(con, rs);
+var Convert = require(__dirname + '/../Util/Convert');
+var Db = require(__dirname + '/../Db');
+var Logger = require(__dirname + '/../Logger').GetLogger(module);
+var Transaction = require(__dirname + '/Transaction');
+var Transactions = require(__dirname + '/Transactions');
+
+
+function FindTransaction(transactionId, callback) {
+	var trModel = Db.GetModel('transaction');
+	trModel.findOne({id:transactionId}).exec(function(err, data) {
+		if (err) {
+			if (callback) callback(err);
+			return;
 		}
-		rs.close();
-		return transaction;
-	} catch (SQLException e) {
-		throw new RuntimeException(e.toString(), e);
-	} catch (NxtException.ValidationException e) {
-		throw new RuntimeException("Transaction already in database, id = " + transactionId + ", does not pass validation!");
-	}
-	*/
+		var transaction = LoadTransaction(data);
+		if (callback) callback(null, transaction);
+	});
+	return true;
 }
 
-function FindTransactionByFullHash(fullHash) {
-	throw new Error('Not implemented');
-	/*
-	try (Connection con = Db.getConnection();
-		 PreparedStatement pstmt = con.prepareStatement("SELECT * FROM transaction WHERE full_hash = ?")) {
-		pstmt.setBytes(1, Convert.parseHexString(fullHash));
-		ResultSet rs = pstmt.executeQuery();
-		Transaction transaction = null;
-		if (rs.next()) {
-			transaction = loadTransaction(con, rs);
+function FindTransactionByFullHash(fullHash, callback) {
+	var trModel = Db.GetModel('transaction');
+	trModel.findOne({full_hash:Convert.ParseHexString(fullHash)}).exec(function(err, data) {
+		if (err) {
+			if (callback) callback(err);
+			return;
 		}
-		rs.close();
-		return transaction;
-	} catch (SQLException e) {
-		throw new RuntimeException(e.toString(), e);
-	} catch (NxtException.ValidationException e) {
-		throw new RuntimeException("Transaction already in database, full_hash = " + fullHash + ", does not pass validation!");
-	}
-	*/
+		new transaction = LoadTransaction(data);
+		if (callback) callback(null, transaction);
+	});
+	return true;
 }
 
 function HasTransaction(transactionId) {
@@ -72,42 +65,51 @@ function HasTransactionByFullHash(fullHash) {
 	*/
 }
 
-function LoadTransaction(con, rs) {
-	throw new Error('Not implemented');
-	/*
-	try {
+function LoadTransaction(tr) {
+	var type = tr.type; // Byte
+	var subtype = tr.subtype; // Byte
+	var timestamp = tr.timestamp; // Int
+	var deadline = tr.deadline; // Short
+	var senderPublicKey = tr.sender_public_key; // Bytes
+	var recipientId = tr.recipient_id; // Long
+	var amountMilliLm = tr.amount; // Long
+	var feeMilliLm = tr.fee; // Long
+	var referencedTransactionFullHash = tr.referenced_transaction_full_hash; // Bytes
+	var signature = tr.signature; // Bytes
+	var blockId = tr.block_id; // Long
+	var height = tr.height; // Int
+	var id = tr.id; // Long
+	var senderId = tr.sender_id; // Long
+	var attachmentBytes = tr.attachment_bytes; // Bytes
+	var blockTimestamp = tr.block_timestamp; // Int
+	var fullHash = tr.full_hash; // Bytes
 
-		byte type = rs.getByte("type");
-		byte subtype = rs.getByte("subtype");
-		int timestamp = rs.getInt("timestamp");
-		short deadline = rs.getShort("deadline");
-		byte[] senderPublicKey = rs.getBytes("sender_public_key");
-		Long recipientId = rs.getLong("recipient_id");
-		long amountNQT = rs.getLong("amount");
-		long feeNQT = rs.getLong("fee");
-		byte[] referencedTransactionFullHash = rs.getBytes("referenced_transaction_full_hash");
-		byte[] signature = rs.getBytes("signature");
-		Long blockId = rs.getLong("block_id");
-		int height = rs.getInt("height");
-		Long id = rs.getLong("id");
-		Long senderId = rs.getLong("sender_id");
-		byte[] attachmentBytes = rs.getBytes("attachment_bytes");
-		int blockTimestamp = rs.getInt("block_timestamp");
-		byte[] fullHash = rs.getBytes("full_hash");
-
-		TransactionType transactionType = TransactionType.findTransactionType(type, subtype);
-		TransactionImpl transaction = new TransactionImpl(transactionType, timestamp, deadline, senderPublicKey, recipientId, amountNQT, feeNQT,
-					referencedTransactionFullHash, signature, blockId, height, id, senderId, blockTimestamp, fullHash);
-		if (attachmentBytes != null) {
-			ByteBuffer buffer = ByteBuffer.wrap(attachmentBytes);
-			buffer.order(ByteOrder.LITTLE_ENDIAN);
-			transactionType.loadAttachment(transaction, buffer); // this does not do validate
-		}
-		return transaction;
-	} catch (SQLException e) {
-		throw new RuntimeException(e.toString(), e);
+	var transactionType = Transactions.Types.Find(type, subtype);
+	var transaction = new Transaction({
+		type: transactionType,
+		timestamp: timestamp,
+		deadline: deadline,
+		senderPublicKey: senderPublicKey,
+		recipientId: recipientId,
+		amountMilliLm: amountMilliLm,
+		feeMilliLm: feeMilliLm,
+		referencedTransactionFullHash: referencedTransactionFullHash,
+		signature: signature,
+		blockId: blockId,
+		height: height,
+		id: id,
+		senderId: senderId,
+		blockTimestamp: blockTimestamp,
+		fullHash: fullHash
+		});
+	/* TODO
+	if (attachmentBytes) {
+		ByteBuffer buffer = ByteBuffer.wrap(attachmentBytes);
+		buffer.order(ByteOrder.LITTLE_ENDIAN);
+		transactionType.loadAttachment(transaction, buffer); // this does not do validate
 	}
 	*/
+	return transaction;
 }
 
 function FindBlockTransactions(con, blockId) {
@@ -131,49 +133,87 @@ function FindBlockTransactions(con, blockId) {
 	*/
 }
 
-function SaveTransactions(con, transactions) {
-	throw new Error('Not implemented');
-	/*
-	try {
-		for (Transaction transaction : transactions) {
-			try (PreparedStatement pstmt = con.prepareStatement("INSERT INTO transaction (id, deadline, sender_public_key, "
-					+ "recipient_id, amount, fee, referenced_transaction_full_hash, height, "
-					+ "block_id, signature, timestamp, type, subtype, sender_id, attachment_bytes, "
-					+ "block_timestamp, full_hash) "
-					+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
-				int i = 0;
-				pstmt.setLong(++i, transaction.getId());
-				pstmt.setShort(++i, transaction.getDeadline());
-				pstmt.setBytes(++i, transaction.getSenderPublicKey());
-				pstmt.setLong(++i, transaction.getRecipientId());
-				pstmt.setLong(++i, transaction.getAmountNQT());
-				pstmt.setLong(++i, transaction.getFeeNQT());
-				if (transaction.getReferencedTransactionFullHash() != null) {
-					pstmt.setBytes(++i, Convert.parseHexString(transaction.getReferencedTransactionFullHash()));
-				} else {
-					pstmt.setNull(++i, Types.BINARY);
-				}
-				pstmt.setInt(++i, transaction.getHeight());
-				pstmt.setLong(++i, transaction.getBlockId());
-				pstmt.setBytes(++i, transaction.getSignature());
-				pstmt.setInt(++i, transaction.getTimestamp());
-				pstmt.setByte(++i, transaction.getType().getType());
-				pstmt.setByte(++i, transaction.getType().getSubtype());
-				pstmt.setLong(++i, transaction.getSenderId());
-				if (transaction.getAttachment() != null) {
-					pstmt.setBytes(++i, transaction.getAttachment().getBytes());
-				} else {
-					pstmt.setNull(++i, Types.VARBINARY);
-				}
-				pstmt.setInt(++i, transaction.getBlockTimestamp());
-				pstmt.setBytes(++i, Convert.parseHexString(transaction.getFullHash()));
-				pstmt.executeUpdate();
-			}
-		}
-	} catch (SQLException e) {
-		throw new RuntimeException(e.toString(), e);
+function SaveTransaction(transaction, callback) {
+	//console.log(transaction);
+	//console.log(transaction.id);
+
+	var trModel = Db.GetModel('transaction');
+	tr = new trModel();
+	tr.id = transaction.GetId();
+	console.log('SaveTransaction: tr.id='+tr.id+' saving...');
+	tr.deadline = transaction.GetDeadline();
+	tr.sender_public_key = transaction.GetSenderPublicKey();
+	tr.recipient_id = transaction.GetRecipientId();
+	tr.amount = transaction.GetAmountMilliLm();
+	tr.fee = transaction.GetFeeMilliLm();
+	if (transaction.GetReferencedTransactionFullHash() != null) {
+		tr.referenced_transaction_full_hash = Convert.ParseHexString(transaction.GetReferencedTransactionFullHash());
+	} else {
+		tr.referenced_transaction_full_hash = Types.BINARY;
 	}
+	tr.height = transaction.GetHeight();
+	tr.block_id = transaction.GetBlockId();
+	tr.signature = transaction.GetSignature();
+	tr.timestamp = transaction.GetTimestamp();
+	tr.type = transaction.GetType().GetType()
+	tr.subtype = transaction.GetType().GetSubtype();
+	tr.sender_id = transaction.GetSenderId();
+	if (transaction.GetAttachment() != null) {
+		tr.attachment_bytes = transaction.GetAttachment().GetBytes();
+	} else {
+		tr.attachment_bytes = 0; //Types.VARBINARY;
+	}
+	tr.block_timestamp = transaction.GetBlockTimestamp();
+	tr.full_hash = Convert.ParseHexString(transaction.GetFullHash());
+
+	//console.log('SaveTransaction: transaction.id='+tr.id);
+	/*
+	console.log('tr.id='+tr.id);
+	console.log('tr.deadline='+tr.deadline);
+	console.log('tr.sender_public_key='+tr.sender_public_key);
+	console.log('tr.recipient_id='+tr.recipient_id);
+	console.log('tr.amount='+tr.amount);
+	console.log('tr.fee='+tr.fee);
+	console.log('tr.referenced_transaction_full_hash='+tr.referenced_transaction_full_hash);
+	console.log('tr.height='+tr.height);
+	console.log('tr.block_id='+tr.block_id);
+	console.log('tr.signature='+tr.signature);
+	console.log('tr.timestamp='+tr.timestamp);
+	console.log('tr.type='+tr.type);
+	console.log('tr.subtype='+tr.subtype);
+	console.log('tr.sender_id='+tr.sender_id);
+	console.log('tr.attachment_bytes='+tr.attachment_bytes);
+	console.log('tr.block_timestamp='+tr.block_timestamp);
+	console.log('tr.full_hash='+tr.full_hash);
 	*/
+
+	tr.save(function(err) {
+		if (err) {
+			Logger.warn('SaveTransaction: non saved. err='+err);
+			if (callback)
+				callback(err);
+			return;
+		}
+		trModel.findOne({id:tr.id}).exec(function(err, data) {
+			if (!err) {
+				if (data != null) {
+					//console.log('SaveTransaction: data='+data);
+					console.log('SaveTransaction: tr.id='+data.id+' saved');
+				} else {
+					console.log('SaveTransaction: non saved');
+				}
+			}
+			if (callback)
+				callback(err);
+		});
+	});
+}
+
+// con, transactions
+function SaveTransactions(transactions) {
+	for (var transaction in transactions) {
+		SaveTransaction(transaction);
+	}
 }
 
 
@@ -183,4 +223,5 @@ exports.HasTransaction = HasTransaction;
 exports.HasTransactionByFullHash = HasTransactionByFullHash;
 exports.LoadTransaction = LoadTransaction;
 exports.FindBlockTransactions = FindBlockTransactions;
+exports.SaveTransaction = SaveTransaction;
 exports.SaveTransactions = SaveTransactions;

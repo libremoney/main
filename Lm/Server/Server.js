@@ -8,11 +8,11 @@
 var express = require('express');
 var path = require('path');
 
-var Config = require(__dirname + '/../Config');
-var Logger = require(__dirname + "/../Logger").GetLogger(module);
-
 var Api = require(__dirname + "/Api");
+var Config = require(__dirname + '/../Config');
+var Core = require(__dirname + '/../Core');
 var GroupsPage = require(__dirname + "/Pages/Groups");
+var Logger = require(__dirname + "/../Logger").GetLogger(module);
 var MainPage = require(__dirname + "/Pages/Main");
 var ProjectsPage = require(__dirname + "/Pages/Projects");
 var StartPage = require(__dirname + "/Pages/Start");
@@ -23,11 +23,15 @@ var Test = require(__dirname + '/Test');
 //var routes = require('./routes'); // Файл с роутам
 //var Db = require('./lib/db'); // Файл работы с базой MongoDB
 
+var UserServer = require(__dirname + '/UserServer');
+
 
 var TESTNET_API_PORT = 6876;
 var allowedBotHosts = new Array();
-var enforcePost;
+var enforcePost1;
 
+var app1;
+var port1;
 
 // ==== Functions ====
 
@@ -35,7 +39,18 @@ function Log(msg) {
 	Logger.info(msg);
 }
 
-function Init(app, callback) {
+function Init(app, port, callback) {
+	app1 = app;
+	port1 = port;
+	/*
+	Core.AddListener(Core.Event.Shutdown, function() {
+		Shutdown();
+	});
+	*/
+	Core.AddListener(Core.Event.Start, function() {
+		Start();
+	});
+
 	//var PageDir = __dirname + '/pages/';
 	//appRoute = App.Route;
 	//appRouter = App.Router;
@@ -57,7 +72,6 @@ function Init(app, callback) {
 	*/
 
 	/*App.use(function (req, res, next) {
-		console.log('1111: '+req.body);
 		next();
 	});*/
 
@@ -91,7 +105,6 @@ function Init(app, callback) {
 function Init400(app) {
 	// Если произошла ошибка валидации, то отдаем 400 Bad Request
 	app.use(function (err, req, res, next) {
-		console.log(err.name);
 		if (err.name == "ValidationError") {
 			res.send(400, err);
 		} else {
@@ -130,7 +143,7 @@ function InitApi(app) {
 	app.get("/api/cancelBidOrder", Api.CancelBidOrder);
 	app.get("/api/castVote", Api.CastVote);
 	app.get("/api/createPoll", Api.CreatePoll);
-	app.get("/api/createTransaction", Api.CreateTransaction); // !!!!
+	//app.get("/api/createTransaction", Api.CreateTransaction); // !!!!
 	app.get("/api/decodeHallmark", Api.DecodeHallmark);
 	app.get("/api/decodeToken", Api.DecodeToken);
 	app.get("/api/generateToken", Api.GenerateToken);
@@ -165,6 +178,7 @@ function InitApi(app) {
 	app.get("/api/getAllTrades", Api.GetAllTrades);
 	app.get("/api/getTransaction", Api.GetTransaction);
 	app.get("/api/getTransactionBytes", Api.GetTransactionBytes);
+	app.get("/api/getVersion", Api.GetVersion);
 	app.get("/api/getUnconfirmedTransactionIds", Api.GetUnconfirmedTransactionIds);
 	app.get("/api/getUnconfirmedTransactions", Api.GetUnconfirmedTransactions);
 	app.get("/api/getAccountCurrentAskOrderIds", Api.GetAccountCurrentAskOrderIds);
@@ -194,11 +208,13 @@ function InitApi(app) {
 }
 
 function InitApi2(app) {
+	UserServer.Init();
+
 	app.post('/api', Api.Main);
 
 
 	/*
-	enforcePost = Config.GetBooleanProperty("apiServerEnforcePost");
+	enforcePost1 = Config.GetBooleanProperty("apiServerEnforcePost");
 	var allowedBotHostsList = Config.GetStringListProperty("allowedBotHosts");
 	if (allowedBotHostsList.indexOf("*") >= 0)  {
 		allowedBotHosts = null;
@@ -311,6 +327,10 @@ function InitTest(app) {
 
 function Shutdown() {
 	/*
+	API.shutdown();
+	Users.shutdown();
+	*/
+	/*
 	if (apiServer != null) {
 		try {
 			apiServer.stop();
@@ -321,10 +341,10 @@ function Shutdown() {
 	*/
 }
 
-function Start(app, port, callback) {
-	app.listen(port, function () {
-		console.log('Express server started on port %s', port);
-		if (callback) callback(null);
+function Start() {
+	Logger.info('Starting...');
+	app1.listen(port1, function () {
+		Logger.info('Server started on port='+port1);
 	});
 }
 

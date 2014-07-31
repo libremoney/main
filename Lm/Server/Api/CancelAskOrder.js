@@ -4,29 +4,21 @@
  * CC0 license
  */
 
-/*
-import nxt.Account;
-import nxt.Attachment;
-import nxt.NxtException;
-import nxt.Order;
-*/
-
+var ColoredCoins = require(__dirname + '/../../ColoredCoins');
+var CreateTransaction = require(__dirname + '/../CreateTransaction');
 var JsonResponses = require(__dirname + '/../JsonResponses');
 
 
 //super("order");
 function CancelAskOrder(req, res) {
-	res.send('This is not implemented');    
-	/*
-	Long orderId = ParameterParser.getOrderId(req);
-	Account account = ParameterParser.getSenderAccount(req);
-	Order.Ask orderData = Order.Ask.getAskOrder(orderId);
-	if (orderData == null || !orderData.getAccount().getId().equals(account.getId())) {
-		return JsonResponsesUnknownOrder;
+	var orderId = ParameterParser.GetOrderId(req);
+	var account = ParameterParser.GetSenderAccount(req);
+	var orderData = Order.Ask.GetAskOrder(orderId);
+	if (!orderData || !orderData.GetAccount().GetId() == account.GetId()) {
+		return JsonResponses.UnknownOrder;
 	}
-	Attachment attachment = new Attachment.ColoredCoinsAskOrderCancellation(orderId);
-	return createTransaction(req, account, attachment);
-	*/
+	var attachment = ColoredCoins.CreateColoredCoinsAskOrderCancellationAttachment(orderId);
+	return CreateTransaction(req, res, account, null, null, attachment);
 }
 
 module.exports = CancelAskOrder;

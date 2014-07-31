@@ -4,6 +4,10 @@
  * CC0 license
  */
 
+var Db = require(__dirname + '/../Db');
+var Logger = require(__dirname + '/../Logger').GetLogger(module);
+var Transactions = require(__dirname + '/../Transactions');
+
 
 function DeleteAll() {
 	throw new Error('Not implementted');
@@ -95,18 +99,20 @@ function FindBlockIdAtHeight(height) {
 	*/
 }
 
-function HasBlock(blockId) {
-	throw new Error('Not implementted');
-	/*
-	try (Connection con = Db.getConnection();
-		 PreparedStatement pstmt = con.prepareStatement("SELECT 1 FROM block WHERE id = ?")) {
-		pstmt.setLong(1, blockId);
-		ResultSet rs = pstmt.executeQuery();
-		return rs.next();
-	} catch (SQLException e) {
-		throw new RuntimeException(e.toString(), e);
-	}
-	*/
+function HasBlock(blockId, callback) {
+	if (!callback) return;
+	var blockModel = Db.GetModel('block');
+	blockModel.findOne({id: blockId}).exec(function(err, block) {
+		Logger.debug('HasBlock: err='+err+' block='+block);
+		if (err) {
+			callback(err);
+			return;
+		}
+		if (block)
+			callback(null, true)
+		else
+			callback(null, false);
+	});
 }
 
 function LoadBlock(con, rs) {
@@ -136,7 +142,7 @@ function LoadBlock(con, rs) {
 		byte[] payloadHash = rs.getBytes("payload_hash");
 
 		Long id = rs.getLong("id");
-		List<TransactionImpl> transactions = TransactionDb.findBlockTransactions(con, id);
+		List<TransactionImpl> transactions = Transactions.FindBlockTransactions(con, id);
 
 		BlockImpl block = new BlockImpl(version, timestamp, previousBlockId, totalAmountNQT, totalFeeNQT, payloadLength, payloadHash,
 				generatorPublicKey, generationSignature, blockSignature, previousBlockHash, transactions,
@@ -154,50 +160,54 @@ function LoadBlock(con, rs) {
 	*/
 }
 
-function SaveBlock(con, block) {
-	throw new Error('Not implementted');
+// con, block
+function SaveBlock(block) {
+	blockModel = Db.GetModel('block');
+	var b = new blockModel();
+
+	b.id = block.GetId();
+	b.version = block.GetVersion();
+	b.timestamp = block.GetTimestamp();
+
+	if (block.GetPreviousBlockId() != null) {
+		b.previous_block_id = block.GetPreviousBlockId();
+	} else {
+		b.previous_block_id = 0; //Types.BIGINT;
+	}
+
+	b.total_amount = block.GetTotalAmountMilliLm();
+	b.total_fee = block.GetTotalFeeMilliLm();
+	b.payload_length = block.GetPayloadLength();
+	b.generator_public_key = block.GetGeneratorPublicKey();
+	b.previous_block_hash = block.GetPreviousBlockHash();
+	b.cumulative_difficulty = block.GetCumulativeDifficulty().toByteArray();
+	b.base_target = block.GetBaseTarget();
+
+	if (block.GetNextBlockId() != null) {
+		b.next_block_id = block.GetNextBlockId();
+	} else {
+		b.next_block_id = 0; //Types.BIGINT;
+	}
+
+	b.height = block.GetHeight();
+	b.generation_signature = block.GetGenerationSignature();
+	b.block_signature = block.GetBlockSignature();
+	b.payload_hash = block.GetPayloadHash();
+	b.generator_id = block.GetGeneratorId();
+
+	b.save();
+
+	Transactions.SaveTransactions(block.GetTransactions());
+
+	// Update PreviousBlock
+	if (block.GetPreviousBlockId()) {
+		blockModel.findOne({id: block.GetPreviousBlockId()}, function(err, b) {
+			b.next_block_id = block.GetId();
+			b.save();
+		});
+	}
+
 	/*
-	try {
-		try (PreparedStatement pstmt = con.prepareStatement("INSERT INTO block (id, version, timestamp, previous_block_id, "
-				+ "total_amount, total_fee, payload_length, generator_public_key, previous_block_hash, cumulative_difficulty, "
-				+ "base_target, next_block_id, height, generation_signature, block_signature, payload_hash, generator_id) "
-				+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
-			int i = 0;
-			pstmt.setLong(++i, block.getId());
-			pstmt.setInt(++i, block.getVersion());
-			pstmt.setInt(++i, block.getTimestamp());
-			if (block.getPreviousBlockId() != null) {
-				pstmt.setLong(++i, block.getPreviousBlockId());
-			} else {
-				pstmt.setNull(++i, Types.BIGINT);
-			}
-			pstmt.setLong(++i, block.getTotalAmountNQT());
-			pstmt.setLong(++i, block.getTotalFeeNQT());
-			pstmt.setInt(++i, block.getPayloadLength());
-			pstmt.setBytes(++i, block.getGeneratorPublicKey());
-			pstmt.setBytes(++i, block.getPreviousBlockHash());
-			pstmt.setBytes(++i, block.getCumulativeDifficulty().toByteArray());
-			pstmt.setLong(++i, block.getBaseTarget());
-			if (block.getNextBlockId()!= null) {
-				pstmt.setLong(++i, block.getNextBlockId());
-			} else {
-				pstmt.setNull(++i, Types.BIGINT);
-			}
-			pstmt.setInt(++i, block.getHeight());
-			pstmt.setBytes(++i, block.getGenerationSignature());
-			pstmt.setBytes(++i, block.getBlockSignature());
-			pstmt.setBytes(++i, block.getPayloadHash());
-			pstmt.setLong(++i, block.getGeneratorId());
-			pstmt.executeUpdate();
-			TransactionDb.saveTransactions(con, block.getTransactions());
-		}
-		if (block.getPreviousBlockId() != null) {
-			try (PreparedStatement pstmt = con.prepareStatement("UPDATE block SET next_block_id = ? WHERE id = ?")) {
-				pstmt.setLong(1, block.getId());
-				pstmt.setLong(2, block.getPreviousBlockId());
-				pstmt.executeUpdate();
-			}
-		}
 	} catch (SQLException e) {
 		throw new RuntimeException(e.toString(), e);
 	}

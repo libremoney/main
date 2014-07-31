@@ -6,18 +6,17 @@
 
 
 var winston = require('winston');
+var Listeners = require(__dirname + '/Util/Listeners');
 
 
 // Our logger instance
 var log;
 
-
-/*
 // Log event types
-public static enum Event {
-	MESSAGE, EXCEPTION
+var Event = {
+	MESSAGE:0,
+	EXCEPTION:1
 }
-*/
 
 // Log levels enum
 var Level = {
@@ -28,13 +27,8 @@ var Level = {
 	Debug: 4
 }
 
-/*
-// Message listeners
-private static final Listeners<String, Event> messageListeners = new Listeners<>();
-
-// Exception listeners
-private static final Listeners<Exception, Event> exceptionListeners = new Listeners<>();
-*/
+var messageListeners = new Listeners();
+var exceptionListeners = new Listeners();
 
 /**
  * Initialize the JDK log manager using the Java logging configuration files
@@ -125,11 +119,8 @@ public static void shutdown() {
  * @param eventType Notification event type
  * @return TRUE if listener added
  */
-function AddMessageListener(listener, eventType) {
-	throw new Error('Not implementted');
-	/*
-	return messageListeners.addListener(listener, eventType);
-	*/
+function AddMessageListener(eventType, listener) {
+	return messageListeners.AddListener(eventType, listener);
 }
 
 /**
@@ -139,11 +130,8 @@ function AddMessageListener(listener, eventType) {
  * @param eventType Notification event type
  * @return TRUE if listener added
  */
-function AddExceptionListener(listener, eventType) {
-	throw new Error('Not implementted');
-	/*
-	return exceptionListeners.addListener(listener, eventType);
-	*/
+function AddExceptionListener(eventType, listener) {
+	return exceptionListeners.AddListener(eventType, listener);
 }
 
 /**
@@ -153,11 +141,8 @@ function AddExceptionListener(listener, eventType) {
  * @param eventType Notification event type
  * @return TRUE if listener removed
  */
-function RemoveMessageListener(listener, eventType) {
-	throw new Error('Not implementted');
-	/*
-	return messageListeners.removeListener(listener, eventType);
-	*/
+function RemoveMessageListener(eventType, listener) {
+	return messageListeners.RemoveListener(eventType, listener);
 }
 
 /**
@@ -167,11 +152,8 @@ function RemoveMessageListener(listener, eventType) {
  * @param eventType Notification event type
  * @return TRUE if listener removed
  */
-function RemoveExceptionListener(listener, eventType) {
-	throw new Error('Not implementted');
-	/*
-	return exceptionListeners.removeListener(listener, eventType);
-	*/
+function RemoveExceptionListener(eventType, listener) {
+	return exceptionListeners.RemoveListener(eventType, listener);
 }
 
 /**
@@ -298,9 +280,9 @@ function DoLog(level, message, exc) {
 	/*
 	// Notify listeners
 	if (exc != null)
-		exceptionListeners.notify(exc, Event.EXCEPTION);
+		exceptionListeners.Notify(Event.EXCEPTION, exc);
 	else
-		messageListeners.notify(message, Event.MESSAGE);
+		messageListeners.Notify(Event.MESSAGE, message);
 	*/
 	//throw new Error('Not implementted');
 }

@@ -1,3 +1,8 @@
+/*!
+ * LibreMoney Aliases 0.0
+ * Copyright(c) 2014 LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
 var aliases = new Array(); //private static final ConcurrentMap<String, Alias> aliases = new ConcurrentHashMap<>();
 //private static final ConcurrentMap<Long, Alias> aliasIdToAliasMappings = new ConcurrentHashMap<>();
@@ -39,6 +44,9 @@ function GetAliasByName(AliasName) {
 }
 
 function Init() {
+    Core.AddListener(Core.Events.Clear, function() {
+        Clear();
+    })
 }
 
 function Remove(Alias) {

@@ -1,18 +1,15 @@
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-var LmTrType = require(__dirname + '/LmTransactionType');
 
-function TransactionType_AccountControl() {
+var Constants = require(__dirname + '/../Constants');
+var TrType = require(__dirname + '/TransactionType');
 
-	this.GetType = function () {
-		return LmTrType.TYPE_ACCOUNT_CONTROL;
-	}
 
-	this.ApplyAttachmentUnconfirmed = function (Transaction, SenderAccount) {
-		return true;
-	}
-
-	this.UndoAttachmentUnconfirmed = function (Transaction, SenderAccount) {}
-
+function CreateAccountControlTransactionType() {
 	/*
 	public static final TransactionType EFFECTIVE_BALANCE_LEASING = new AccountControl() {
 
@@ -54,6 +51,28 @@ function TransactionType_AccountControl() {
 
 	};
 	*/
+
+	function ApplyAttachmentUnconfirmed(transaction, senderAccount) {
+		return true;
+	}
+
+	function GetType() {
+		return Constants.TYPE_ACCOUNT_CONTROL;
+	}
+
+	function UndoAttachmentUnconfirmed(transaction, senderAccount) {
+	}
+
+	this.ApplyAttachmentUnconfirmed = ApplyAttachmentUnconfirmed;
+	this.GetType = GetType;
+	this.UndoAttachmentUnconfirmed = UndoAttachmentUnconfirmed;
+	return this;
 }
 
-module.exports = TransactionType_AccountControl;
+function Init() {
+	//accountControl = CreateAccountControlTransactionType();
+	//Transactions.Types.Add(accountControl);
+}
+
+
+exports.Init = Init;

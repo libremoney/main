@@ -93,6 +93,16 @@ var bigInt = (function () {
 		var o = {
 			value: value,
 			sign: s,
+			// Prof1983
+			fromByteArray: function (m, arr) {
+				if (arr.length < 1) throw 'BitInteger: arr.length < 0';
+				var th = bigInt(arr[0]);
+				for (var i = 1; arr.length > i; i++) {
+					th.multiply(256);
+					th.add(arr[i]);
+				}
+				return th;
+			},
 			negate: function (m) {
 				var first = m || self;
 				return bigInt(first.value, !first.sign);
@@ -331,6 +341,11 @@ var bigInt = (function () {
 					return (first.value == 0 ? 0 : 1);
 				} else
 					return -1;
+			},
+			// Prof1983
+			toByteArray: function() {
+				// TODO
+				return [0];
 			},
 			toString: function (m) {
 				var first = m || self;

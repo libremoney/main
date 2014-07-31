@@ -1,67 +1,75 @@
-/*
-import nxt.Account;
-import nxt.Alias;
-import nxt.Asset;
-import nxt.Generator;
-import nxt.Nxt;
-import nxt.Order;
-import nxt.Poll;
-import nxt.Trade;
-import nxt.Vote;
-import nxt.peer.Peer;
-import nxt.peer.Peers;
-import nxt.util.Convert;
-*/
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-function Main(req, res) {
-	//static final GetState instance = new GetState();
-	res.send('This is not implemented');
-	/*
-	JSONStreamAware processRequest(HttpServletRequest req) {
+var Accounts = require(__dirname + '/../../Accounts');
+var Aliases = require(__dirname + '/../../Aliases');
+var Assets = require(__dirname + '/../../Assets');
+var Blockchain = require(__dirname + '/../../Blockchain');
+var BlockchainProcessor = require(__dirname + '/../../BlockchainProcessor');
+var Convert = require(__dirname + '/../../Util/Convert');
+var Core = require(__dirname + '/../../Core');
+var Generators = require(__dirname + '/../../Generators');
+var Logger = require(__dirname + '/../../Logger').GetLogger(module);
+var Orders = require(__dirname + '/../../Orders');
+var Peers = require(__dirname + '/../../Peers');
+var Polls = require(__dirname + '/../../Polls');
+var Trades = require(__dirname + '/../../Trades');
+var Votes = require(__dirname + '/../../Votes');
 
-		JSONObject response = new JSONObject();
 
-		response.put("version", Nxt.VERSION);
-		response.put("time", Convert.getEpochTime());
-		response.put("lastBlock", Nxt.getBlockchain().getLastBlock().getStringId());
-		response.put("cumulativeDifficulty", Nxt.getBlockchain().getLastBlock().getCumulativeDifficulty().toString());
+function GetState(req, res) {
+	var response = {};
 
-		long totalEffectiveBalance = 0;
-		for (Account account : Account.getAllAccounts()) {
-			long effectiveBalanceNXT = account.getEffectiveBalanceNXT();
-			if (effectiveBalanceNXT > 0) {
-				totalEffectiveBalance += effectiveBalanceNXT;
-			}
+	response.version = Core.GetVersion();
+	response.time = Convert.GetEpochTime();
+	response.lastBlock = Blockchain.GetLastBlock().GetStringId();
+	response.cumulativeDifficulty = Blockchain.GetLastBlock().GetCumulativeDifficulty().toString();
+
+	var totalEffectiveBalance = 0;
+	for (var account in Account.GetAllAccounts()) {
+		var effectiveBalanceLm = account.GetEffectiveBalanceLm();
+		if (effectiveBalanceLm > 0) {
+			totalEffectiveBalance += effectiveBalanceLm;
 		}
-		response.put("totalEffectiveBalanceNXT", totalEffectiveBalance);
-
-		response.put("numberOfBlocks", Nxt.getBlockchain().getHeight() + 1);
-		response.put("numberOfTransactions", Nxt.getBlockchain().getTransactionCount());
-		response.put("numberOfAccounts", Account.getAllAccounts().size());
-		response.put("numberOfAssets", Asset.getAllAssets().size());
-		response.put("numberOfOrders", Order.Ask.getAllAskOrders().size() + Order.Bid.getAllBidOrders().size());
-		int numberOfTrades = 0;
-		for (List<Trade> assetTrades : Trade.getAllTrades()) {
-			numberOfTrades += assetTrades.size();
-		}
-		response.put("numberOfTrades", numberOfTrades);
-		response.put("numberOfAliases", Alias.getAllAliases().size());
-		response.put("numberOfPolls", Poll.getAllPolls().size());
-		response.put("numberOfVotes", Vote.getVotes().size());
-		response.put("numberOfPeers", Peers.getAllPeers().size());
-		response.put("numberOfUnlockedAccounts", Generator.getAllGenerators().size());
-		Peer lastBlockchainFeeder = Nxt.getBlockchainProcessor().getLastBlockchainFeeder();
-		response.put("lastBlockchainFeeder", lastBlockchainFeeder == null ? null : lastBlockchainFeeder.getAnnouncedAddress());
-		response.put("lastBlockchainFeederHeight", Nxt.getBlockchainProcessor().getLastBlockchainFeederHeight());
-		response.put("isScanning", Nxt.getBlockchainProcessor().isScanning());
-		response.put("availableProcessors", Runtime.getRuntime().availableProcessors());
-		response.put("maxMemory", Runtime.getRuntime().maxMemory());
-		response.put("totalMemory", Runtime.getRuntime().totalMemory());
-		response.put("freeMemory", Runtime.getRuntime().freeMemory());
-
-		return response;
 	}
-	*/
+	response.totalEffectiveBalanceLm = totalEffectiveBalance;
+
+	response.numberOfBlocks = Blockchain.GetHeight() + 1;
+	response.numberOfTransactions = Blockchain.GetTransactionCount(function(err, count) {
+		if (err) {
+			res.send('Error');
+			Logger.warn('Error');
+			return;
+		}
+		response.numberOfAccounts = Accounts.GetAllAccounts().length;
+		response.numberOfAssets = Assets.GetAllAssets().length;
+		response.numberOfOrders = Orders.Ask.GetAllAskOrders().length + Orders.Bid.GetAllBidOrders().length;
+		var numberOfTrades = 0;
+		for (var assetTrades in Trades.GetAllTrades()) {
+			numberOfTrades += assetTrades.length;
+		}
+		response.numberOfTrades = numberOfTrades;
+		response.numberOfAliases = Aliases.GetAllAliases().length;
+		response.numberOfPolls = Polls.GetAllPolls().length;
+		response.numberOfVotes = Votes.GetVotes().length;
+		response.numberOfPeers = Peers.GetAllPeers().length;
+		response.numberOfUnlockedAccounts = Generators.GetAllGenerators().length;
+		var lastBlockchainFeeder = BlockchainProcessor.GetLastBlockchainFeeder();
+		response.lastBlockchainFeeder = (lastBlockchainFeeder == null ? null : lastBlockchainFeeder.GetAnnouncedAddress());
+		response.lastBlockchainFeederHeight = BlockchainProcessor.GetLastBlockchainFeederHeight();
+		response.isScanning = BlockchainProcessor.IsScanning();
+		response.availableProcessors = 1; //Runtime.getRuntime().availableProcessors();
+		response.maxMemory = 1; //Runtime.getRuntime().maxMemory();
+		response.totalMemory = 1; //Runtime.getRuntime().totalMemory();
+		response.freeMemory = 1; //Runtime.getRuntime().freeMemory();
+
+		res.send(response);
+	});
+	return true;
 }
 
-module.exports = Main;
+
+module.exports = GetState;

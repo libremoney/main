@@ -1,62 +1,52 @@
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-var LmAttachment = require(__dirname + '/LmAttachment');
+//var LmAttachment = require(__dirname + '/LmAttachment');
+var Constants = require(__dirname + '/../Constants');
+var Convert = require(__dirname + '/../Convert');
+var Transactions = require(__dirname + '/../Transactions');
 
-function CreateColoredCoinsOrderCancellation() {
-	var obj = LmAttachment.CreateAttachment();
 
-	/*
-	static final long serialVersionUID = 0;
-	private final Long orderId;
+//static final long serialVersionUID = 0;
 
-	private ColoredCoinsOrderCancellation(Long orderId) {
-		this.orderId = orderId;
-	}
+function ColoredCoinsOrderCancellation(orderId) {
+	//obj.orderId;
+	var obj = Transactions.CreateAttachment(orderId);
 
-	public int getSize() {
-		return 8;
-	}
-
-	public byte[] getBytes() {
+	function GetBytes() {
+		res.send('This is not implemented');
+		/*
 		ByteBuffer buffer = ByteBuffer.allocate(getSize());
 		buffer.order(ByteOrder.LITTLE_ENDIAN);
 		buffer.putLong(Convert.nullToZero(orderId));
 		return buffer.array();
+		*/
 	}
 
-	public JSONObject getJSONObject() {
-		JSONObject attachment = new JSONObject();
-		attachment.put("order", Convert.toUnsignedLong(orderId));
+	function GetJsonObject() {
+		var attachment = {};
+		attachment.order = Convert.ToUnsignedLong(this.orderId);
 		return attachment;
 	}
 
-	public Long getOrderId() {
+	function GetOrderId() {
 		return orderId;
 	}
-	*/
 
+	function GetSize() {
+		return 8;
+	}
+
+	obj.GetBytes = GetBytes;
+	obj.GetJsonObject = GetJsonObject;
+	obj.GetOrderId = GetOrderId;
+	obj.GetSize = GetSize;
 	return obj;
 }
 
 
-function CreateColoredCoinsBidOrderCancellation() {
-	obj = CreateColoredCoinsOrderCancellation();
 
-	/*
-	static final long serialVersionUID = 0;
-
-	public ColoredCoinsBidOrderCancellation(Long orderId) {
-		super(orderId);
-	}
-
-	@Override
-	public TransactionType getTransactionType() {
-		return TransactionType.ColoredCoins.BID_ORDER_CANCELLATION;
-	}
-	*/
-
-	return obj;
-}
-
-
-exports.CreateColoredCoinsOrderCancellation = CreateColoredCoinsOrderCancellation;
-exports.CreateColoredCoinsBidOrderCancellation = CreateColoredCoinsBidOrderCancellation;
+module.exports = ColoredCoinsOrderCancellation;

@@ -1,50 +1,48 @@
-/*
-import nxt.Nxt;
-import nxt.Transaction;
-import nxt.util.Convert;
-import static nxt.http.JSONResponses.INCORRECT_TRANSACTION;
-import static nxt.http.JSONResponses.MISSING_TRANSACTION;
-import static nxt.http.JSONResponses.UNKNOWN_TRANSACTION;
-*/
+/*!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-function Main(req, res) {
-	res.send('This is not implemented');
-	/*
-	static final GetTransactionBytes instance = new GetTransactionBytes();
+var Convert = require(__dirname + '/../../Util/Convert');
+var JsonResponses = require(__dirname + '/../JsonResponses');
+var TransactionProcessor = require(__dirname + '/../../TransactionProcessor');
 
-	private GetTransactionBytes() {
-		super("transaction");
+
+//super("transaction");
+function GetTransactionBytes(req, res) {
+	var transactionValue = req.query.transaction;
+	if (!transactionValue) {
+		res.send(JsonResponses.MissingTransaction);
+		return;
 	}
 
-	JSONStreamAware processRequest(HttpServletRequest req) {
-		String transactionValue = req.getParameter("transaction");
-		if (transactionValue == null) {
-			return MISSING_TRANSACTION;
-		}
+	var transactionId;
+	var transaction;
+	//try {
+		transactionId = Convert.ParseUnsignedLong(transactionValue);
+	//} catch (e) {
+	//	res.send(JsonResponses.IncorrectTransaction);
+	//	return;
+	//}
 
-		Long transactionId;
-		Transaction transaction;
-		try {
-			transactionId = Convert.parseUnsignedLong(transactionValue);
-		} catch (RuntimeException e) {
-			return INCORRECT_TRANSACTION;
-		}
-
-		transaction = Nxt.getBlockchain().getTransaction(transactionId);
-		JSONObject response = new JSONObject();
-		if (transaction == null) {
-			transaction = Nxt.getTransactionProcessor().getUnconfirmedTransaction(transactionId);
-			if (transaction == null) {
-				return UNKNOWN_TRANSACTION;
+	Blockchain.GetTransaction(transactionId, function(err, transaction) {
+		var response = {};
+		if (!transaction) {
+			transaction = TransactionProcessor.GetUnconfirmedTransaction(transactionId);
+			if (!transaction) {
+				res.send(JsonResponses.UnknownTransaction);
+				return;
 			}
 		} else {
-			response.put("confirmations", Nxt.getBlockchain().getLastBlock().getHeight() - transaction.getHeight());
+			response.confirmations = Blockchain.GetLastBlock().GetHeight() - transaction.GetHeight();
 		}
-		response.put("transactionBytes", Convert.toHexString(transaction.getBytes()));
-		response.put("unsignedTransactionBytes", Convert.toHexString(transaction.getUnsignedBytes()));
-		return response;
-	}
-	*/
+		response.transactionBytes = Convert.ToHexString(transaction.GetBytes());
+		response.unsignedTransactionBytes = Convert.ToHexString(transaction.GetUnsignedBytes());
+		res.send(response);
+		return;
+	});
 }
 
-module.exports = Main;
+
+module.exports = GetTransactionBytes;

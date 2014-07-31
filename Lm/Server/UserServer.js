@@ -5,43 +5,19 @@
  */
 
 /*
-import nxt.Account;
 import nxt.Block;
-import nxt.BlockchainProcessor;
 import nxt.Constants;
-import nxt.Generator;
-import nxt.Nxt;
-import nxt.Transaction;
-import nxt.TransactionProcessor;
-import nxt.peer.Peer;
-import nxt.peer.Peers;
 import nxt.util.Convert;
-import nxt.util.Listener;
-import nxt.util.Logger;
 import nxt.util.ThreadPool;
-import org.eclipse.jetty.server.HttpConfiguration;
-import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.SecureRequestCustomizer;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.SslConnectionFactory;
-import org.eclipse.jetty.server.handler.ContextHandler;
-import org.eclipse.jetty.server.handler.DefaultHandler;
-import org.eclipse.jetty.server.handler.HandlerList;
-import org.eclipse.jetty.server.handler.ResourceHandler;
-import org.eclipse.jetty.servlet.FilterHolder;
-import org.eclipse.jetty.servlet.FilterMapping;
-import org.eclipse.jetty.servlet.ServletHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.servlets.CrossOriginFilter;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONStreamAware;
 */
 
+var Accounts = require(__dirname + '/../Accounts');
+var BlockchainProcessor = require(__dirname + '/../BlockchainProcessor');
 var Config = require(__dirname + '/../Config');
+var Generators = require(__dirname + '/../Generators');
 var Logger = require(__dirname + '/../Logger').GetLogger(module);
+var Peers = require(__dirname + '/../Peers');
+var TransactionProcessor = require(__dirname + '/../TransactionProcessor');
 var User = require(__dirname + '/User');
 
 
@@ -61,43 +37,64 @@ var transactionIndexMap = new Array(); //ConcurrentHashMap<>();
 
 var allowedUserHosts = new Array();
 
+var enforcePost2;
+
 
 function AllowedUserHosts_Contains(host) {
 	if (allowedUserHosts.length == 0) return false;
 	return (allowedUserHosts.indexOf(host) >= 0);
 }
 
+function GetEnforcePost() {
+	return enforcePost2;
+}
+
 function GetAllUsers() {
 	return allUsers;
 }
 
+// deprecated
 function GetIndex1(peer) {
+	return GetIndexByPeer(peer);
+}
+
+// deprecated
+function GetIndex2(block) {
+	return GetIndexByBlock(block);
+}
+
+// deprecated
+function GetIndex3(transaction) {
+	return GetIndexByTransaction(transaction);
+}
+
+function GetIndexByBlock(block) {
+	var index = blockIndexMap.indexOf(block.GetId());
+	if (index < 0) {
+		blockCounter++;
+		index = blockCounter;
+		blockIndexMap[index] = block.GetId();
+	}
+	return index;
+}
+
+function GetIndexByPeer(peer) {
 	var index = peerIndexMap.indexOf(peer.GetPeerAddress());
 	if (index < 0) {
 		peerCounter++;
 		index = peerCounter;
 		peerIndexMap[index] = peer.GetPeerAddress();
-		peerAddressMap[peer.getPeerAddress()] = index;
+		peerAddressMap[peer.GetPeerAddress()] = index;
 	}
 	return index;
 }
 
-function GetIndex2(block) {
-	var index = blockIndexMap.indexOf(block.GetId());
-	if (index < 0) {
-		blockCounter++;
-		index = blockCounter;
-		blockIndexMap[index] = block.getId();
-	}
-	return index;
-}
-
-function GetIndex3(transaction) {
-	var index = transactionIndexMap.indexOf(transaction.getId());
+function GetIndexByTransaction(transaction) {
+	var index = transactionIndexMap.indexOf(transaction.GetId());
 	if (index < 0) {
 		transactionCounter++;
 		index = transactionCounter;
-		transactionIndexMap[index] = transaction.getId();
+		transactionIndexMap[index] = transaction.GetId();
 	}
 	return index;
 }
@@ -123,8 +120,10 @@ function GetUser(userId) {
 }
 
 function Init() {
+	var enforcePost2 = Config.GetBooleanProperty("uiServerEnforcePost");
+
 	var allowedUserHostsList = Config.GetStringListProperty("allowedUserHosts");
-	if (allowedUserHostsList.indexOf("*") < 0) {
+	if (allowedUserHostsList && allowedUserHostsList.indexOf("*") < 0) {
 		allowedUserHosts = allowedUserHostsList; //Collections.unmodifiableSet(new HashSet<>(allowedUserHostsList));
 	} else {
 		allowedUserHosts = null;
@@ -220,386 +219,369 @@ function Init() {
 	InitPeers();
 	InitTransactionProcessor();
 	InitBlockchainProcessor();
-	InitGenerator();
+	InitGenerators();
 }
 
 function InitAccouns() {
-	/*
-	Account.addListener(new Listener<Account>() {
-		public void notify(Account account) {
-			JSONObject response = new JSONObject();
-			response.put("response", "setBalance");
-			response.put("balanceNQT", account.getUnconfirmedBalanceNQT());
-			byte[] accountPublicKey = account.getPublicKey();
-			for (User user : Users.users.values()) {
-				if (user.getSecretPhrase() != null && Arrays.equals(user.getPublicKey(), accountPublicKey)) {
-					user.send(response);
-				}
+	Accounts.AddListener(Accounts.Event.UNCONFIRMED_BALANCE, function(account) {
+		var response = {};
+		response.response = "setBalance";
+		response.balanceMilliLm = account.GetUnconfirmedBalanceMilliLm();
+		var accountPublicKey = account.GetPublicKey();
+		for (var user in users) {
+			if (user.GetSecretPhrase() != null && user.GetPublicKey() == accountPublicKey) {
+				user.Send(response);
 			}
 		}
-	}, Account.Event.UNCONFIRMED_BALANCE);
-	*/
+	});
 }
 
 function InitBlockchainProcessor() {
-	/*
-	Nxt.getBlockchainProcessor().addListener(new Listener<Block>() {
-		public void notify(Block block) {
-			JSONObject response = new JSONObject();
-			JSONArray addedOrphanedBlocks = new JSONArray();
-			JSONObject addedOrphanedBlock = new JSONObject();
-			addedOrphanedBlock.put("index", Users.getIndex(block));
-			addedOrphanedBlock.put("timestamp", block.getTimestamp());
-			addedOrphanedBlock.put("numberOfTransactions", block.getTransactionIds().size());
-			addedOrphanedBlock.put("totalAmountNQT", block.getTotalAmountNQT());
-			addedOrphanedBlock.put("totalFeeNQT", block.getTotalFeeNQT());
-			addedOrphanedBlock.put("payloadLength", block.getPayloadLength());
-			addedOrphanedBlock.put("generator", Convert.toUnsignedLong(block.getGeneratorId()));
-			addedOrphanedBlock.put("height", block.getHeight());
-			addedOrphanedBlock.put("version", block.getVersion());
-			addedOrphanedBlock.put("block", block.getStringId());
-			addedOrphanedBlock.put("baseTarget", BigInteger.valueOf(block.getBaseTarget()).multiply(BigInteger.valueOf(100000)).divide(BigInteger.valueOf(Constants.InitialBaseTarget)));
-			addedOrphanedBlocks.add(addedOrphanedBlock);
-			response.put("addedOrphanedBlocks", addedOrphanedBlocks);
-			Users.sendNewDataToAll(response);
-		}
-	}, BlockchainProcessor.Event.BLOCK_POPPED);
+	BlockchainProcessor.AddListener(BlockchainProcessor.Event.BLOCK_POPPED, function(block) {
+		var response = {};
+		var addedOrphanedBlocks = [];
+		var addedOrphanedBlock = {};
+		addedOrphanedBlock.index = GetIndex(block);
+		addedOrphanedBlock.timestamp = block.getTimestamp();
+		addedOrphanedBlock.numberOfTransactions = block.GetTransactionIds().length;
+		addedOrphanedBlock.totalAmountMilliLm = block.GetTotalAmountMilliLm();
+		addedOrphanedBlock.totalFeeMilliLm = block.GetTotalFeeMilliLm();
+		addedOrphanedBlock.payloadLength = block.GetPayloadLength();
+		addedOrphanedBlock.generator = Convert.ToUnsignedLong(block.GetGeneratorId());
+		addedOrphanedBlock.height = block.GetHeight();
+		addedOrphanedBlock.version = block.GetVersion();
+		addedOrphanedBlock.block = block.GetStringId();
+		addedOrphanedBlock.baseTarget = BigInteger.valueOf(block.GetBaseTarget()).multiply(BigInteger.valueOf(100000))
+				.divide(BigInteger.valueOf(Constants.InitialBaseTarget));
+		addedOrphanedBlocks.push(addedOrphanedBlock);
+		response.put("addedOrphanedBlocks", addedOrphanedBlocks);
+		SendNewDataToAll(response);
+	});
 
-	Nxt.getBlockchainProcessor().addListener(new Listener<Block>() {
-		public void notify(Block block) {
-			JSONObject response = new JSONObject();
-			JSONArray addedRecentBlocks = new JSONArray();
-			JSONObject addedRecentBlock = new JSONObject();
-			addedRecentBlock.put("index", Users.getIndex(block));
-			addedRecentBlock.put("timestamp", block.getTimestamp());
-			addedRecentBlock.put("numberOfTransactions", block.getTransactionIds().size());
-			addedRecentBlock.put("totalAmountNQT", block.getTotalAmountNQT());
-			addedRecentBlock.put("totalFeeNQT", block.getTotalFeeNQT());
-			addedRecentBlock.put("payloadLength", block.getPayloadLength());
-			addedRecentBlock.put("generator", Convert.toUnsignedLong(block.getGeneratorId()));
-			addedRecentBlock.put("height", block.getHeight());
-			addedRecentBlock.put("version", block.getVersion());
-			addedRecentBlock.put("block", block.getStringId());
-			addedRecentBlock.put("baseTarget", BigInteger.valueOf(block.getBaseTarget()).multiply(BigInteger.valueOf(100000)).divide(BigInteger.valueOf(Constants.InitialBaseTarget)));
-			addedRecentBlocks.add(addedRecentBlock);
-			response.put("addedRecentBlocks", addedRecentBlocks);
-			Users.sendNewDataToAll(response);
-		}
-	}, BlockchainProcessor.Event.BLOCK_PUSHED);
-	*/
+	BlockchainProcessor.AddListener(BlockchainProcessor.Event.BLOCK_PUSHED, function(block) {
+		var response = {};
+		var addedRecentBlocks = [];
+		var addedRecentBlock = {};
+		addedRecentBlock.index = GetIndex(block);
+		addedRecentBlock.timestamp = block.GetTimestamp();
+		addedRecentBlock.numberOfTransactions = block.GetTransactionIds().length;
+		addedRecentBlock.totalAmountMilliLm = block.GetTotalAmountMilliLm();
+		addedRecentBlock.totalFeeMilliLm = block.GetTotalFeeMilliLm();
+		addedRecentBlock.payloadLength = block.GetPayloadLength();
+		addedRecentBlock.generator = Convert.ToUnsignedLong(block.GetGeneratorId());
+		addedRecentBlock.height = block.GetHeight();
+		addedRecentBlock.version = block.GetVersion();
+		addedRecentBlock.block = block.GetStringId();
+		addedRecentBlock.baseTarget = BigInteger.valueOf(block.GetBaseTarget()).multiply(BigInteger.valueOf(100000))
+				.divide(BigInteger.valueOf(Constants.InitialBaseTarget));
+		addedRecentBlocks.push(addedRecentBlock);
+		response.addedRecentBlocks = addedRecentBlocks;
+		SendNewDataToAll(response);
+	});
 }
 
-function InitGenerator() {
-	/*
-	Generator.addListener(new Listener<Generator>() {
-		public void notify(Generator generator) {
-			JSONObject response = new JSONObject();
-			response.put("response", "setBlockGenerationDeadline");
-			response.put("deadline", generator.getDeadline());
-			for (User user : users.values()) {
-				if (Arrays.equals(generator.getPublicKey(), user.getPublicKey())) {
-					user.send(response);
-				}
+function InitGenerators() {
+	Generators.AddListener(Generators.Event.GENERATION_DEADLINE, function(generator) {
+		var response = {};
+		response.response = "setBlockGenerationDeadline";
+		response.deadline = generator.GetDeadline();
+		for (var user in users) {
+			if (Arrays.Equal(generator.GetPublicKey(), user.GetPublicKey())) {
+				user.Send(response);
 			}
 		}
-	}, Generator.Event.GENERATION_DEADLINE);
-	*/	
+	});
 }
 
 function InitPeers() {
-	/*
-	Peers.addListener(new Listener<Peer>() {
-		public void notify(Peer peer) {
-			JSONObject response = new JSONObject();
-			JSONArray removedActivePeers = new JSONArray();
-			JSONObject removedActivePeer = new JSONObject();
-			removedActivePeer.put("index", Users.getIndex(peer));
-			removedActivePeers.add(removedActivePeer);
-			response.put("removedActivePeers", removedActivePeers);
-			JSONArray removedKnownPeers = new JSONArray();
-			JSONObject removedKnownPeer = new JSONObject();
-			removedKnownPeer.put("index", Users.getIndex(peer));
-			removedKnownPeers.add(removedKnownPeer);
-			response.put("removedKnownPeers", removedKnownPeers);
-			JSONArray addedBlacklistedPeers = new JSONArray();
-			JSONObject addedBlacklistedPeer = new JSONObject();
-			addedBlacklistedPeer.put("index", Users.getIndex(peer));
-			addedBlacklistedPeer.put("address", peer.getPeerAddress());
-			addedBlacklistedPeer.put("announcedAddress", Convert.truncate(peer.getAnnouncedAddress(), "-", 25, true));
-			if (peer.isWellKnown()) {
-				addedBlacklistedPeer.put("wellKnown", true);
-			}
-			addedBlacklistedPeer.put("software", peer.getSoftware());
-			addedBlacklistedPeers.add(addedBlacklistedPeer);
-			response.put("addedBlacklistedPeers", addedBlacklistedPeers);
-			Users.sendNewDataToAll(response);
+	Peers.AddListener(Peers.Event.BLACKLIST, function(peer) {
+		/*
+		JSONObject response = new JSONObject();
+		JSONArray removedActivePeers = new JSONArray();
+		JSONObject removedActivePeer = new JSONObject();
+		removedActivePeer.put("index", Users.getIndex(peer));
+		removedActivePeers.add(removedActivePeer);
+		response.put("removedActivePeers", removedActivePeers);
+		JSONArray removedKnownPeers = new JSONArray();
+		JSONObject removedKnownPeer = new JSONObject();
+		removedKnownPeer.put("index", Users.getIndex(peer));
+		removedKnownPeers.add(removedKnownPeer);
+		response.put("removedKnownPeers", removedKnownPeers);
+		JSONArray addedBlacklistedPeers = new JSONArray();
+		JSONObject addedBlacklistedPeer = new JSONObject();
+		addedBlacklistedPeer.put("index", Users.getIndex(peer));
+		addedBlacklistedPeer.put("address", peer.getPeerAddress());
+		addedBlacklistedPeer.put("announcedAddress", Convert.truncate(peer.getAnnouncedAddress(), "-", 25, true));
+		if (peer.isWellKnown()) {
+			addedBlacklistedPeer.put("wellKnown", true);
 		}
-	}, Peers.Event.BLACKLIST);
+		addedBlacklistedPeer.put("software", peer.getSoftware());
+		addedBlacklistedPeers.add(addedBlacklistedPeer);
+		response.put("addedBlacklistedPeers", addedBlacklistedPeers);
+		Users.sendNewDataToAll(response);
+		*/
+	});
 
-	Peers.addListener(new Listener<Peer>() {
-		public void notify(Peer peer) {
-			JSONObject response = new JSONObject();
-			JSONArray removedActivePeers = new JSONArray();
-			JSONObject removedActivePeer = new JSONObject();
-			removedActivePeer.put("index", Users.getIndex(peer));
-			removedActivePeers.add(removedActivePeer);
-			response.put("removedActivePeers", removedActivePeers);
-			JSONArray addedKnownPeers = new JSONArray();
-			JSONObject addedKnownPeer = new JSONObject();
-			addedKnownPeer.put("index", Users.getIndex(peer));
-			addedKnownPeer.put("address", peer.getPeerAddress());
-			addedKnownPeer.put("announcedAddress", Convert.truncate(peer.getAnnouncedAddress(), "-", 25, true));
-			if (peer.isWellKnown()) {
-				addedKnownPeer.put("wellKnown", true);
-			}
-			addedKnownPeer.put("software", peer.getSoftware());
-			addedKnownPeers.add(addedKnownPeer);
-			response.put("addedKnownPeers", addedKnownPeers);
-			Users.sendNewDataToAll(response);
+	Peers.AddListener(Peers.Event.DEACTIVATE, function(peer) {
+		/*
+		JSONObject response = new JSONObject();
+		JSONArray removedActivePeers = new JSONArray();
+		JSONObject removedActivePeer = new JSONObject();
+		removedActivePeer.put("index", Users.getIndex(peer));
+		removedActivePeers.add(removedActivePeer);
+		response.put("removedActivePeers", removedActivePeers);
+		JSONArray addedKnownPeers = new JSONArray();
+		JSONObject addedKnownPeer = new JSONObject();
+		addedKnownPeer.put("index", Users.getIndex(peer));
+		addedKnownPeer.put("address", peer.getPeerAddress());
+		addedKnownPeer.put("announcedAddress", Convert.truncate(peer.getAnnouncedAddress(), "-", 25, true));
+		if (peer.isWellKnown()) {
+			addedKnownPeer.put("wellKnown", true);
 		}
-	}, Peers.Event.DEACTIVATE);
+		addedKnownPeer.put("software", peer.getSoftware());
+		addedKnownPeers.add(addedKnownPeer);
+		response.put("addedKnownPeers", addedKnownPeers);
+		Users.sendNewDataToAll(response);
+		*/
+	});
 
-	Peers.addListener(new Listener<Peer>() {
-		public void notify(Peer peer) {
-			JSONObject response = new JSONObject();
-			JSONArray removedBlacklistedPeers = new JSONArray();
-			JSONObject removedBlacklistedPeer = new JSONObject();
-			removedBlacklistedPeer.put("index", Users.getIndex(peer));
-			removedBlacklistedPeers.add(removedBlacklistedPeer);
-			response.put("removedBlacklistedPeers", removedBlacklistedPeers);
-			JSONArray addedKnownPeers = new JSONArray();
-			JSONObject addedKnownPeer = new JSONObject();
-			addedKnownPeer.put("index", Users.getIndex(peer));
-			addedKnownPeer.put("address", peer.getPeerAddress());
-			addedKnownPeer.put("announcedAddress", Convert.truncate(peer.getAnnouncedAddress(), "-", 25, true));
-			if (peer.isWellKnown()) {
-				addedKnownPeer.put("wellKnown", true);
-			}
-			addedKnownPeer.put("software", peer.getSoftware());
-			addedKnownPeers.add(addedKnownPeer);
-			response.put("addedKnownPeers", addedKnownPeers);
-			Users.sendNewDataToAll(response);
+	Peers.AddListener(Peers.Event.UNBLACKLIST, function(peer) {
+		/*
+		JSONObject response = new JSONObject();
+		JSONArray removedBlacklistedPeers = new JSONArray();
+		JSONObject removedBlacklistedPeer = new JSONObject();
+		removedBlacklistedPeer.put("index", Users.getIndex(peer));
+		removedBlacklistedPeers.add(removedBlacklistedPeer);
+		response.put("removedBlacklistedPeers", removedBlacklistedPeers);
+		JSONArray addedKnownPeers = new JSONArray();
+		JSONObject addedKnownPeer = new JSONObject();
+		addedKnownPeer.put("index", Users.getIndex(peer));
+		addedKnownPeer.put("address", peer.getPeerAddress());
+		addedKnownPeer.put("announcedAddress", Convert.truncate(peer.getAnnouncedAddress(), "-", 25, true));
+		if (peer.isWellKnown()) {
+			addedKnownPeer.put("wellKnown", true);
 		}
-	}, Peers.Event.UNBLACKLIST);
+		addedKnownPeer.put("software", peer.getSoftware());
+		addedKnownPeers.add(addedKnownPeer);
+		response.put("addedKnownPeers", addedKnownPeers);
+		Users.sendNewDataToAll(response);
+		*/
+	});
 
-	Peers.addListener(new Listener<Peer>() {
-		public void notify(Peer peer) {
-			JSONObject response = new JSONObject();
-			JSONArray removedKnownPeers = new JSONArray();
-			JSONObject removedKnownPeer = new JSONObject();
-			removedKnownPeer.put("index", Users.getIndex(peer));
-			removedKnownPeers.add(removedKnownPeer);
-			response.put("removedKnownPeers", removedKnownPeers);
-			Users.sendNewDataToAll(response);
-		}
-	}, Peers.Event.REMOVE);
+	Peers.AddListener(Peers.Event.REMOVE, function(peer) {
+		/*
+		JSONObject response = new JSONObject();
+		JSONArray removedKnownPeers = new JSONArray();
+		JSONObject removedKnownPeer = new JSONObject();
+		removedKnownPeer.put("index", Users.getIndex(peer));
+		removedKnownPeers.add(removedKnownPeer);
+		response.put("removedKnownPeers", removedKnownPeers);
+		Users.sendNewDataToAll(response);
+		*/
+	});
 
-	Peers.addListener(new Listener<Peer>() {
-		public void notify(Peer peer) {
-			JSONObject response = new JSONObject();
-			JSONArray changedActivePeers = new JSONArray();
-			JSONObject changedActivePeer = new JSONObject();
-			changedActivePeer.put("index", Users.getIndex(peer));
-			changedActivePeer.put("downloaded", peer.getDownloadedVolume());
-			changedActivePeers.add(changedActivePeer);
-			response.put("changedActivePeers", changedActivePeers);
-			Users.sendNewDataToAll(response);
-		}
-	}, Peers.Event.DOWNLOADED_VOLUME);
+	Peers.AddListener(Peers.Event.DOWNLOADED_VOLUME, function(peer) {
+		/*
+		JSONObject response = new JSONObject();
+		JSONArray changedActivePeers = new JSONArray();
+		JSONObject changedActivePeer = new JSONObject();
+		changedActivePeer.put("index", Users.getIndex(peer));
+		changedActivePeer.put("downloaded", peer.getDownloadedVolume());
+		changedActivePeers.add(changedActivePeer);
+		response.put("changedActivePeers", changedActivePeers);
+		Users.sendNewDataToAll(response);
+		*/
+	});
 
-	Peers.addListener(new Listener<Peer>() {
-		public void notify(Peer peer) {
-			JSONObject response = new JSONObject();
-			JSONArray changedActivePeers = new JSONArray();
-			JSONObject changedActivePeer = new JSONObject();
-			changedActivePeer.put("index", Users.getIndex(peer));
-			changedActivePeer.put("uploaded", peer.getUploadedVolume());
-			changedActivePeers.add(changedActivePeer);
-			response.put("changedActivePeers", changedActivePeers);
-			Users.sendNewDataToAll(response);
-		}
-	}, Peers.Event.UPLOADED_VOLUME);
+	Peers.AddListener(Peers.Event.UPLOADED_VOLUME, function(peer) {
+		/*
+		JSONObject response = new JSONObject();
+		JSONArray changedActivePeers = new JSONArray();
+		JSONObject changedActivePeer = new JSONObject();
+		changedActivePeer.put("index", Users.getIndex(peer));
+		changedActivePeer.put("uploaded", peer.getUploadedVolume());
+		changedActivePeers.add(changedActivePeer);
+		response.put("changedActivePeers", changedActivePeers);
+		Users.sendNewDataToAll(response);
+		*/
+	});
 
-	Peers.addListener(new Listener<Peer>() {
-		public void notify(Peer peer) {
-			JSONObject response = new JSONObject();
-			JSONArray changedActivePeers = new JSONArray();
-			JSONObject changedActivePeer = new JSONObject();
-			changedActivePeer.put("index", Users.getIndex(peer));
-			changedActivePeer.put("weight", peer.getWeight());
-			changedActivePeers.add(changedActivePeer);
-			response.put("changedActivePeers", changedActivePeers);
-			Users.sendNewDataToAll(response);
-		}
-	}, Peers.Event.WEIGHT);
+	Peers.AddListener(Peers.Event.WEIGHT, function(peer) {
+		/*
+		JSONObject response = new JSONObject();
+		JSONArray changedActivePeers = new JSONArray();
+		JSONObject changedActivePeer = new JSONObject();
+		changedActivePeer.put("index", Users.getIndex(peer));
+		changedActivePeer.put("weight", peer.getWeight());
+		changedActivePeers.add(changedActivePeer);
+		response.put("changedActivePeers", changedActivePeers);
+		Users.sendNewDataToAll(response);
+		*/
+	});
 
-	Peers.addListener(new Listener<Peer>() {
-		public void notify(Peer peer) {
-			JSONObject response = new JSONObject();
-			JSONArray removedKnownPeers = new JSONArray();
-			JSONObject removedKnownPeer = new JSONObject();
-			removedKnownPeer.put("index", Users.getIndex(peer));
-			removedKnownPeers.add(removedKnownPeer);
-			response.put("removedKnownPeers", removedKnownPeers);
-			JSONArray addedActivePeers = new JSONArray();
-			JSONObject addedActivePeer = new JSONObject();
-			addedActivePeer.put("index", Users.getIndex(peer));
-			if (peer.getState() != Peer.State.CONNECTED) {
-				addedActivePeer.put("disconnected", true);
-			}
-			addedActivePeer.put("address", peer.getPeerAddress());
-			addedActivePeer.put("announcedAddress", Convert.truncate(peer.getAnnouncedAddress(), "-", 25, true));
-			if (peer.isWellKnown()) {
-				addedActivePeer.put("wellKnown", true);
-			}
-			addedActivePeer.put("weight", peer.getWeight());
-			addedActivePeer.put("downloaded", peer.getDownloadedVolume());
-			addedActivePeer.put("uploaded", peer.getUploadedVolume());
-			addedActivePeer.put("software", peer.getSoftware());
-			addedActivePeers.add(addedActivePeer);
-			response.put("addedActivePeers", addedActivePeers);
-			Users.sendNewDataToAll(response);
+	Peers.AddListener(Peers.Event.ADDED_ACTIVE_PEER, function(peer) {
+		/*
+		JSONObject response = new JSONObject();
+		JSONArray removedKnownPeers = new JSONArray();
+		JSONObject removedKnownPeer = new JSONObject();
+		removedKnownPeer.put("index", Users.getIndex(peer));
+		removedKnownPeers.add(removedKnownPeer);
+		response.put("removedKnownPeers", removedKnownPeers);
+		JSONArray addedActivePeers = new JSONArray();
+		JSONObject addedActivePeer = new JSONObject();
+		addedActivePeer.put("index", Users.getIndex(peer));
+		if (peer.getState() != Peer.State.CONNECTED) {
+			addedActivePeer.put("disconnected", true);
 		}
-	}, Peers.Event.ADDED_ACTIVE_PEER);
+		addedActivePeer.put("address", peer.getPeerAddress());
+		addedActivePeer.put("announcedAddress", Convert.truncate(peer.getAnnouncedAddress(), "-", 25, true));
+		if (peer.isWellKnown()) {
+			addedActivePeer.put("wellKnown", true);
+		}
+		addedActivePeer.put("weight", peer.getWeight());
+		addedActivePeer.put("downloaded", peer.getDownloadedVolume());
+		addedActivePeer.put("uploaded", peer.getUploadedVolume());
+		addedActivePeer.put("software", peer.getSoftware());
+		addedActivePeers.add(addedActivePeer);
+		response.put("addedActivePeers", addedActivePeers);
+		Users.sendNewDataToAll(response);
+		*/
+	});
 
-	Peers.addListener(new Listener<Peer>() {
-		public void notify(Peer peer) {
-			JSONObject response = new JSONObject();
-			JSONArray changedActivePeers = new JSONArray();
-			JSONObject changedActivePeer = new JSONObject();
-			changedActivePeer.put("index", Users.getIndex(peer));
-			changedActivePeer.put(peer.getState() == Peer.State.CONNECTED ? "connected" : "disconnected", true);
-			changedActivePeer.put("announcedAddress", Convert.truncate(peer.getAnnouncedAddress(), "-", 25, true));
-			if (peer.isWellKnown()) {
-				changedActivePeer.put("wellKnown", true);
-			}
-			changedActivePeers.add(changedActivePeer);
-			response.put("changedActivePeers", changedActivePeers);
-			Users.sendNewDataToAll(response);
+	Peers.AddListener(Peers.Event.CHANGED_ACTIVE_PEER, function(peer) {
+		/*
+		JSONObject response = new JSONObject();
+		JSONArray changedActivePeers = new JSONArray();
+		JSONObject changedActivePeer = new JSONObject();
+		changedActivePeer.put("index", Users.getIndex(peer));
+		changedActivePeer.put(peer.getState() == Peer.State.CONNECTED ? "connected" : "disconnected", true);
+		changedActivePeer.put("announcedAddress", Convert.truncate(peer.getAnnouncedAddress(), "-", 25, true));
+		if (peer.isWellKnown()) {
+			changedActivePeer.put("wellKnown", true);
 		}
-	}, Peers.Event.CHANGED_ACTIVE_PEER);
+		changedActivePeers.add(changedActivePeer);
+		response.put("changedActivePeers", changedActivePeers);
+		Users.sendNewDataToAll(response);
+		*/
+	});
 
-	Peers.addListener(new Listener<Peer>() {
-		public void notify(Peer peer) {
-			JSONObject response = new JSONObject();
-			JSONArray addedKnownPeers = new JSONArray();
-			JSONObject addedKnownPeer = new JSONObject();
-			addedKnownPeer.put("index", Users.getIndex(peer));
-			addedKnownPeer.put("address", peer.getPeerAddress());
-			addedKnownPeer.put("announcedAddress", Convert.truncate(peer.getAnnouncedAddress(), "-", 25, true));
-			if (peer.isWellKnown()) {
-				addedKnownPeer.put("wellKnown", true);
-			}
-			addedKnownPeer.put("software", peer.getSoftware());
-			addedKnownPeers.add(addedKnownPeer);
-			response.put("addedKnownPeers", addedKnownPeers);
-			Users.sendNewDataToAll(response);
+	Peers.AddListener(Peers.Event.NEW_PEER, function(peer) {
+		/*
+		JSONObject response = new JSONObject();
+		JSONArray addedKnownPeers = new JSONArray();
+		JSONObject addedKnownPeer = new JSONObject();
+		addedKnownPeer.put("index", Users.getIndex(peer));
+		addedKnownPeer.put("address", peer.getPeerAddress());
+		addedKnownPeer.put("announcedAddress", Convert.truncate(peer.getAnnouncedAddress(), "-", 25, true));
+		if (peer.isWellKnown()) {
+			addedKnownPeer.put("wellKnown", true);
 		}
-	}, Peers.Event.NEW_PEER);
-	*/
+		addedKnownPeer.put("software", peer.getSoftware());
+		addedKnownPeers.add(addedKnownPeer);
+		response.put("addedKnownPeers", addedKnownPeers);
+		Users.sendNewDataToAll(response);
+		*/
+	});
 }
 
 function InitTransactionProcessor() {
-	/*
-	Nxt.getTransactionProcessor().addListener(new Listener<List<Transaction>>() {
-		public void notify(List<Transaction> transactions) {
-			JSONObject response = new JSONObject();
-			JSONArray removedUnconfirmedTransactions = new JSONArray();
-			for (Transaction transaction : transactions) {
-				JSONObject removedUnconfirmedTransaction = new JSONObject();
-				removedUnconfirmedTransaction.put("index", Users.getIndex(transaction));
-				removedUnconfirmedTransactions.add(removedUnconfirmedTransaction);
-			}
-			response.put("removedUnconfirmedTransactions", removedUnconfirmedTransactions);
-			Users.sendNewDataToAll(response);
+	TransactionProcessor.AddListener(TransactionProcessor.Event.REMOVED_UNCONFIRMED_TRANSACTIONS, function(transactions) {
+		/*
+		JSONObject response = new JSONObject();
+		JSONArray removedUnconfirmedTransactions = new JSONArray();
+		for (Transaction transaction : transactions) {
+			JSONObject removedUnconfirmedTransaction = new JSONObject();
+			removedUnconfirmedTransaction.put("index", Users.getIndex(transaction));
+			removedUnconfirmedTransactions.add(removedUnconfirmedTransaction);
 		}
-	}, TransactionProcessor.Event.REMOVED_UNCONFIRMED_TRANSACTIONS);
+		response.put("removedUnconfirmedTransactions", removedUnconfirmedTransactions);
+		Users.sendNewDataToAll(response);
+		*/
+	});
 
-	Nxt.getTransactionProcessor().addListener(new Listener<List<Transaction>>() {
-		public void notify(List<Transaction> transactions) {
-			JSONObject response = new JSONObject();
-			JSONArray addedUnconfirmedTransactions = new JSONArray();
-			for (Transaction transaction : transactions) {
-				JSONObject addedUnconfirmedTransaction = new JSONObject();
-				addedUnconfirmedTransaction.put("index", Users.getIndex(transaction));
-				addedUnconfirmedTransaction.put("timestamp", transaction.getTimestamp());
-				addedUnconfirmedTransaction.put("deadline", transaction.getDeadline());
-				addedUnconfirmedTransaction.put("recipient", Convert.toUnsignedLong(transaction.getRecipientId()));
-				addedUnconfirmedTransaction.put("amountNQT", transaction.getAmountNQT());
-				addedUnconfirmedTransaction.put("feeNQT", transaction.getFeeNQT());
-				addedUnconfirmedTransaction.put("sender", Convert.toUnsignedLong(transaction.getSenderId()));
-				addedUnconfirmedTransaction.put("id", transaction.getStringId());
-				addedUnconfirmedTransactions.add(addedUnconfirmedTransaction);
-			}
-			response.put("addedUnconfirmedTransactions", addedUnconfirmedTransactions);
-			Users.sendNewDataToAll(response);
+	TransactionProcessor.AddListener(TransactionProcessor.Event.ADDED_UNCONFIRMED_TRANSACTIONS, function(transactions) {
+		/*
+		JSONObject response = new JSONObject();
+		JSONArray addedUnconfirmedTransactions = new JSONArray();
+		for (Transaction transaction : transactions) {
+			JSONObject addedUnconfirmedTransaction = new JSONObject();
+			addedUnconfirmedTransaction.put("index", Users.getIndex(transaction));
+			addedUnconfirmedTransaction.put("timestamp", transaction.getTimestamp());
+			addedUnconfirmedTransaction.put("deadline", transaction.getDeadline());
+			addedUnconfirmedTransaction.put("recipient", Convert.toUnsignedLong(transaction.getRecipientId()));
+			addedUnconfirmedTransaction.put("amountNQT", transaction.getAmountNQT());
+			addedUnconfirmedTransaction.put("feeNQT", transaction.getFeeNQT());
+			addedUnconfirmedTransaction.put("sender", Convert.toUnsignedLong(transaction.getSenderId()));
+			addedUnconfirmedTransaction.put("id", transaction.getStringId());
+			addedUnconfirmedTransactions.add(addedUnconfirmedTransaction);
 		}
-	}, TransactionProcessor.Event.ADDED_UNCONFIRMED_TRANSACTIONS);
+		response.put("addedUnconfirmedTransactions", addedUnconfirmedTransactions);
+		Users.sendNewDataToAll(response);
+		*/
+	});
 
-	Nxt.getTransactionProcessor().addListener(new Listener<List<Transaction>>() {
-		public void notify(List<Transaction> transactions) {
-			JSONObject response = new JSONObject();
-			JSONArray addedConfirmedTransactions = new JSONArray();
-			for (Transaction transaction : transactions) {
-				JSONObject addedConfirmedTransaction = new JSONObject();
-				addedConfirmedTransaction.put("index", Users.getIndex(transaction));
-				addedConfirmedTransaction.put("blockTimestamp", transaction.getBlockTimestamp());
-				addedConfirmedTransaction.put("transactionTimestamp", transaction.getTimestamp());
-				addedConfirmedTransaction.put("sender", Convert.toUnsignedLong(transaction.getSenderId()));
-				addedConfirmedTransaction.put("recipient", Convert.toUnsignedLong(transaction.getRecipientId()));
-				addedConfirmedTransaction.put("amountNQT", transaction.getAmountNQT());
-				addedConfirmedTransaction.put("feeNQT", transaction.getFeeNQT());
-				addedConfirmedTransaction.put("id", transaction.getStringId());
-				addedConfirmedTransactions.add(addedConfirmedTransaction);
-			}
-			response.put("addedConfirmedTransactions", addedConfirmedTransactions);
-			Users.sendNewDataToAll(response);
+	TransactionProcessor.AddListener(TransactionProcessor.Event.ADDED_CONFIRMED_TRANSACTIONS, function(transactions) {
+		/*
+		JSONObject response = new JSONObject();
+		JSONArray addedConfirmedTransactions = new JSONArray();
+		for (Transaction transaction : transactions) {
+			JSONObject addedConfirmedTransaction = new JSONObject();
+			addedConfirmedTransaction.put("index", Users.getIndex(transaction));
+			addedConfirmedTransaction.put("blockTimestamp", transaction.getBlockTimestamp());
+			addedConfirmedTransaction.put("transactionTimestamp", transaction.getTimestamp());
+			addedConfirmedTransaction.put("sender", Convert.toUnsignedLong(transaction.getSenderId()));
+			addedConfirmedTransaction.put("recipient", Convert.toUnsignedLong(transaction.getRecipientId()));
+			addedConfirmedTransaction.put("amountNQT", transaction.getAmountNQT());
+			addedConfirmedTransaction.put("feeNQT", transaction.getFeeNQT());
+			addedConfirmedTransaction.put("id", transaction.getStringId());
+			addedConfirmedTransactions.add(addedConfirmedTransaction);
 		}
-	}, TransactionProcessor.Event.ADDED_CONFIRMED_TRANSACTIONS);
+		response.put("addedConfirmedTransactions", addedConfirmedTransactions);
+		Users.sendNewDataToAll(response);
+		*/
+	});
 
-	Nxt.getTransactionProcessor().addListener(new Listener<List<Transaction>>() {
-		public void notify(List<Transaction> transactions) {
-			JSONObject response = new JSONObject();
-			JSONArray newTransactions = new JSONArray();
-			for (Transaction transaction : transactions) {
-				JSONObject newTransaction = new JSONObject();
-				newTransaction.put("index", Users.getIndex(transaction));
-				newTransaction.put("timestamp", transaction.getTimestamp());
-				newTransaction.put("deadline", transaction.getDeadline());
-				newTransaction.put("recipient", Convert.toUnsignedLong(transaction.getRecipientId()));
-				newTransaction.put("amountNQT", transaction.getAmountNQT());
-				newTransaction.put("feeNQT", transaction.getFeeNQT());
-				newTransaction.put("sender", Convert.toUnsignedLong(transaction.getSenderId()));
-				newTransaction.put("id", transaction.getStringId());
-				newTransactions.add(newTransaction);
-			}
-			response.put("addedDoubleSpendingTransactions", newTransactions);
-			Users.sendNewDataToAll(response);
+	TransactionProcessor.AddListener(TransactionProcessor.Event.ADDED_DOUBLESPENDING_TRANSACTIONS, function(transactions) {
+		/*
+		JSONObject response = new JSONObject();
+		JSONArray newTransactions = new JSONArray();
+		for (Transaction transaction : transactions) {
+			JSONObject newTransaction = new JSONObject();
+			newTransaction.put("index", Users.getIndex(transaction));
+			newTransaction.put("timestamp", transaction.getTimestamp());
+			newTransaction.put("deadline", transaction.getDeadline());
+			newTransaction.put("recipient", Convert.toUnsignedLong(transaction.getRecipientId()));
+			newTransaction.put("amountNQT", transaction.getAmountNQT());
+			newTransaction.put("feeNQT", transaction.getFeeNQT());
+			newTransaction.put("sender", Convert.toUnsignedLong(transaction.getSenderId()));
+			newTransaction.put("id", transaction.getStringId());
+			newTransactions.add(newTransaction);
 		}
-	}, TransactionProcessor.Event.ADDED_DOUBLESPENDING_TRANSACTIONS);
-	*/
+		response.put("addedDoubleSpendingTransactions", newTransactions);
+		Users.sendNewDataToAll(response);
+		*/
+	});
 }
 
 function Remove(user) {
-	return users.remove(user.getUserId());
+	var i = users.indexOf(user.GetUserId());
+	if (i >= 0)
+		users[i] = null;
 }
 
 function SendNewDataToAll(response) {
-	/*
-	response.put("response", "processNewData");
-	sendToAll(response);
-	*/
+	response.response = "processNewData";
+	SendToAll(response);
 }
 
 function SendToAll(response) {
-	/*
-	for (User user : users.values()) {
-		user.send(response);
+	for (var user in users) {
+		user.Send(response);
 	}
-	*/
 }
 
 function Shutdown() {
+	throw new Error('This is not implemented');
 	/*
 	if (userServer != null) {
 		try {
@@ -614,9 +596,13 @@ function Shutdown() {
 
 exports.AllowedUserHosts_Contains = AllowedUserHosts_Contains;
 exports.GetAllUsers = GetAllUsers;
-exports.GetIndex1 = GetIndex1;
-exports.GetIndex2 = GetIndex2;
-exports.GetIndex3 = GetIndex3;
+exports.GetEnforcePost = GetEnforcePost;
+exports.GetIndex1 = GetIndex1; // deprecated
+exports.GetIndex2 = GetIndex2; // deprecated
+exports.GetIndex3 = GetIndex3; // deprecated
+exports.GetIndexByBlock = GetIndexByBlock;
+exports.GetIndexByPeer = GetIndexByPeer;
+exports.GetIndexByTransaction = GetIndexByTransaction;
 exports.GetPeer = GetPeer;
 exports.GetUser = GetUser;
 exports.Init = Init;

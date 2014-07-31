@@ -11,37 +11,59 @@ import org.json.simple.JSONObject;
 */
 
 var Arrays = require(__dirname + '/../Util/Arrays');
-//var LmGenesis = require(__dirname + '/LmGenesis');
+var Blocks = require(__dirname + '/../Blocks');
+var ByteBuffer = require(__dirname + '/../Util/ByteBuffer');
+var Convert = require(__dirname + '/../Util/Convert');
+//var Genesis = require(__dirname + '/Genesis');
+var Logger = require(__dirname + '/../Logger').GetLogger(module);
 
+/*
+type,
+timestamp,
+deadline,
+senderPublicKey,
+recipientId,
+amountMilliLm,
+feeMilliLm,
+referencedTransactionFullHash,
+signature,
+blockId,
+height,
+id,
+senderId,
+blockTimestamp,
+fullHash
+*/
+function Transaction(data) {
+	if (data.senderPublicKey == null || typeof data.senderPublicKey != 'object' || typeof data.senderPublicKey.length == 'undefined')
+		throw new Error('Transaction: data.senderPublicKey mast be array');
+	if (typeof data.recipientId != 'number')
+		throw new Error('Transaction: data.recipientId not a number');
+	this.deadline = data.deadline; // Hour?
+	this.senderPublicKey = data.senderPublicKey;
+	this.recipientId = data.recipientId;
+	this.amountMilliLm = data.amountMilliLm;
+	this.feeMilliLm = data.feeMilliLm;
+	this.referencedTransactionFullHash = data.referencedTransactionFullHash;
+	this.type = data.type; // TransactionType
 
-function Transaction(type, timestamp, deadline, senderPublicKey, recipientId,
-		amountMilliLm, feeMilliLm, referencedTransactionFullHash, signature,
-		blockId, height, id, senderId, blockTimestamp, fullHash) {
-	this.deadline = deadline; // Hour?
-	this.senderPublicKey = senderPublicKey;
-	this.recipientId = recipientId;
-	this.amountMilliLm = amountMilliLm;
-	this.feeMilliLm = feeMilliLm;
-	this.referencedTransactionFullHash = referencedTransactionFullHash;
-	this.type = type; // TransactionType
-
-	if (typeof height == 'undefined')
+	if (typeof data.height == 'undefined')
 		this.height = 2000000000 //Integer.MAX_VALUE
 	else
-		this.height = height;
-	this.blockId = blockId;
+		this.height = data.height;
+	this.blockId = data.blockId;
 	//this.Block =
-	this.signature = signature;
-	this.timestamp = timestamp;
-	if (typeof blockTimestamp == 'undefined')
+	this.signature = data.signature;
+	this.timestamp = parseInt(data.timestamp);
+	if (typeof data.blockTimestamp == 'undefined')
 		this.blockTimestamp = -1
 	else
-		this.blockTimestamp = blockTimestamp;
+		this.blockTimestamp = data.blockTimestamp;
 	//this.Attachment =
-	this.id = id;
-	//this.StringId = null;
-	this.senderId = senderId;
-	this.fullHash = fullHash; // fullHash == null ? null : Convert.toHexString(fullHash);
+	this.id = data.id;
+	this.stringId = null;
+	this.senderId = data.senderId;
+	this.fullHash = data.fullHash; // fullHash == null ? null : Convert.toHexString(fullHash);
 
 	/*
 	if ((timestamp == 0 && Arrays.Equals(senderPublicKey, Genesis.CreatorPublicKey))
@@ -59,129 +81,31 @@ function Transaction(type, timestamp, deadline, senderPublicKey, recipientId,
 	return this;
 }
 
-function GetDeadline() {
-	return this.deadline;
-}
-
-function GetSenderPublicKey() {
-	return this.senderPublicKey;
-}
-
-function GetRecipientId() {
-	return this.recipientId;
-}
-
-function GetAmountMilliLm() {
-	return this.amountMilliLm;
-}
-
-function GetFeeMilliLm() {
-	return this.feeMilliLm;
-}
-
-function GetReferencedTransactionFullHash() {
-	return this.referencedTransactionFullHash;
-}
-
-function GetHeight() {
-	return this.height;
-}
-
-function GetSignature() {
-	return this.signature;
-}
-
-// TransactionType
-function GetType() {
-	return this.type;
-}
-
-function GetBlockId() {
-	return this.blockId;
-}
-
-function GetBlock() {
-	if (this.block == null) {
-		this.block = BlockDb.FindBlock(this.blockId);
-	}
-	return this.block;
-}
-
-function SetBlock(block) {
-	this.block = block;
-	this.blockId = block.GetId();
-	this.height = block.GetHeight();
-	this.blockTimestamp = block.GetTimestamp();
-}
-
-function GetTimestamp() {
-	return this.timestamp;
-}
-
-function GetBlockTimestamp() {
-	return this.blockTimestamp;
-}
-
-function GetExpiration() {
-	return this.timestamp + this.deadline * 60;
-}
-
-function GetAttachment() {
-	return this.attachment;
-}
-
-function SetAttachment(attachment) {
-	this.attachment = attachment;
-}
-
-function GetId() {
-	/*
-	if (this.Id == null) {
-		if (this.Signature == null) {
-			return false;
-			//throw new IllegalStateException("Transaction is not signed yet");
-		}
-		byte[] hash;
-		byte[] data = zeroSignature(getBytes());
-		byte[] signatureHash = Crypto.sha256().digest(signature);
-		MessageDigest digest = Crypto.sha256();
-		digest.update(data);
-		hash = digest.digest(signatureHash);
-		BigInteger bigInteger = new BigInteger(1, new byte[] {hash[7], hash[6], hash[5], hash[4], hash[3], hash[2], hash[1], hash[0]});
-		id = bigInteger.longValue();
-		stringId = bigInteger.toString();
-		fullHash = Convert.toHexString(hash);
-	}
-	*/
-	//throw new Error('Not implementted');
-	return this.id;
-}
-
-function GetStringId() {
+function Apply() {
 	throw new Error('Not implementted');
 	/*
-	if (StringId == null) {
-		GetId();
-		if (StringId == null) {
-			StringId = Convert.toUnsignedLong(id);
-		}
+	Account senderAccount = Account.getAccount(getSenderId());
+	senderAccount.apply(senderPublicKey, this.getHeight());
+	Account recipientAccount = Account.getAccount(recipientId);
+	if (recipientAccount == null) {
+		recipientAccount = Account.addOrGetAccount(recipientId);
 	}
-	return stringId;
+	type.apply(this, senderAccount, recipientAccount);
 	*/
 }
 
-function GetFullHash() {
-	if (this.fullHash == null) {
-		GetId();
+// returns false iff double spending
+function ApplyUnconfirmed() {
+	throw new Error('Not implementted');
+	/*
+	Account senderAccount = Account.getAccount(getSenderId());
+	if (senderAccount == null) {
+		return false;
 	}
-	return this.fullHash;
-}
-
-function GetSenderId() {
-	if (this.senderId == null) {
-		this.senderId = this.account.GetId(this.senderPublicKey);
+	synchronized(senderAccount) {
+		return type.applyUnconfirmed(this, senderAccount);
 	}
-	return this.senderId;
+	*/
 }
 
 function CompareTo(o) {
@@ -216,37 +140,113 @@ function CompareTo(o) {
 	*/
 }
 
-function GetBytes() {
+function Equals(o) {
 	throw new Error('Not implementted');
 	/*
-	ByteBuffer buffer = ByteBuffer.allocate(getSize());
-	buffer.order(ByteOrder.LITTLE_ENDIAN);
-	buffer.put(type.getType());
-	buffer.put(type.getSubtype());
-	buffer.putInt(timestamp);
-	buffer.putShort(deadline);
-	buffer.put(senderPublicKey);
-	buffer.putLong(Convert.nullToZero(recipientId));
-	buffer.putLong(amountNQT);
-	buffer.putLong(feeNQT);
-	if (referencedTransactionFullHash != null) {
-		buffer.put(Convert.parseHexString(referencedTransactionFullHash));
-	} else {
-		buffer.put(new byte[32]);
-	}
-	buffer.put(signature != null ? signature : new byte[64]);
-	if (attachment != null) {
-		buffer.put(attachment.getBytes());
-	}
-	return buffer.array();
+	return o instanceof TransactionImpl && this.getId().equals(((Transaction)o).getId());
 	*/
 }
 
-function GetUnsignedBytes() {
-	throw new Error('Not implementted');
-	/*
-	return zeroSignature(getBytes());
-	*/
+function GetAmountMilliLm() {
+	return this.amountMilliLm;
+}
+
+function GetAttachment() {
+	return this.attachment;
+}
+
+function GetBlock() {
+	if (this.block == null) {
+		this.block = Blocks.FindBlock(this.blockId);
+	}
+	return this.block;
+}
+
+function GetBlockId() {
+	return this.blockId;
+}
+
+function GetBlockTimestamp() {
+	return this.blockTimestamp;
+}
+
+function GetBytes() {
+	var buffer = new ByteBuffer();
+	buffer.littleEndian();
+	buffer.byte(this.type.GetType());
+	buffer.byte(this.type.GetSubtype());
+	buffer.int32(this.timestamp);
+	buffer.short(this.deadline);
+	buffer.byteArray(this.senderPublicKey, this.senderPublicKey.length);
+	aa = Convert.NullToZero(this.recipientId);
+	buffer.int64(aa);
+	buffer.int64(this.amountMilliLm);
+	buffer.int64(this.feeMilliLm);
+	if (this.referencedTransactionFullHash != null) {
+		var a = Convert.ParseHexString(this.referencedTransactionFullHash);
+		buffer.byteArray(a, a.length);
+	} else {
+		a = new Array(32);
+		for (var i = 0; a.length > i; i++) a[i] = 0;
+		buffer.byteArray(a, a.length);
+	}
+	if (this.signature) {
+		buffer.byteArray(this.signature, this.signature.length);
+	} else {
+		var a = new Array(64);
+		for (var i = 0; a.length > i; i++) a[i] = 0;
+		buffer.byteArray(a, a.length);
+	}
+
+	if (this.attachment != null) {
+		var att = this.attachment.GetBytes();
+		buffer.byteArray(att, att.length);
+	}
+	return buffer.pack();
+}
+
+function GetDeadline() {
+	return this.deadline;
+}
+
+function GetExpiration() {
+	return this.timestamp + this.deadline * 60;
+}
+
+function GetFeeMilliLm() {
+	return this.feeMilliLm;
+}
+
+function GetFullHash() {
+	if (this.fullHash == null) {
+		GetId();
+	}
+	return this.fullHash;
+}
+
+function GetHeight() {
+	return this.height;
+}
+
+function GetId() {
+	if (!this.id) {
+		if (!this.signature) {
+			Logger.error("GetId: Transaction is not signed yet");
+			return false;
+		}
+		var hash;
+		var data = this.ZeroSignature(this.GetBytes());
+		var signatureHash = Crypto.Sha256().digest(this.signature);
+		var digest = Crypto.Sha256();
+		digest.update(data);
+		hash = digest.digest(signatureHash);
+		var bigInteger = new BigInteger();
+		bigInteger.fromByteArray([hash[7], hash[6], hash[5], hash[4], hash[3], hash[2], hash[1], hash[0]]);
+		this.id = bigInteger.longValue();
+		this.stringId = bigInteger.toString();
+		this.fullHash = Convert.ToHexString(hash);
+	}
+	return this.id;
 }
 
 function GetJsonObject() {
@@ -272,25 +272,123 @@ function GetJsonObject() {
 	*/
 }
 
-function Sign(secretPhrase) {
-	throw new Error('Not implementted');
-	/*
-	if (signature != null) {
-		throw new IllegalStateException("Transaction already signed");
-	}
-	signature = Crypto.sign(getBytes(), secretPhrase);
-	*/
+function GetRecipientId() {
+	return this.recipientId;
 }
 
-function Equals(o) {
+function GetReferencedTransactionFullHash() {
+	return this.referencedTransactionFullHash;
+}
+
+function GetSenderId() {
+	if (this.senderId == null) {
+		this.senderId = this.account.GetId(this.senderPublicKey);
+	}
+	return this.senderId;
+}
+
+function GetSenderPublicKey() {
+	return this.senderPublicKey;
+}
+
+function GetSignature() {
+	return this.signature;
+}
+
+function GetSize() {
+	return this.SignatureOffset() + 64  + (this.attachment == null ? 0 : this.attachment.GetSize());
+}
+
+function GetStringId() {
+	if (!this.stringId) {
+		this.GetId();
+		if (!this.stringId) {
+			this.stringId = Convert.ToUnsignedLong(this.id);
+		}
+	}
+	return this.stringId;
+}
+
+function GetTimestamp() {
+	return this.timestamp;
+}
+
+// TransactionType
+function GetType() {
+	return this.type;
+}
+
+function GetUnsignedBytes() {
 	throw new Error('Not implementted');
 	/*
-	return o instanceof TransactionImpl && this.getId().equals(((Transaction)o).getId());
+	return zeroSignature(getBytes());
 	*/
 }
 
 function HashCode() {
 	return this.GetId().HashCode();
+}
+
+function IsDuplicate(Duplicates) {
+	return this.Type.IsDuplicate(this, Duplicates);
+}
+
+function SetAttachment(attachment) {
+	this.attachment = attachment;
+}
+
+function SetBlock(block) {
+	this.block = block;
+	this.blockId = block.GetId();
+	this.height = block.GetHeight();
+	this.blockTimestamp = block.GetTimestamp();
+}
+
+function Sign(secretPhrase) {
+	if (signature != null) {
+		throw new Error("IllegalStateException: Transaction already signed");
+	}
+	signature = Crypto.Sign(GetBytes(), secretPhrase);
+}
+
+function SignatureOffset() {
+	return 1 + 1 + 4 + 2 + 32 + 8 + 8 + 8 + 32;
+}
+
+// NOTE: when undo is called, lastBlock has already been set to the previous block
+function Undo() {
+	throw new Error('Not implementted');
+	/*
+	Account senderAccount = Account.getAccount(senderId);
+	senderAccount.undo(this.getHeight());
+	Account recipientAccount = Account.getAccount(recipientId);
+	type.undo(this, senderAccount, recipientAccount);
+	*/
+}
+
+function UndoUnconfirmed() {
+	throw new Error('Not implementted');
+	/*
+	Account senderAccount = Account.getAccount(getSenderId());
+	type.undoUnconfirmed(this, senderAccount);
+	*/
+}
+
+function UpdateTotals(accumulatedAmounts, accumulatedAssetQuantities) {
+	throw new Error('Not implementted');
+	/*
+	Long senderId = getSenderId();
+	Long accumulatedAmount = accumulatedAmounts.get(senderId);
+	if (accumulatedAmount == null) {
+		accumulatedAmount = 0L;
+	}
+	accumulatedAmounts.put(senderId, Convert.safeAdd(accumulatedAmount, Convert.safeAdd(amountNQT, feeNQT)));
+	type.updateTotals(this, accumulatedAmounts, accumulatedAssetQuantities, accumulatedAmount);
+	*/
+}
+
+function ValidateAttachment() {
+	this.type.ValidateAttachment(this);
 }
 
 function Verify() {
@@ -308,14 +406,6 @@ function Verify() {
 	*/
 }
 
-function GetSize() {
-	return this.SignatureOffset() + 64  + (this.attachment == null ? 0 : this.attachment.GetSize());
-}
-
-function SignatureOffset() {
-	return 1 + 1 + 4 + 2 + 32 + 8 + 8 + 8 + 32;
-}
-
 function ZeroSignature(data) {
 	throw new Error('Not implementted');
 	/*
@@ -325,76 +415,6 @@ function ZeroSignature(data) {
 	}
 	return data;
 	*/
-}
-
-function ValidateAttachment() {
-	throw new Error('Not implementted');
-	/*
-	type.validateAttachment(this);
-	*/
-}
-
-// returns false iff double spending
-function ApplyUnconfirmed() {
-	throw new Error('Not implementted');
-	/*
-	Account senderAccount = Account.getAccount(getSenderId());
-	if (senderAccount == null) {
-		return false;
-	}
-	synchronized(senderAccount) {
-		return type.applyUnconfirmed(this, senderAccount);
-	}
-	*/
-}
-
-function Apply() {
-	throw new Error('Not implementted');
-	/*
-	Account senderAccount = Account.getAccount(getSenderId());
-	senderAccount.apply(senderPublicKey, this.getHeight());
-	Account recipientAccount = Account.getAccount(recipientId);
-	if (recipientAccount == null) {
-		recipientAccount = Account.addOrGetAccount(recipientId);
-	}
-	type.apply(this, senderAccount, recipientAccount);
-	*/
-}
-
-function UndoUnconfirmed() {
-	throw new Error('Not implementted');
-	/*
-	Account senderAccount = Account.getAccount(getSenderId());
-	type.undoUnconfirmed(this, senderAccount);
-	*/
-}
-
-// NOTE: when undo is called, lastBlock has already been set to the previous block
-function Undo() {
-	throw new Error('Not implementted');
-	/*
-	Account senderAccount = Account.getAccount(senderId);
-	senderAccount.undo(this.getHeight());
-	Account recipientAccount = Account.getAccount(recipientId);
-	type.undo(this, senderAccount, recipientAccount);
-	*/
-}
-
-function UpdateTotals(accumulatedAmounts, accumulatedAssetQuantities) {
-	throw new Error('Not implementted');
-	/*
-	Long senderId = getSenderId();
-	Long accumulatedAmount = accumulatedAmounts.get(senderId);
-	if (accumulatedAmount == null) {
-		accumulatedAmount = 0L;
-	}
-	accumulatedAmounts.put(senderId, Convert.safeAdd(accumulatedAmount, Convert.safeAdd(amountNQT, feeNQT)));
-	type.updateTotals(this, accumulatedAmounts, accumulatedAssetQuantities, accumulatedAmount);
-	*/
-}
-
-function IsDuplicate(Duplicates) {
-	return this.Type.IsDuplicate(this, Duplicates);
 }
 
 

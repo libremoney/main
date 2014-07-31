@@ -11,7 +11,7 @@ var modelName = 'community';
 
 // Список документов
 function list(req, res, next) {
-	Db.Model(modelName).find({}, function (err, data) {
+	Db.GetModel(modelName).find({}, function (err, data) {
 		if (err) next(err);
 		S = '<html><body><h1>Community list</h1>';
 		data.forEach(function(Community){
@@ -32,7 +32,7 @@ function get(req, res, next) {
 		res.send(400)
 	}
 
-	db.model(modelName).find({_id: id}, function (err, data) {
+	Db.GetModel(modelName).find({_id: id}, function (err, data) {
 		if (err) next(err);
 		if (data) {
 			res.send(data);
@@ -47,7 +47,7 @@ function get(req, res, next) {
 // Создаем документ
 function create(req, res, next) {
 	/*
-	db.model(modelName).create(req.body, function (err, data) {
+	Db.GetModel(modelName).create(req.body, function (err, data) {
 		if (err) {
 			next(err);
 		}

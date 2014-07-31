@@ -4,28 +4,17 @@
  * CC0 license
  */
 
-/*
-import nxt.Account;
-import nxt.NxtException;
-*/
+var ParameterParser = require(__dirname + "/../ParameterParser");
+var Transactions = require(__dirname + "/../../Transactions");
+var CreateTransaction = require(__dirname + "/../CreateTransaction");
 
-function Main(req, res) {
-	var obj = CreateTransaction();
-	res.send('This is not implemented');
-	/*
-	static final SendMoney instance = new SendMoney();
 
-	private SendMoney() {
-		super("recipient", "amountNQT");
-	}
-
-	JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
-		Long recipient = ParameterParser.getRecipientId(req);
-		long amountNQT = ParameterParser.getAmountNQT(req);
-		Account account = ParameterParser.getSenderAccount(req);
-		return createTransaction(req, account, recipient, amountNQT, null);
-	}
-	*/
+//super("recipient", "amountNQT");
+function SendMoney(req, res) {
+	var recipient = ParameterParser.GetRecipientId(req);
+	var amountMilliLm = ParameterParser.GetAmountMilliLm(req);
+	var account = ParameterParser.GetSenderAccount(req);
+	return CreateTransaction(req, res, account, recipient, amountMilliLm, null);
 }
 
-module.exports = Main;
+module.exports = SendMoney;

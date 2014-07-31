@@ -4,13 +4,6 @@
  * CC0 license
  */
 
-/*
-import nxt.util.Convert;
-import nxt.util.Listener;
-import nxt.util.Listeners;
-import nxt.util.Logger;
-*/
-
 var Blockchain = require(__dirname + '/../Blockchain');
 var Constants = require(__dirname + '/../Constants');
 var Convert = require(__dirname + '/../Util/Convert');
@@ -221,9 +214,8 @@ function LeaseEffectiveBalance(lesseeId, period) {
 			currentLeasingHeightTo = currentLeasingHeightFrom + period;
 			currentLesseeId = lesseeId;
 			nextLeasingHeightFrom = Integer.MAX_VALUE;
-			leaseListeners.notify(
-					new AccountLease(this.getId(), lesseeId, currentLeasingHeightFrom, currentLeasingHeightTo),
-					Event.LEASE_SCHEDULED);
+			leaseListeners.Notify(Event.LEASE_SCHEDULED,
+					new AccountLease(this.getId(), lesseeId, currentLeasingHeightFrom, currentLeasingHeightTo));
 
 		} else {
 
@@ -233,9 +225,8 @@ function LeaseEffectiveBalance(lesseeId, period) {
 			}
 			nextLeasingHeightTo = nextLeasingHeightFrom + period;
 			nextLesseeId = lesseeId;
-			leaseListeners.notify(
-					new AccountLease(this.getId(), lesseeId, nextLeasingHeightFrom, nextLeasingHeightTo),
-					Event.LEASE_SCHEDULED);
+			leaseListeners.Notify(Event.LEASE_SCHEDULED
+					new AccountLease(this.getId(), lesseeId, nextLeasingHeightFrom, nextLeasingHeightTo));
 
 		}
 	}
@@ -325,8 +316,8 @@ function AddToAssetBalanceQNT(assetId, quantityQNT) {
 		}
 		assetBalances.put(assetId, assetBalance);
 	}
-	listeners.notify(this, Event.ASSET_BALANCE);
-	assetListeners.notify(new AccountAsset(id, assetId, assetBalances.get(assetId)), Event.ASSET_BALANCE);
+	listeners.Notify(Event.ASSET_BALANCE, this);
+	assetListeners.Notify(Event.ASSET_BALANCE, new AccountAsset(id, assetId, assetBalances.get(assetId)));
 	*/
 }
 
@@ -341,8 +332,8 @@ function AddToUnconfirmedAssetBalanceQNT(assetId, quantityQNT) {
 		}
 		unconfirmedAssetBalances.put(assetId, unconfirmedAssetBalance);
 	}
-	listeners.notify(this, Event.UNCONFIRMED_ASSET_BALANCE);
-	assetListeners.notify(new AccountAsset(id, assetId, unconfirmedAssetBalances.get(assetId)), Event.UNCONFIRMED_ASSET_BALANCE);
+	listeners.Notify(Event.UNCONFIRMED_ASSET_BALANCE, this);
+	assetListeners.Notify(Event.UNCONFIRMED_ASSET_BALANCE, new AccountAsset(id, assetId, unconfirmedAssetBalances.get(assetId)));
 	*/
 }
 
@@ -364,10 +355,10 @@ function AddToAssetAndUnconfirmedAssetBalanceQNT(assetId, quantityQNT) {
 		}
 		unconfirmedAssetBalances.put(assetId, unconfirmedAssetBalance);
 	}
-	listeners.notify(this, Event.ASSET_BALANCE);
-	listeners.notify(this, Event.UNCONFIRMED_ASSET_BALANCE);
-	assetListeners.notify(new AccountAsset(id, assetId, assetBalances.get(assetId)), Event.ASSET_BALANCE);
-	assetListeners.notify(new AccountAsset(id, assetId, unconfirmedAssetBalances.get(assetId)), Event.UNCONFIRMED_ASSET_BALANCE);
+	listeners.Notify(Event.ASSET_BALANCE, this);
+	listeners.Notify(Event.UNCONFIRMED_ASSET_BALANCE, this);
+	assetListeners.Notify(Event.ASSET_BALANCE, new AccountAsset(id, assetId, assetBalances.get(assetId)));
+	assetListeners.Notify(Event.UNCONFIRMED_ASSET_BALANCE, new AccountAsset(id, assetId, unconfirmedAssetBalances.get(assetId)));
 	*/
 }
 
@@ -379,7 +370,7 @@ function AddToBalanceMilliLm(amountNQT) {
 		addToGuaranteedBalanceNQT(amountNQT);
 	}
 	if (amountNQT != 0) {
-		listeners.notify(this, Event.BALANCE);
+		listeners.Notify(Event.BALANCE, this);
 	}
 	*/
 }
@@ -393,7 +384,7 @@ function AddToUnconfirmedBalanceMilliLm(amountNQT) {
 	synchronized (this) {
 		this.unconfirmedBalanceNQT = Convert.safeAdd(this.unconfirmedBalanceNQT, amountNQT);
 	}
-	listeners.notify(this, Event.UNCONFIRMED_BALANCE);
+	listeners.Notify(Event.UNCONFIRMED_BALANCE, this);
 	*/
 }
 
@@ -406,8 +397,8 @@ function AddToBalanceAndUnconfirmedBalanceMilliLm(amountNQT) {
 		addToGuaranteedBalanceNQT(amountNQT);
 	}
 	if (amountNQT != 0) {
-		listeners.notify(this, Event.BALANCE);
-		listeners.notify(this, Event.UNCONFIRMED_BALANCE);
+		listeners.Notify(Event.BALANCE, this);
+		listeners.Notify(Event.UNCONFIRMED_BALANCE, this);
 	}
 	*/
 }

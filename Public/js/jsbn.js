@@ -13,10 +13,16 @@ var j_lm = ((canary&0xffffff)==0xefcafe);
 
 // (public) Constructor
 function BigInteger(a,b,c) {
-	if(a != null)
-		if("number" == typeof a) this.fromNumber(a,b,c);
-		else if(b == null && "string" != typeof a) this.fromString(a,256);
-		else this.fromString(a,b);
+	if (a != null) {
+		if (typeof a == 'number' && typeof b != 'undefined') {
+			this.fromNumber(a,b,c);
+		} else {
+			if (b == null && typeof a != 'string')
+				this.fromString(a,256);
+			else
+				this.fromString(a,b);
+		}
+	}
 }
 
 // return new, unset BigInteger

@@ -10,8 +10,8 @@ static final String SEPARATOR = Nxt.getStringProperty("nxt.debugTraceSeparator",
 static final boolean LOG_UNCONFIRMED = Nxt.getBooleanProperty("nxt.debugLogUnconfirmed");
 */
 
-/*
-static void init() {
+function Init() {
+	/*
 	List<String> accountIds = Nxt.getStringListProperty("nxt.debugTraceAccounts");
 	String logName = Nxt.getStringProperty("nxt.debugTraceLog");
 	if (accountIds.isEmpty() || logName == null) {
@@ -20,84 +20,54 @@ static void init() {
 	addDebugTrace(accountIds, logName);
 	Logger.logDebugMessage("Debug tracing of " + (accountIds.contains("*") ? "ALL"
 			: String.valueOf(accountIds.size())) + " accounts enabled");
+	*/
 }
-*/
 
-/*
-public static void addDebugTrace(List<String> accountIds, String logName) {
+function AddDebugTrace(accountIds, logName) {
+	/*
 	final DebugTrace debugTrace = new DebugTrace(accountIds, logName);
 	final Map<String, String> headers = new HashMap<>();
 	for (String entry : columns) {
 		headers.put(entry, entry);
 	}
 	debugTrace.log(headers);
-	Trade.addListener(new Listener<Trade>() {
-		@Override
-		public void notify(Trade trade) {
-			debugTrace.trace(trade);
-		}
-	}, Trade.Event.TRADE);
-	Account.addListener(new Listener<Account>() {
-		@Override
-		public void notify(Account account) {
-			debugTrace.trace(account, false);
-		}
-	}, Account.Event.BALANCE);
+	Trade.AddListener(Trades.Event.TRADE, function(trade) {
+		debugTrace.trace(trade);
+	});
+	Account.AddListener(Accounts.Event.BALANCE, function(account) {
+		debugTrace.trace(account, false);
+	});
 	if (LOG_UNCONFIRMED) {
-		Account.addListener(new Listener<Account>() {
-			@Override
-			public void notify(Account account) {
-				debugTrace.trace(account, true);
-			}
-		}, Account.Event.UNCONFIRMED_BALANCE);
+		Account.AddListener(Accounts.Event.UNCONFIRMED_BALANCE, function(account) {
+			debugTrace.trace(account, true);
+		});
 	}
-	Account.addAssetListener(new Listener<Account.AccountAsset>() {
-		@Override
-		public void notify(Account.AccountAsset accountAsset) {
-			debugTrace.trace(accountAsset, false);
-		}
-	}, Account.Event.ASSET_BALANCE);
+	Account.AddAssetListener(Account.Event.ASSET_BALANCE, function(accountAsset) {
+		debugTrace.trace(accountAsset, false);
+	});
 	if (LOG_UNCONFIRMED) {
-		Account.addAssetListener(new Listener<Account.AccountAsset>() {
-			@Override
-			public void notify(Account.AccountAsset accountAsset) {
-				debugTrace.trace(accountAsset, true);
-			}
-		}, Account.Event.UNCONFIRMED_ASSET_BALANCE);
+		Account.AddAssetListener(Account.Event.UNCONFIRMED_ASSET_BALANCE, function(accountAsset) {
+			debugTrace.trace(accountAsset, true);
+		});
 	}
-	Account.addLeaseListener(new Listener<Account.AccountLease>() {
-		@Override
-		public void notify(Account.AccountLease accountLease) {
-			debugTrace.trace(accountLease, true);
-		}
-	}, Account.Event.LEASE_STARTED);
-	Account.addLeaseListener(new Listener<Account.AccountLease>() {
-		@Override
-		public void notify(Account.AccountLease accountLease) {
-			debugTrace.trace(accountLease, false);
-		}
-	}, Account.Event.LEASE_ENDED);
-	Nxt.getBlockchainProcessor().addListener(new Listener<Block>() {
-		@Override
-		public void notify(Block block) {
-			debugTrace.resetLog();
-			debugTrace.log(headers);
-		}
-	}, BlockchainProcessor.Event.RESCAN_BEGIN);
-	Nxt.getBlockchainProcessor().addListener(new Listener<Block>() {
-		@Override
-		public void notify(Block block) {
-			debugTrace.trace(block, false);
-		}
-	}, BlockchainProcessor.Event.BEFORE_BLOCK_APPLY);
-	Nxt.getBlockchainProcessor().addListener(new Listener<Block>() {
-		@Override
-		public void notify(Block block) {
-			debugTrace.trace(block, true);
-		}
-	}, BlockchainProcessor.Event.BEFORE_BLOCK_UNDO);
+	Account.AddLeaseListener(Account.Event.LEASE_STARTED, function(accountLease) {
+		debugTrace.trace(accountLease, true);
+	});
+	Account.AddLeaseListener(Account.Event.LEASE_ENDED, function(accountLease) {
+		debugTrace.trace(accountLease, false);
+	});
+	BlockchainProcessor.AddListener(BlockchainProcessor.Event.RESCAN_BEGIN, function(block) {
+		debugTrace.resetLog();
+		debugTrace.log(headers);
+	});
+	BlockchainProcessor.AddListener(BlockchainProcessor.Event.BEFORE_BLOCK_APPLY, function(block) {
+		debugTrace.trace(block, false);
+	});
+	BlockchainProcessor.AddListener(BlockchainProcessor.Event.BEFORE_BLOCK_UNDO, function(block) {
+		debugTrace.trace(block, true);
+	});
+	*/
 }
-*/
 
 /*
 private static final String[] columns = {"height", "event", "account", "asset", "balance", "unconfirmed balance",

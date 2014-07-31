@@ -1,33 +1,31 @@
-/*
-import nxt.Account;
-import nxt.Asset;
-*/
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-function Main(req, res) {
-	res.send('This is not implemented');
-	/*
-	static final GetAssetsByIssuer instance = new GetAssetsByIssuer();
+var Assets = require(__dirname + '/../../Assets');
+var JsonData = require(__dirname + '/../JsonData');
+var ParameterParser = require(__dirname + '/../ParameterParser');
 
-	private GetAssetsByIssuer() {
-		super("account", "account", "account");
-	}
 
-	JSONStreamAware processRequest(HttpServletRequest req) throws ParameterException {
-		List<Account> accounts = ParameterParser.getAccounts(req);
-		JSONObject response = new JSONObject();
-		JSONArray accountsJSONArray = new JSONArray();
-		response.put("assets", accountsJSONArray);
-		for (Account account : accounts) {
-			List<Asset> assets = Asset.getAssetsIssuedBy(account.getId());
-			JSONArray assetsJSONArray = new JSONArray();
-			for (Asset asset : assets) {
-				assetsJSONArray.add(JSONData.asset(asset));
-			}
-			accountsJSONArray.add(assetsJSONArray);
+//super("account", "account", "account");
+function GetAssetsByIssuer(req, res) {
+	var accounts = ParameterParser.GetAccounts(req);
+	var response = {};
+	var accountsJsonArray = [];
+	response.assets = accountsJsonArray;
+	for (var account in accounts) {
+		var assets = Assets.GetAssetsIssuedBy(account.GetId());
+		var assetsJsonArray = [];
+		for (var asset in assets) {
+			assetsJsonArray.push(JsonData.Asset(asset));
 		}
-		return response;
+		accountsJsonArray.push(assetsJsonArray);
 	}
-	*/
+	res.send(response);
+	return true;
 }
 
-module.exports = Main;
+
+module.exports = GetAssetsByIssuer;

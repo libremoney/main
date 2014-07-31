@@ -5,7 +5,8 @@
  */
 
 var BigInteger = require(__dirname + '/BigInteger');
-var LmConstants = require(__dirname + '/../Constants');
+var Constants = require(__dirname + '/../Constants');
+var Crypto = require(__dirname + '/../Crypto/Crypto');
 
 
 var hexChars = new Array('0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f');
@@ -79,10 +80,7 @@ function EmptyToNull(value) {
 }
 
 function FromEpochTime(epochTime) {
-	throw new Error('Not implementted');
-	/*
-	return new Date(epochTime * 1000L + LmConstants.EpochBeginning - 500L);
-	*/
+	return new Date(epochTime + Constants.EpochBeginning - 500);
 }
 
 // hash - hex string or bytes array
@@ -107,16 +105,12 @@ function FullHashToId(hash) {
 	b.push(hash[1]);
 	b.push(hash[0]);
 	var bb = BytesToDouble(b);
-	console.log("FullHashToId: bb="+bb)
 	var bigInteger = new BigInteger(1, bb);
 	return bigInteger.longValue();
 }
 
 function GetEpochTime() {
-	throw new Error('Not implementted');
-	/*
-	return (int)((System.currentTimeMillis() - LmConstants.EpochBeginning + 500) / 1000);
-	*/
+	return (Date.now() - Constants.EpochBeginning + 500);
 }
 
 function NullToEmpty(s) {
@@ -127,10 +121,7 @@ function NullToEmpty(s) {
 }
 
 function NullToZero(i) {
-	throw new Error('Not implementted');
-	/*
 	return i == null ? 0 : i;
-	*/
 }
 
 function Ord(string) {
@@ -145,7 +136,7 @@ function ParseAccountId(account) {
 	if (account.startsWith("LMA-")) {
 		return ZeroToNull(Crypto.RsDecode(account.substring(4)));
 	} else {
-		return account; //ParseUnsignedLong(account); - Prof1983
+		return ParseUnsignedLong(account);
 	}
 }
 
@@ -165,9 +156,8 @@ function ParseHexString(hex) {
 	return bytes;
 }
 
-// ParseNXT
 function ParseLm(value) {
-	return ParseStringFraction(value, 8, LmConstants.MaxBalanceLm);
+	return ParseStringFraction(value, 8, Constants.MaxBalanceLm);
 }
 
 function ParseStringFraction(value, decimals, maxValue) {
@@ -195,7 +185,6 @@ function ParseStringFraction(value, decimals, maxValue) {
 	*/
 }
 
-/*
 function ParseUnsignedLong(number) {
 	if (typeof number == 'undefined' || number == null) {
 		return null;
@@ -206,11 +195,9 @@ function ParseUnsignedLong(number) {
 	}
 	return ZeroToNull(bigInt.longValue());
 }
-*/
 
 function RsAccount(accountId) {
 	return "LMA-" + Crypto.RsEncode(NullToZero(accountId));
-	throw new Error('Not implementted');
 }
 
 function SafeAbs(a) {
@@ -290,15 +277,12 @@ function StringToArray(string) {
 }
 
 function ToHexString(bytes) {
-	throw new Error('Not implementted');
-	/*
-	char[] chars = new char[bytes.length * 2];
-	for (int i = 0; i < bytes.length; i++) {
+	var chars = new Array(bytes.length * 2);
+	for (var i = 0; i < bytes.length; i++) {
 		chars[i * 2] = hexChars[((bytes[i] >> 4) & 0xF)];
 		chars[i * 2 + 1] = hexChars[(bytes[i] & 0xF)];
 	}
 	return String.valueOf(chars);
-	*/
 }
 
 function ToUnsignedLong(objectId) {
@@ -312,7 +296,6 @@ function ToUnsignedLong(objectId) {
 	--- 2 --- (Long)
 	return toUnsignedLong(nullToZero(objectId));
 	*/
-	throw new Error('Not implementted');
 }
 
 function Truncate(s, replaceNull, limit, dots) {
@@ -345,7 +328,7 @@ exports.ParseAccountId = ParseAccountId;
 exports.ParseHexString = ParseHexString;
 exports.ParseLm = ParseLm;
 exports.ParseStringFraction = ParseStringFraction;
-//exports.ParseUnsignedLong = ParseUnsignedLong;
+exports.ParseUnsignedLong = ParseUnsignedLong;
 exports.RsAccount = RsAccount;
 exports.SafeAbs = SafeAbs;
 exports.SafeAdd = SafeAdd;

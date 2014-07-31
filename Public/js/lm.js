@@ -322,7 +322,7 @@ var Lm = (function(Lm, $, undefined) {
 				}
 
 				//only show if happened within last week
-				var showAssetDifference = (!Lm.DownloadingBlockchain || (Lm.Blocks && Lm.Blocks[0] && Lm.State && Lm.State.time - Lm.Blocks[0].timestamp < 60 * 60 * 24 * 7));
+				var showAssetDifference = (!Lm.DownloadingBlockchain || (Lm.Blocks && Lm.Blocks[0] && Lm.State && Lm.State.time - Lm.Blocks[0].timestamp < 1000 * 60 * 60 * 24 * 7));
 
 				if (Lm.DatabaseSupport) {
 					Lm.Database.select("data", [{
@@ -457,6 +457,18 @@ var Lm = (function(Lm, $, undefined) {
 				if (callback) {
 					callback();
 				}
+			}
+		});
+	}
+
+	function GetVersion(callback) {
+		Lm.SendRequest("getVersion", function(response) {
+			if (response.errorCode) {
+				$("#lm_version_header").html('Er: '+response.errorCode);
+			} else {
+				var version = response.version;
+				$("#lm_version_header").html('v.'+version);
+				if (callback) callback();
 			}
 		});
 	}
@@ -803,6 +815,7 @@ var Lm = (function(Lm, $, undefined) {
 	Lm.CreateDatabase = CreateDatabase;
 	Lm.GetAccountInfo = GetAccountInfo;
 	Lm.GetState = GetState;
+	Lm.GetVersion = GetVersion;
 	Lm.GoToPage = GoToPage;
 	Lm.Init = Init;
 	Lm.PageLoaded = PageLoaded;

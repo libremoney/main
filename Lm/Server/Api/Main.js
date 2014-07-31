@@ -35,10 +35,6 @@ abstract static class UserRequestHandler {
 }
 */
 
-/*
-private static final boolean enforcePost = Nxt.getBooleanProperty("nxt.uiServerEnforcePOST");
-*/
-
 var userRequestHandlers = {
 	generateAuthorizationToken: GenerateAuthorizationToken,
 	getInitialData: GetInitialData,
@@ -76,15 +72,12 @@ function Main(req, res) {
 			res.end("Ok");
 			return;
 		}
-
-		Main2(body, res);
-
-		res.send('This is not implemented now /api');
+		Main2(req, body, res);
 	});
 }
 
 // res = user
-function Main2(body, res) {
+function Main2(req, body, res) {
 	/*
 	resp.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, private");
 	resp.setHeader("Pragma", "no-cache");
@@ -94,7 +87,8 @@ function Main2(body, res) {
 	var user = null;
 
 	var userPasscode = body.user;
-	if (userPasscode == null) {
+	if (!userPasscode) {
+		res.send('{"error":"user not defined"}');
 		return;
 	}
 	user = UserServer.GetUser(userPasscode);
@@ -108,27 +102,29 @@ function Main2(body, res) {
 
 	var requestType = body.requestType;
 	if (!requestType) {
-		user.Enqueue(JsonResponses.INCORRECT_REQUEST);
-		return;
-	}
-xxxx
-	var userRequestHandler = handlers[requestType];
-	if (!userRequestHandler) {
-		user.Enqueue(JsonResponses.INCORRECT_REQUEST);
+		res.send(JsonResponses.INCORRECT_REQUEST);
 		return;
 	}
 
-	if (enforcePost && userRequestHandler.requirePost() && ! "POST".equals(req.getMethod())) {
-		user.enqueue(JsonResponses.POST_REQUIRED_2);
+	var userRequestHandler = userRequestHandlers[requestType];
+	if (!userRequestHandler) {
+		res.send(JsonResponses.INCORRECT_REQUEST);
 		return;
 	}
 
 	/*
-	JSONStreamAware response = userRequestHandler.processRequest(req, user);
+	if (UserServer.GetEnforcePost() && userRequestHandler.requirePost() && ! "POST".equals(req.getMethod())) {
+		res.send(JsonResponses.POST_REQUIRED_2);
+		return;
+	}
+	*/
+
+	userRequestHandler(req, res, user);
 	if (response != null) {
-		user.enqueue(response);
+		res.send(response);
 	}
 
+	/*
 	} catch (RuntimeException|NxtException e) {
 		Logger.logMessage("Error processing GET request", e);
 		if (user != null) {

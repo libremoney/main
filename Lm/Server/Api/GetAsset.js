@@ -1,19 +1,18 @@
-/*
-import nxt.NxtException;
-*/
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-function Main(req, res) {
-	//static final GetAsset instance = new GetAsset();
-	res.send('This is not implemented');
-	/*
-	private GetAsset() {
-		super("asset");
-	}
+var JsonData = require(__dirname + '/../JsonData');
+var ParameterParser = require(__dirname + '/../ParameterParser');
 
-	JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
-		return JSONData.asset(ParameterParser.getAsset(req));
-	}
-	*/
+
+//super("asset");
+function GetAsset(req, res) {
+	res.send(JsonData.Asset(ParameterParser.GetAsset(req)));
+	return true;
 }
 
-module.exports = Main;
+
+module.exports = GetAsset;

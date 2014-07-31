@@ -11,7 +11,7 @@ var modelName = 'users';
 
 // Список документов (GET)
 function list(req, res, next) {
-	Db.Model(modelName).find({}, function (err, data) {
+	Db.GetModel(modelName).find({}, function (err, data) {
 		if (err) next(err);
 		S = '<html><body><h1>Users list</h1>';
 		data.forEach(function(User){
@@ -31,7 +31,7 @@ function get(req, res, next) {
 		res.send(400)
 	}
 
-	Db.Model(modelName).find({_id: id}, function (err, data) {
+	Db.GetModel(modelName).find({_id: id}, function (err, data) {
 		if (err) next(err);
 		if (data) {
 			res.send(data);
@@ -60,7 +60,7 @@ function get(req, res, next) {
 
 // Создаем документ (POST)
 function create(req, res, next) {
-	Db.Model(modelName).create(req.body, function (err, data) {
+	Db.GetModel(modelName).create(req.body, function (err, data) {
 		if (err) {
 			next(err);
 		}
@@ -101,7 +101,7 @@ function update(req, res, next) {
 		res.send(400)
 	}
 
-	Db.Model(modelName).update({_id: id}, {$set: req.body}, function (err, numberAffected, data) {
+	Db.GetModel(modelName).update({_id: id}, {$set: req.body}, function (err, numberAffected, data) {
 		if (err) next(err);
 		if (numberAffected) {
 			res.send(200);
@@ -119,7 +119,7 @@ function remove(req, res, next) {
 		res.send(400)
 	}
 
-	Db.Model(modelName).remove({_id: id}, function (err, data) {
+	Db.GetModel(modelName).remove({_id: id}, function (err, data) {
 		if (err) next(err);
 		res.send(data ? req.params.id : 404);
 	});

@@ -1,19 +1,18 @@
-/*
-import nxt.NxtException;
-import javax.servlet.http.HttpServletRequest;
-*/
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-function Main(req, res) {
-	res.send('This is not implemented');
-	/*
-	static final GetBalance instance = new GetBalance();
-	private GetBalance() {
-		super("account");
-	}
-	JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
-		return JSONData.accountBalance(ParameterParser.getAccount(req));
-	}
-	*/
+var JsonData = require(__dirname + '/../JsonData');
+var ParameterParser = require(__dirname + '/../ParameterParser');
+
+
+//super("account");
+function GetBalance(req, res) {
+	res.send(JsonData.AccountBalance(ParameterParser.GetAccount(req)));
+	return true;
 }
 
-module.exports = Main;
+
+module.exports = GetBalance;

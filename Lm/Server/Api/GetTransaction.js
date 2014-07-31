@@ -8,65 +8,79 @@
 import nxt.Transaction;
 */
 
-var LmUtil = require(__dirname + '/../../Util/Convert');
+var Blockchain = require(__dirname + '/../../Blockchain');
+var Convert = require(__dirname + '/../../Util/Convert');
 var JsonData = require(__dirname + '/../JsonData');
+var JsonResponses = require(__dirname + '/../JsonResponses');
+var Logger = require(__dirname + '/../../Logger').GetLogger(module);
+var TransactionProcessor = require(__dirname + '/../../TransactionProcessor');
 
 
 //super("transaction", "fullHash");
 function GetTransaction(req, res) {
-	var transactionIdString = req.query.transaction;
-	var transactionFullHash = req.query.fullHash;
-	//if (transactionIdString == null && transactionFullHash == null) {
-	//	return MISSING_TRANSACTION;
-	//}
-
-	var transaction = Lm.Transactions[1];
-
-	res.send(JsonData.Transaction(transaction));
-	/*
-	res.send({
-		transaction: {
-			type: 0,
-			transaction: 'test'
-		},
-		input: ''
-	});
-	*/
-	//res.send('This is not implemented');
-	/*
-	String transactionIdString = Convert.emptyToNull(req.getParameter("transaction"));
-	String transactionFullHash = Convert.emptyToNull(req.getParameter("fullHash"));
-
-	if (transactionIdString == null && transactionFullHash == null) {
-		return MISSING_TRANSACTION;
+	var transactionIdString = Convert.EmptyToNull(req.query.transaction);
+	var transactionFullHash = Convert.EmptyToNull(req.query.fullHash);
+	if (!transactionIdString && !transactionFullHash) {
+		res.send(JsonResponses.MissingTransaction)
+		return false;
 	}
+	var transactionId = null;
+	var transaction;
 
-	Long transactionId = null;
-	Transaction transaction;
-	try {
-		if (transactionIdString != null) {
-			transactionId = Convert.parseUnsignedLong(transactionIdString);
-			transaction = Nxt.getBlockchain().getTransaction(transactionId);
-		} else {
-			transaction = Nxt.getBlockchain().getTransactionByFullHash(transactionFullHash);
-			if (transaction == null) {
-				return UNKNOWN_TRANSACTION;
+	//var transaction = Transactions[1];
+	//res.send(JsonData.Transaction(transaction));
+
+	//Logger.debug('transactionIdString='+transactionIdString+' transactionFullHash='+transactionFullHash);
+
+	if (transactionIdString) {
+		transactionId = Convert.ParseUnsignedLong(transactionIdString);
+		//Logger.debug('transactionId='+transactionId);
+		Blockchain.GetTransaction(transactionId, function(err, transaction) {
+			if (err) {
+				Logger.warn(JsonResponses.IncorrectTransaction);
+				res.send(JsonResponses.IncorrectTransaction);
+				return;
 			}
-		}
-	} catch (RuntimeException e) {
-		return INCORRECT_TRANSACTION;
-	}
-
-	if (transaction == null) {
-		transaction = Nxt.getTransactionProcessor().getUnconfirmedTransaction(transactionId);
-		if (transaction == null) {
-			return UNKNOWN_TRANSACTION;
-		}
-		return JSONData.unconfirmedTransaction(transaction);
+			if (!transaction) {
+				transaction = TransactionProcessor.GetUnconfirmedTransaction(transactionId);
+				if (!transaction) {
+					res.send(JsonResponses.UnknownTransaction);
+					return false;
+				}
+				res.send(JsonData.UnconfirmedTransaction(transaction));
+				return;
+			}
+			Logger.debug(transaction.GetAmountMilliLm());
+			res.send(JsonData.Transaction(transaction));
+		});
 	} else {
-		return JSONData.transaction(transaction);
+		Blockchain.GetTransactionByFullHash(transactionFullHash, function(err, transaction) {
+			if (err) {
+				Logger.warn(JsonResponses.IncorrectTransaction);
+				res.send(JsonResponses.IncorrectTransaction);
+				return;
+			}
+			if (!transaction) {
+				Logger.warn(JsonResponses.UnknownTransaction);
+				res.send(JsonResponses.UnknownTransaction);
+				return false;
+			}
+			Logger.debug(transaction.GetAmountMilliLm());
+			res.send(JsonData.Transaction(transaction));
+		});
+	}
+	/*
+	} catch (e) {
+		Logger.warn(JsonResponses.IncorrectTransaction);
+		res.send(JsonResponses.IncorrectTransaction);
+		return false;
 	}
 	*/
+	return true;
 }
+
+function Work(transaction) {
+}
+
 
 module.exports = GetTransaction;

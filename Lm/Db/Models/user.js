@@ -1,6 +1,12 @@
+/**!
+ * LibreMoney 0.0
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-function Main(mongoose) {
+function InitUsersModel(mongoose, modelName) {
 	var UserSchema = new mongoose.Schema({
+		//properties:
 		name: { type: String, required: true },
 		account_id: { type: String, required: true }
 	});
@@ -10,9 +16,10 @@ function Main(mongoose) {
 		return v.length > 4 && v.length < 32;
 	});
 
-	var UserModel = mongoose.model('User', UserSchema);
+	var UserModel = mongoose.model(modelName, UserSchema);
 
 	return UserModel;
 }
 
-module.exports = Main;
+
+module.exports = InitUsersModel;
