@@ -14,7 +14,6 @@ var Config = require('./Lm/Config');
 var Core = require("./Lm/Core");
 var Db = require('./Lm/Db');
 var Demo = require('./Lm/Demo');
-var Lang = require('./Locale/Ru');
 var Logger = require("./Lm/Logger").GetLogger(module);
 var Server = require("./Lm/Server");
 var TransactionProcessor = require("./Lm/TransactionProcessor");

@@ -13,7 +13,6 @@ function LmAddress() {
 	var cwmap = [3, 2, 1, 0, 7, 6, 5, 4, 13, 14, 15, 16, 12, 8, 9, 10, 11];
 
 	var alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-	//var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ345679';
 
 	this.guess = [];
 

@@ -1,3 +1,6 @@
+/**
+ * @depends {lm.js}
+ */
 var Lm = (function(Lm, $, undefined) {
 	Lm.Assets = [];
 	Lm.AssetIds = [];
@@ -5,17 +8,16 @@ var Lm = (function(Lm, $, undefined) {
 	Lm.AssetSearch = false;
 	Lm.LastIssuerCheck = false;
 	Lm.ViewingAsset = false; //viewing non-bookmarked asset
-
+	Lm.CurrentAsset = {};
+	var currentAssetID = 0;
 
 	function AssetExchangePage(callback) {
-		Lm.PageLoading();
-
 		$(".content.content-stretch:visible").width($(".page:visible").width());
 
-		Lm.Assets = [];
-		Lm.AssetIds = [];
-
 		if (Lm.DatabaseSupport) {
+			Lm.Assets = [];
+			Lm.AssetIds = [];
+
 			Lm.Database.select("assets", null, function(error, assets) {
 				//select already bookmarked assets
 				$.each(assets, function(index, asset) {
@@ -68,20 +70,25 @@ var Lm = (function(Lm, $, undefined) {
 				var qs = [];
 
 				$.each(Lm.AccountInfo.unconfirmedAssetBalances, function(key, assetBalance) {
-					qs.push("assets=" + encodeURIComponent(assetBalance.asset));
+					if (Lm.AssetIds.indexOf(assetBalance.asset) == -1) {
+						qs.push("assets=" + encodeURIComponent(assetBalance.asset));
+					}
 				});
+
 				qs = qs.join("&");
 
-				Lm.SendRequest("getAssets+", {
-					"querystring": qs
-				}, function(response) {
-					if (response.assets && response.assets.length) {
-						$.each(response.assets, function(key, asset) {
-							Lm.CacheAsset(asset);
-						});
-					}
-					Lm.LoadAssetExchangeSidebar(callback);
-				});
+				if (qs) {
+					Lm.SendRequest("getAssets+", {
+						"querystring": qs
+					}, function(response) {
+						if (response.assets && response.assets.length) {
+							$.each(response.assets, function(key, asset) {
+								Lm.CacheAsset(asset);
+							});
+						}
+						Lm.LoadAssetExchangeSidebar(callback);
+					});
+				}
 			} else {
 				Lm.LoadAssetExchangeSidebar(callback);
 			}
@@ -89,6 +96,10 @@ var Lm = (function(Lm, $, undefined) {
 	}
 
 	function CacheAsset(asset) {
+		if (Lm.AssetIds.indexOf(asset.asset) != -1) {
+			return;
+		}
+
 		Lm.AssetIds.push(asset.asset);
 
 		if (!asset.groupName) {
@@ -107,8 +118,6 @@ var Lm = (function(Lm, $, undefined) {
 		};
 
 		Lm.Assets.push(asset);
-
-		return asset;
 	}
 
 	function AddAssetBookmarkForm($modal) {
@@ -118,13 +127,13 @@ var Lm = (function(Lm, $, undefined) {
 
 		if (!data.id) {
 			return {
-				"error": "Asset or account ID is a required field."
+				"error": $.t("error_asset_or_account_id_required")
 			};
 		}
 
 		if (!/^\d+$/.test(data.id) && !/^LMA\-/i.test(data.id)) {
 			return {
-				"error": "Asset or account ID is invalid."
+				"error": $.t("error_asset_or_account_id_invalid")
 			};
 		}
 
@@ -133,12 +142,12 @@ var Lm = (function(Lm, $, undefined) {
 				"account": data.id
 			}, function(response) {
 				if (response.errorCode) {
-					Lm.ShowModalError(response.errorDescription, $modal);
+					Lm.ShowModalError(Lm.TranslateServerError(response), $modal);
 				} else {
 					if (response.assets && response.assets[0] && response.assets[0].length) {
 						Lm.SaveAssetBookmarks(response.assets[0], Lm.Forms.AddAssetBookmarkComplete);
 					} else {
-						Lm.ShowModalError("No assets found by this account.", $modal);
+						Lm.ShowModalError($.t("account_no_assets"), $modal);
 					}
 				}
 			});
@@ -151,12 +160,12 @@ var Lm = (function(Lm, $, undefined) {
 						"account": data.id
 					}, function(response) {
 						if (response.errorCode) {
-							Lm.ShowModalError(response.errorDescription, $modal);
+							Lm.ShowModalError(Lm.TranslateServerError(response), $modal);
 						} else {
 							if (response.assets && response.assets[0] && response.assets[0].length) {
 								Lm.SaveAssetBookmarks(response.assets[0], Lm.Forms.AddAssetBookmarkComplete);
 							} else {
-								Lm.ShowModalError("No asset found.", $modal);
+								Lm.ShowModalError($.t("no_asset_found"), $modal);
 							}
 						}
 					});
@@ -183,7 +192,9 @@ var Lm = (function(Lm, $, undefined) {
 
 		if (newAssets.length == 0) {
 			Lm.CloseModal();
-			$.growl((submittedAssets.length == 1 ? "Asset" : "Assets") + " already in bookmark list.", {
+			$.growl($.t("error_asset_already_bookmarked", {
+				"count": submittedAssets.length
+			}), {
 				"type": "danger"
 			});
 			$("#asset_exchange_sidebar a.active").removeClass("active");
@@ -191,7 +202,16 @@ var Lm = (function(Lm, $, undefined) {
 			return;
 		} else {
 			Lm.CloseModal();
-			$.growl((newAssets.length == 1 ? "Asset" : newAssets.length + " assets") + " added successfully.", {
+
+			var message = $.t("success_asset_bookmarked", {
+				"count": newAssets.length
+			});
+
+			if (!Lm.DatabaseSupport) {
+				message += " " + $.t("error_assets_save_db");
+			}
+
+			$.growl(message, {
 				"type": "success"
 			});
 
@@ -207,10 +227,7 @@ var Lm = (function(Lm, $, undefined) {
 		var newAssets = [];
 
 		$.each(assets, function(key, asset) {
-			newAssetIds.push({
-				"asset": String(asset.asset)
-			});
-			newAssets.push({
+			var newAsset = {
 				"asset": String(asset.asset),
 				"name": String(asset.name),
 				"description": String(asset.description),
@@ -219,8 +236,26 @@ var Lm = (function(Lm, $, undefined) {
 				"quantityQNT": String(asset.quantityQNT),
 				"decimals": parseInt(asset.decimals, 10),
 				"groupName": ""
-			});
+			};
+
+			newAssets.push(newAsset);
+
+			if (Lm.DatabaseSupport) {
+				newAssetIds.push({
+					"asset": String(asset.asset)
+				});
+			} else {
+				Lm.AssetIds.push(asset.asset);
+				Lm.Assets.push(newAsset);
+			}
 		});
+
+		if (!Lm.DatabaseSupport) {
+			if (callback) {
+				callback(newAssets, assets);
+			}
+			return;
+		}
 
 		Lm.Database.select("assets", newAssetIds, function(error, existingAssets) {
 			var existingIds = [];
@@ -261,7 +296,7 @@ var Lm = (function(Lm, $, undefined) {
 	function PositionAssetSidebar() {
 		$("#asset_exchange_sidebar").parent().css("position", "relative");
 		$("#asset_exchange_sidebar").parent().css("padding-bottom", "5px");
-		$("#asset_exchange_sidebar_content").height($(window).height() - 120);
+		//$("#asset_exchange_sidebar_content").height($(window).height() - 120);
 		$("#asset_exchange_sidebar").height($(window).height() - 120);
 	}
 
@@ -270,7 +305,7 @@ var Lm = (function(Lm, $, undefined) {
 		if (!Lm.Assets.length) {
 			Lm.PageLoaded();
 			$("#asset_exchange_sidebar_content").empty();
-			$("#no_asset_selected, #loading_asset_data, #no_asset_search_results").hide();
+			$("#no_asset_selected, #loading_asset_data, #no_asset_search_results, #asset_details").hide();
 			$("#no_assets_available").show();
 			$("#asset_exchange_page").addClass("no_assets");
 			return;
@@ -339,17 +374,10 @@ var Lm = (function(Lm, $, undefined) {
 
 				if (asset.groupName) {
 					ungrouped = false;
-					rows += "<a href='#' class='list-group-item list-group-item-header" +
-						(asset.groupName == "Ignore List" ? " no-context" : "") + "'" +
-						(asset.groupName != "Ignore List" ? " data-context='asset_exchange_sidebar_group_context' " : "data-context=''") +
-						" data-groupname='" + asset.groupName.escapeHTML() + "' data-closed='" + isClosedGroup + "'>"+
-						"<h4 class='list-group-item-heading'>" + asset.groupName.toUpperCase().escapeHTML() + "</h4>"+
-						"<i class='fa fa-angle-" + (isClosedGroup ? "right" : "down") + " group_icon'></i></h4></a>";
+					rows += "<a href='#' class='list-group-item list-group-item-header" + (asset.groupName == "Ignore List" ? " no-context" : "") + "'" + (asset.groupName != "Ignore List" ? " data-context='asset_exchange_sidebar_group_context' " : "data-context=''") + " data-groupname='" + asset.groupName.escapeHTML() + "' data-closed='" + isClosedGroup + "'><h4 class='list-group-item-heading'>" + asset.groupName.toUpperCase().escapeHTML() + "</h4><i class='fa fa-angle-" + (isClosedGroup ? "right" : "down") + " group_icon'></i></h4></a>";
 				} else {
 					ungrouped = true;
-					rows += "<a href='#' class='list-group-item list-group-item-header no-context' data-closed='" + isClosedGroup + "'>"+
-						"<h4 class='list-group-item-heading'>UNGROUPED <i class='fa pull-right fa-angle-" + (isClosedGroup ? "right" : "down") + "'></i></h4>"+
-						"</a>";
+					rows += "<a href='#' class='list-group-item list-group-item-header no-context' data-closed='" + isClosedGroup + "'><h4 class='list-group-item-heading'>UNGROUPED <i class='fa pull-right fa-angle-" + (isClosedGroup ? "right" : "down") + "'></i></h4></a>";
 				}
 
 				lastGroup = asset.groupName.toLowerCase();
@@ -367,10 +395,11 @@ var Lm = (function(Lm, $, undefined) {
 			}
 
 			rows += "<a href='#' class='list-group-item list-group-item-" + (ungrouped ? "ungrouped" : "grouped") +
-				(ownsAsset ? " owns_asset" : " not_owns_asset") + "' data-cache='" + i + "' data-asset='" +
-				String(asset.asset).escapeHTML() + "'" + (!ungrouped ? " data-groupname='" + asset.groupName.escapeHTML() + "'" : "") +
-				(isClosedGroup ? " style='display:none'" : "") + " data-closed='" + isClosedGroup + "'><h4 class='list-group-item-heading'>" +
-				asset.name.escapeHTML() + "</h4><p class='list-group-item-text'>qty: " + Lm.FormatQuantity(asset.quantityQNT, asset.decimals) + "</p></a>";
+			(ownsAsset ? " owns_asset" : " not_owns_asset") + "' data-cache='" + i + "' data-asset='" + String(asset.asset).escapeHTML()
+			+ "'" + (!ungrouped ? " data-groupname='" + asset.groupName.escapeHTML() + "'" : "") +
+			(isClosedGroup ? " style='display:none'" : "") + " data-closed='" + isClosedGroup + "'>"+
+			"<h4 class='list-group-item-heading'>" + asset.name.escapeHTML() + "</h4>"+
+			"<p class='list-group-item-text'>qty: " + Lm.FormatQuantity(asset.quantityQNT, asset.decimals) + "</p></a>";
 		}
 
 		var active = $("#asset_exchange_sidebar a.active");
@@ -422,7 +451,7 @@ var Lm = (function(Lm, $, undefined) {
 		Lm.PageLoaded(callback);
 	}
 
-	function IncomingAssetExchange() {
+	function AssetExchangeIncoming() {
 		if (!Lm.ViewingAsset) {
 			//refresh active asset
 			var $active = $("#asset_exchange_sidebar a.active");
@@ -442,17 +471,16 @@ var Lm = (function(Lm, $, undefined) {
 		if (Lm.AccountInfo.assetBalances) {
 			$.each(Lm.AccountInfo.assetBalances, function(key, assetBalance) {
 				if (assetBalance.balanceQNT != "0") {
-					$("#asset_exchange_sidebar a.list-group-item[data-asset=" + assetBalance.asset + "]").addClass("owns_asset")
-						.removeClass("not_owns_asset");
+					$("#asset_exchange_sidebar a.list-group-item[data-asset=" + assetBalance.asset + "]").addClass("owns_asset").removeClass("not_owns_asset");
 				}
 			});
 		}
 	}
 
-	function AssetExchangeSidebar_OnClick(e, data, th) {
+	function AssetExchangeSidebar_OnClick(th, e, data) {
 		e.preventDefault();
 
-		var assetId = th.data("asset");
+		currentAssetID = String(th.data("asset")).escapeHTML();
 
 		//refresh is true if data is refreshed automatically by the system (when a new block arrives)
 		if (data && data.refresh) {
@@ -462,7 +490,7 @@ var Lm = (function(Lm, $, undefined) {
 		}
 
 		//clicked on a group
-		if (!assetId) {
+		if (!currentAssetID) {
 			if (Lm.DatabaseSupport) {
 				var group = th.data("groupname");
 				var closed = th.data("closed");
@@ -502,21 +530,19 @@ var Lm = (function(Lm, $, undefined) {
 			return;
 		}
 
-		assetId = assetId.escapeHTML();
-
 		if (Lm.DatabaseSupport) {
 			Lm.Database.select("assets", [{
-				"asset": assetId
+				"asset": currentAssetID
 			}], function(error, asset) {
-				if (!error) {
+				if (asset && asset.length && asset[0].asset == currentAssetID) {
 					Lm.LoadAsset(asset[0], refresh);
 				}
 			});
 		} else {
 			Lm.SendRequest("getAsset+", {
-				"asset": assetId
+				"asset": currentAssetID
 			}, function(response, input) {
-				if (!response.errorCode) {
+				if (!response.errorCode && response.asset == currentAssetID) {
 					Lm.LoadAsset(response, refresh);
 				}
 			});
@@ -549,7 +575,12 @@ var Lm = (function(Lm, $, undefined) {
 			$(".asset_name").html(String(asset.name).escapeHTML());
 			$("#sell_asset_button").data("asset", assetId);
 			$("#buy_asset_button").data("asset", assetId);
-
+			$("#sell_asset_for_lm").html($.t("sell_asset_for_lm", {
+				"assetName": String(asset.name).escapeHTML()
+			}));
+			$("#buy_asset_with_lm").html($.t("buy_asset_with_lm", {
+				"assetName": String(asset.name).escapeHTML()
+			}));
 			$("#sell_asset_price, #buy_asset_price").val("");
 			$("#sell_asset_quantity, #sell_asset_total, #buy_asset_quantity, #buy_asset_total").val("0");
 
@@ -574,25 +605,21 @@ var Lm = (function(Lm, $, undefined) {
 				}
 			});
 
-			if (nrDuplicates >= 1) {
-				$("#asset_exchange_duplicates_warning span").html((nrDuplicates == 1 ? " is " : " are ") + nrDuplicates + " " +
-					(nrDuplicates == 1 ? "other asset" : "other assets"));
-				$("#asset_exchange_duplicates_warning").show();
-			} else {
-				$("#asset_exchange_duplicates_warning").hide();
-			}
+			$("#asset_exchange_duplicates_warning").html($.t("asset_exchange_duplicates_warning", {
+				"count": nrDuplicates
+			}));
 
 			if (Lm.DatabaseSupport) {
 				Lm.SendRequest("getAsset", {
 					"asset": assetId
 				}, function(response) {
 					if (!response.errorCode) {
-						if (response.asset != asset.asset || response.account != asset.account || response.accountRS != asset.accountRS ||response.decimals != asset.decimals || response.description != asset.description || response.name != asset.name || response.quantityQNT != asset.quantityQNT) {
+						if (response.asset != asset.asset || response.account != asset.account || response.accountRS != asset.accountRS || response.decimals != asset.decimals || response.description != asset.description || response.name != asset.name || response.quantityQNT != asset.quantityQNT) {
 							Lm.Database.delete("assets", [{
 								"asset": asset.asset
 							}], function() {
 								setTimeout(function() {
-									Lm.Pages.AssetExchange();
+									Lm.LoadPage("asset_exchange");
 									$.growl("Invalid asset.", {
 										"type": "danger"
 									});
@@ -612,11 +639,11 @@ var Lm = (function(Lm, $, undefined) {
 			}
 		}
 
-		if (Lm.AccountInfo.UnconfirmedBalanceMilliLm == "0") {
+		if (Lm.AccountInfo.unconfirmedBalanceMilliLm == "0") {
 			$("#your_lm_balance").html("0");
 			$("#buy_automatic_price").addClass("zero").removeClass("nonzero");
 		} else {
-			$("#your_lm_balance").html(Lm.FormatAmount(Lm.AccountInfo.UnconfirmedBalanceMilliLm));
+			$("#your_lm_balance").html(Lm.FormatAmount(Lm.AccountInfo.unconfirmedBalanceMilliLm));
 			$("#buy_automatic_price").addClass("nonzero").removeClass("zero");
 		}
 
@@ -625,7 +652,7 @@ var Lm = (function(Lm, $, undefined) {
 				var balance = Lm.AccountInfo.unconfirmedAssetBalances[i];
 
 				if (balance.asset == assetId) {
-					Lm.CurrentAsset.YourBalanceMilliLm = balance.UnconfirmedBalanceMilliLm;
+					Lm.CurrentAsset.yourBalanceMilliLm = balance.unconfirmedBalanceQNT;
 					$("#your_asset_balance").html(Lm.FormatQuantity(balance.unconfirmedBalanceQNT, Lm.CurrentAsset.decimals));
 					if (balance.unconfirmedBalanceQNT == "0") {
 						$("#sell_automatic_price").addClass("zero").removeClass("nonzero");
@@ -637,8 +664,8 @@ var Lm = (function(Lm, $, undefined) {
 			}
 		}
 
-		if (!Lm.CurrentAsset.YourBalanceMilliLm) {
-			Lm.CurrentAsset.YourBalanceMilliLm = "0";
+		if (!Lm.CurrentAsset.yourBalanceMilliLm) {
+			Lm.CurrentAsset.yourBalanceMilliLm = "0";
 			$("#your_asset_balance").html("0");
 		}
 
@@ -657,14 +684,14 @@ var Lm = (function(Lm, $, undefined) {
 				var rows = "";
 
 				for (var i = 0; i < trades.length; i++) {
-					trades[i].PriceMilliLm = new BigInteger(trades[i].PriceMilliLm);
-					trades[i].QuantityQNT = new BigInteger(trades[i].QuantityQNT);
-					trades[i].TotalMilliLm = new BigInteger(Lm.CalculateOrderTotalMilliLm(trades[i].PriceMilliLm, trades[i].QuantityQNT));
+					trades[i].priceMilliLm = new BigInteger(trades[i].priceMilliLm);
+					trades[i].quantityQNT = new BigInteger(trades[i].quantityQNT);
+					trades[i].totalMilliLm = new BigInteger(Lm.CalculateOrderTotalMilliLm(trades[i].priceMilliLm, trades[i].quantityQNT));
 
-					rows += "<tr><td>" + Lm.FormatTimestamp(trades[i].timestamp) + "</td>"+
-						"<td>" + Lm.FormatQuantity(trades[i].quantityQNT, Lm.CurrentAsset.decimals) + "</td>"+
-						"<td class='asset_price'>" + Lm.FormatOrderPricePerWholeQNT(trades[i].PriceMilliLm, Lm.CurrentAsset.decimals) + "</td>"+
-						"<td>" + Lm.FormatAmount(trades[i].TotalMilliLm) + "</td>"+
+					rows += "<tr><td>" + Lm.FormatTimestamp(trades[i].timestamp) + "</td><td>" +
+						Lm.FormatQuantity(trades[i].quantityQNT, Lm.CurrentAsset.decimals) + "</td>"+
+						"<td class='asset_price'>" + Lm.FormatOrderPricePerWholeQNT(trades[i].priceMilliLm, Lm.CurrentAsset.decimals) + "</td>"+
+						"<td>" + Lm.FormatAmount(trades[i].totalMilliLm) + "</td>"+
 						"<td>" + String(trades[i].askOrder).escapeHTML() + "</td>"+
 						"<td>" + String(trades[i].bidOrder).escapeHTML() + "</td></tr>";
 				}
@@ -709,10 +736,10 @@ var Lm = (function(Lm, $, undefined) {
 					orders.sort(function(a, b) {
 						if (type == "ask") {
 							//lowest price at the top
-							return new BigInteger(a.PriceMilliLm).compareTo(new BigInteger(b.PriceMilliLm));
+							return new BigInteger(a.priceMilliLm).compareTo(new BigInteger(b.priceMilliLm));
 						} else {
 							//highest price at the top
-							return new BigInteger(b.PriceMilliLm).compareTo(new BigInteger(a.PriceMilliLm));
+							return new BigInteger(b.priceMilliLm).compareTo(new BigInteger(a.priceMilliLm));
 						}
 					});
 				}
@@ -726,27 +753,25 @@ var Lm = (function(Lm, $, undefined) {
 				for (var i = 0; i < orders.length; i++) {
 					var order = orders[i];
 
-					order.PriceMilliLm = new BigInteger(order.PriceMilliLm);
-					order.QuantityQNT = new BigInteger(order.QuantityQNT);
-					order.TotalMilliLm = new BigInteger(Lm.CalculateOrderTotalMilliLm(order.QuantityQNT, order.PriceMilliLm));
+					order.priceMilliLm = new BigInteger(order.priceMilliLm);
+					order.quantityQNT = new BigInteger(order.quantityQNT);
+					order.totalMilliLm = new BigInteger(Lm.CalculateOrderTotalMilliLm(order.quantityQNT, order.priceMilliLm));
 
 					if (i == 0 && !refresh) {
-						$("#" + (type == "ask" ? "buy" : "sell") + "_asset_price").val(Lm.CalculateOrderPricePerWholeQNT(order.PriceMilliLm, Lm.CurrentAsset.decimals));
+						$("#" + (type == "ask" ? "buy" : "sell") + "_asset_price").val(Lm.CalculateOrderPricePerWholeQNT(order.priceMilliLm, Lm.CurrentAsset.decimals));
 					}
 
-					var className = (order.account == Lm.Account ? "your-order" : "") +
-						(order.unconfirmed ? " tentative" : (Lm.IsUserCancelledOrder(order) ? " tentative tentative-crossed" : ""));
+					var className = (order.account == Lm.Account ? "your-order" : "") + (order.unconfirmed ? " tentative" : (Lm.IsUserCancelledOrder(order) ? " tentative tentative-crossed" : ""));
 
 					rows += "<tr class='" + className + "' data-transaction='" + String(order.order).escapeHTML() + "' data-quantity='" +
-						order.quantityQNT.toString().escapeHTML() + "' data-price='" + order.PriceMilliLm.toString().escapeHTML() + "'>"+
+						order.quantityQNT.toString().escapeHTML() + "' data-price='" + order.priceMilliLm.toString().escapeHTML() + "'>"+
 						"<td>" + (order.unconfirmed ? "You - <strong>Pending</strong>" :
-							(order.account == Lm.Account ? "<strong>You</strong>" :
-							"<a href='#' data-user='" + Lm.GetAccountFormatted(order, "account") + "' class='user_info'>" +
-							(order.account == Lm.CurrentAsset.account ? "Asset Issuer" : Lm.GetAccountTitle(order, "account")) + "</a>")) +
-						"</td>" +
+							(order.account == Lm.Account ? "<strong>You</strong>" : "<a href='#' data-user='" + Lm.GetAccountFormatted(order, "account") +
+							"' class='user_info'>" + (order.account == Lm.CurrentAsset.account ? "Asset Issuer" : Lm.GetAccountTitle(order, "account")) +
+							"</a>")) + "</td>"+
 						"<td>" + Lm.FormatQuantity(order.quantityQNT, Lm.CurrentAsset.decimals) + "</td>"+
-						"<td>" + Lm.FormatOrderPricePerWholeQNT(order.PriceMilliLm, Lm.CurrentAsset.decimals) + "</td>"+
-						"<td>" + Lm.FormatAmount(order.TotalMilliLm) + "</tr>";
+						"<td>" + Lm.FormatOrderPricePerWholeQNT(order.priceMilliLm, Lm.CurrentAsset.decimals) + "</td>"+
+						"<td>" + Lm.FormatAmount(order.totalMilliLm) + "</tr>";
 				}
 
 				$("#asset_exchange_" + type + "_orders_table tbody").empty().append(rows);
@@ -767,9 +792,7 @@ var Lm = (function(Lm, $, undefined) {
 			for (var i = 0; i < Lm.UnconfirmedTransactions.length; i++) {
 				var unconfirmedTransaction = Lm.UnconfirmedTransactions[i];
 
-				if (unconfirmedTransaction.type == 2 &&
-						(order.type == "ask" ? unconfirmedTransaction.subtype == 4 : unconfirmedTransaction.subtype == 5) &&
-						unconfirmedTransaction.attachment.order == order.order) {
+				if (unconfirmedTransaction.type == 2 && (order.type == "ask" ? unconfirmedTransaction.subtype == 4 : unconfirmedTransaction.subtype == 5) && unconfirmedTransaction.attachment.order == order.order) {
 					return true;
 				}
 			}
@@ -778,12 +801,12 @@ var Lm = (function(Lm, $, undefined) {
 		return false;
 	}
 
-	function AssetExchangeSearch_OnSubmit(e) {
+	function AssetExchangeClearSearch_OnClick(e) {
 		e.preventDefault();
 		$("#asset_exchange_search input[name=q]").trigger("input");
 	}
 
-	function AssetExchangeSearchInput_OnInput(e, th) {
+	function AssetExchangeSearchInput_OnInput(th, e) {
 		var input = $.trim(th.val()).toLowerCase();
 
 		if (!input) {
@@ -806,18 +829,19 @@ var Lm = (function(Lm, $, undefined) {
 					}
 				});
 			}
+
 			Lm.LoadAssetExchangeSidebar();
 			$("#asset_exchange_clear_search").show();
 			$("#asset_exchange_show_type").hide();
 		}
 	}
 
-	function AssetExchangeClearSearch_OnClick() {
+	$("#asset_exchange_clear_search").on("click", function() {
 		$("#asset_exchange_search input[name=q]").val("");
 		$("#asset_exchange_search").trigger("submit");
-	}
+	});
 
-	function BoxHeader_OnClick(e, th) {
+	function BoxHeader_OnClick(th, e) {
 		e.preventDefault();
 		//Find the box parent        
 		var box = th.parents(".box").first();
@@ -885,13 +909,13 @@ var Lm = (function(Lm, $, undefined) {
 		}
 	}
 
-	function AutomaticPrice_OnClick(e, th) {
+	function AutomaticPrice_OnClick(th, e) {
 		try {
 			var type = (th.attr("id") == "sell_automatic_price" ? "sell" : "buy");
 
 			var price = new Big(Lm.ConvertToMilliLm(String($("#" + type + "_asset_price").val())));
-			var balance = new Big(type == "buy" ? Lm.AccountInfo.unconfirmedBalanceMilliLm : Lm.CurrentAsset.YourBalanceMilliLm);
-			var balanceMilliLm = new Big(Lm.AccountInfo.UnconfirmedBalanceMilliLm);
+			var balance = new Big(type == "buy" ? Lm.AccountInfo.unconfirmedBalanceMilliLm : Lm.CurrentAsset.yourBalanceMilliLm);
+			var balanceMilliLm = new Big(Lm.AccountInfo.unconfirmedBalanceMilliLm);
 			var maxQuantity = new Big(Lm.ConvertToQNTf(Lm.CurrentAsset.quantityQNT, Lm.CurrentAsset.decimals));
 
 			if (balance.cmp(new Big("0")) <= 0) {
@@ -943,7 +967,7 @@ var Lm = (function(Lm, $, undefined) {
 		return true;
 	}
 
-	function Asset_OnKeyDown(e, $(this)) {
+	function Asset_OnKeyDown(th, e) {
 		var charCode = !e.charCode ? e.which : e.charCode;
 
 		if (IsControlKey(charCode) || e.ctrlKey || e.metaKey) {
@@ -967,7 +991,7 @@ var Lm = (function(Lm, $, undefined) {
 		} else {
 			//do not allow period
 			if (charCode == 110 || charCode == 190 || charCode == 188) {
-				$.growl("Fractions are not allowed.", {
+				$.growl($.t("error_fractions"), {
 					"type": "danger"
 				});
 				e.preventDefault();
@@ -984,10 +1008,16 @@ var Lm = (function(Lm, $, undefined) {
 			var selectedText = Lm.GetSelectedText();
 
 			if (selectedText != th.val()) {
+				var errorMessage;
+
 				if (isQuantityField) {
-					errorMessage = "Only " + Lm.CurrentAsset.decimals + " digits after the decimal mark are allowed for this asset.";
+					errorMessage = $.t("error_asset_decimals", {
+						"count": (0 + Lm.CurrentAsset.decimals)
+					});
 				} else {
-					errorMessage = "Only " + (8 - Lm.CurrentAsset.decimals) + " digits after the decimal mark are allowed.";
+					errorMessage = $.t("error_decimals", {
+						"count": (8 - Lm.CurrentAsset.decimals)
+					});
 				}
 
 				$.growl(errorMessage, {
@@ -1000,13 +1030,12 @@ var Lm = (function(Lm, $, undefined) {
 		}
 
 		//numeric characters, left/right key, backspace, delete
-		if (charCode == 8 || charCode == 37 || charCode == 39 || charCode == 46 ||
-				(charCode >= 48 && charCode <= 57 && !isNaN(String.fromCharCode(charCode))) || (charCode >= 96 && charCode <= 105)) {
+		if (charCode == 8 || charCode == 37 || charCode == 39 || charCode == 46 || (charCode >= 48 && charCode <= 57 && !isNaN(String.fromCharCode(charCode))) || (charCode >= 96 && charCode <= 105)) {
 			return;
 		} else {
 			//comma
 			if (charCode == 188) {
-				$.growl("Comma is not allowed, use a dot instead.", {
+				$.growl($.t("error_comma_not_allowed"), {
 					"type": "danger"
 				});
 			}
@@ -1016,13 +1045,12 @@ var Lm = (function(Lm, $, undefined) {
 	}
 
 	//calculate preview price (calculated on every keypress)
-	function AssetPrice_OnKeyUp(e, th) {
+	function AssetPrice_OnKeyUp(th, e) {
 		var orderType = th.data("type").toLowerCase();
 
 		try {
 			var quantityQNT = new BigInteger(Lm.ConvertToQNT(String($("#" + orderType + "_asset_quantity").val()), Lm.CurrentAsset.decimals));
-			var priceMilliLm = new BigInteger(Lm.CalculatePricePerWholeQNT(Lm.ConvertToMilliLm(String($("#" + orderType + "_asset_price").val())),
-					Lm.CurrentAsset.decimals));
+			var priceMilliLm = new BigInteger(Lm.CalculatePricePerWholeQNT(Lm.ConvertToMilliLm(String($("#" + orderType + "_asset_price").val())), Lm.CurrentAsset.decimals));
 
 			if (priceMilliLm.toString() == "0" || quantityQNT.toString() == "0") {
 				$("#" + orderType + "_asset_total").val("0");
@@ -1035,7 +1063,7 @@ var Lm = (function(Lm, $, undefined) {
 		}
 	}
 
-	function AssetOrderModal_OnShow(e) {
+	function AssetOrderModal_OnShow(th, e) {
 		var $invoker = $(e.relatedTarget);
 
 		var orderType = $invoker.data("type");
@@ -1049,8 +1077,7 @@ var Lm = (function(Lm, $, undefined) {
 			//TODO
 			var quantity = String($("#" + orderType + "_asset_quantity").val());
 			var quantityQNT = new BigInteger(Lm.ConvertToQNT(quantity, Lm.CurrentAsset.decimals));
-			var priceMilliLm = new BigInteger(Lm.CalculatePricePerWholeQNT(Lm.ConvertToMilliLm(String($("#" + orderType + "_asset_price").val())),
-				Lm.CurrentAsset.decimals));
+			var priceMilliLm = new BigInteger(Lm.CalculatePricePerWholeQNT(Lm.ConvertToMilliLm(String($("#" + orderType + "_asset_price").val())), Lm.CurrentAsset.decimals));
 			var feeMilliLm = new BigInteger(Lm.ConvertToMilliLm(String($("#" + orderType + "_asset_fee").val())));
 			var totalLm = Lm.FormatAmount(Lm.CalculateOrderTotalMilliLm(quantityQNT, priceMilliLm, Lm.CurrentAsset.decimals), false, true);
 		} catch (err) {
@@ -1061,30 +1088,38 @@ var Lm = (function(Lm, $, undefined) {
 		}
 
 		if (priceMilliLm.toString() == "0" || quantityQNT.toString() == "0") {
-			$.growl("Please fill in an amount and price.", {
+			$.growl($.t("error_amount_price_required"), {
 				"type": "danger"
 			});
 			return e.preventDefault();
 		}
 
 		if (feeMilliLm.toString() == "0") {
-			feeMilliLm = new BigInteger("1000");
+			feeMilliLm = new BigInteger("100000000");
 		}
 
 		var priceMilliLmPerWholeQNT = priceMilliLm.multiply(new BigInteger("" + Math.pow(10, Lm.CurrentAsset.decimals)));
 
 		if (orderType == "buy") {
-			var description = "Buy <strong>" + Lm.FormatQuantity(quantityQNT, Lm.CurrentAsset.decimals, true) + " " +
-				$("#asset_name").html() + "</strong> assets at <strong>" + Lm.FormatAmount(priceMilliLmPerWholeQNT, false, true) +
-				" Lm</strong> each.";
-			var tooltipTitle = "Per whole asset bought you will pay " + Lm.FormatAmount(priceMilliLmPerWholeQNT, false, true) +
-				" Lm, making a total of " + totalLm + " Lm once everything have been bought.";
+			var description = $.t("buy_order_description", {
+				"quantity": Lm.FormatQuantity(quantityQNT, Lm.CurrentAsset.decimals, true),
+				"asset_name": $("#asset_name").html().escapeHTML(),
+				"lm": Lm.FormatAmount(priceMilliLmPerWholeQNT)
+			});
+			var tooltipTitle = $.t("buy_order_description_help", {
+				"lm": Lm.FormatAmount(priceMilliLmPerWholeQNT, false, true),
+				"total_lm": totalLm
+			});
 		} else {
-			var description = "Sell <strong>" + Lm.FormatQuantity(quantityQNT, Lm.CurrentAsset.decimals, true) + " " +
-				$("#asset_name").html() + "</strong> assets at <strong>" + Lm.FormatAmount(priceMilliLmPerWholeQNT, false, true) +
-				" Lm</strong> each.";
-			var tooltipTitle = "Per whole asset sold you will receive " + Lm.FormatAmount(priceMilliLmPerWholeQNT, false, true) +
-				" Lm, making a total of " + totalLm + " Lm once everything has been sold.";
+			var description = $.t("sell_order_description", {
+				"quantity": Lm.FormatQuantity(quantityQNT, Lm.CurrentAsset.decimals, true),
+				"asset_name": $("#asset_name").html().escapeHTML(),
+				"lm": Lm.FormatAmount(priceMilliLmPerWholeQNT)
+			});
+			var tooltipTitle = $.t("sell_order_description_help", {
+				"lm": Lm.FormatAmount(priceMilliLmPerWholeQNT, false, true),
+				"total_lm": totalLm
+			});
 		}
 
 		$("#asset_order_description").html(description);
@@ -1115,7 +1150,8 @@ var Lm = (function(Lm, $, undefined) {
 
 		return {
 			"requestType": orderType,
-			"successMessage": $modal.find("input[name=success_message]").val().replace("__", (orderType == "placeBidOrder" ? "buy" : "sell"))
+			"successMessage": (orderType == "placeBidOrder" ? $.t("success_buy_order_asset") : $.t("success_sell_order_asset")),
+			"errorMessage": $.t("error_order_asset")
 		};
 	}
 
@@ -1178,11 +1214,11 @@ var Lm = (function(Lm, $, undefined) {
 
 		if (!data.description) {
 			return {
-				"error": "Description is a required field."
+				"error": $.t("error_description_required")
 			};
 		} else if (!/^\d+$/.test(data.quantity)) {
 			return {
-				"error": "Quantity must be a whole numbrer."
+				"error": $.t("error_whole_quantity")
 			};
 		} else {
 			data.quantityQNT = String(data.quantity);
@@ -1201,7 +1237,7 @@ var Lm = (function(Lm, $, undefined) {
 		}
 	}
 
-	function AssetExchangeSidebarGroupContext_OnClick(e, th) {
+	function AssetExchangeSidebarGroupContext_OnClick(th, e) {
 		e.preventDefault();
 
 		var groupName = Lm.SelectedContext.data("groupname");
@@ -1221,7 +1257,7 @@ var Lm = (function(Lm, $, undefined) {
 
 		if (!newGroupName.match(/^[a-z0-9 ]+$/i)) {
 			return {
-				"error": "Only alphanumerical characters can be used in the group name."
+				"error": $.t("error_group_name")
 			};
 		}
 
@@ -1231,8 +1267,8 @@ var Lm = (function(Lm, $, undefined) {
 			"groupName": oldGroupName
 		}], function() {
 			setTimeout(function() {
-				Lm.Pages.AssetExchange();
-				$.growl("Group name updated successfully.", {
+				Lm.LoadPage("asset_exchange");
+				$.growl($.t("success_group_name_update"), {
 					"type": "success"
 				});
 			}, 50);
@@ -1243,7 +1279,7 @@ var Lm = (function(Lm, $, undefined) {
 		};
 	}
 
-	function AssetExchangeSidebarContext_OnClick(e, th) {
+	function AssetExchangeSidebarContext_OnClick(th, e) {
 		e.preventDefault();
 
 		var assetId = Lm.SelectedContext.data("asset");
@@ -1262,6 +1298,7 @@ var Lm = (function(Lm, $, undefined) {
 				$("#asset_exchange_group_title").html(String(asset.name).escapeHTML());
 
 				Lm.Database.select("assets", [], function(error, assets) {
+					//Lm.Database.execute("SELECT DISTINCT groupName FROM assets", [], function(groupNames) {					
 					var groupNames = [];
 
 					$.each(assets, function(index, asset) {
@@ -1287,9 +1324,7 @@ var Lm = (function(Lm, $, undefined) {
 					groupSelect.empty();
 
 					$.each(groupNames, function(index, groupName) {
-						groupSelect.append("<option value='" + groupName.escapeHTML() + "'" +
-							(asset.groupName && asset.groupName.toLowerCase() == groupName.toLowerCase() ? " selected='selected'" : "") + ">" +
-							groupName.escapeHTML() + "</option>");
+						groupSelect.append("<option value='" + groupName.escapeHTML() + "'" + (asset.groupName && asset.groupName.toLowerCase() == groupName.toLowerCase() ? " selected='selected'" : "") + ">" + groupName.escapeHTML() + "</option>");
 					});
 
 					groupSelect.append("<option value='0'" + (!asset.groupName ? " selected='selected'" : "") + ">None</option>");
@@ -1305,8 +1340,8 @@ var Lm = (function(Lm, $, undefined) {
 				"asset": assetId
 			}], function() {
 				setTimeout(function() {
-					Lm.Pages.AssetExchange();
-					$.growl("Asset removed from group successfully.", {
+					Lm.LoadPage("asset_exchange");
+					$.growl($.t("success_asset_group_removal"), {
 						"type": "success"
 					});
 				}, 50);
@@ -1324,7 +1359,7 @@ var Lm = (function(Lm, $, undefined) {
 			}
 
 			if (ownsAsset) {
-				$.growl("Asset cannot be removed (you own it).", {
+				$.growl($.t("error_owned_asset_no_removal"), {
 					"type": "danger"
 				});
 			} else {
@@ -1333,8 +1368,8 @@ var Lm = (function(Lm, $, undefined) {
 					"asset": assetId
 				}], function(error, affected) {
 					setTimeout(function() {
-						Lm.Pages.AssetExchange();
-						$.growl("Asset removed from bookmarks successfully.", {
+						Lm.LoadPage("asset_exchange");
+						$.growl($.t("success_asset_bookmark_removal"), {
 							"type": "success"
 						});
 					}, 50);
@@ -1369,13 +1404,13 @@ var Lm = (function(Lm, $, undefined) {
 			"asset": assetId
 		}], function() {
 			setTimeout(function() {
-				Lm.Pages.AssetExchange();
+				Lm.LoadPage("asset_exchange");
 				if (!groupName) {
-					$.growl("Asset removed from group successfully.", {
+					$.growl($.t("success_asset_group_removal"), {
 						"type": "success"
 					});
 				} else {
-					$.growl("Asset added to group successfully.", {
+					$.growl($.t("sucess_asset_group_add"), {
 						"type": "success"
 					});
 				}
@@ -1387,14 +1422,12 @@ var Lm = (function(Lm, $, undefined) {
 		};
 	}
 
-	function AssetExchangeGroupModal_OnHidden(e) {
+	$("#asset_exchange_group_modal").on("hidden.bs.modal", function(e) {
 		$("#asset_exchange_group_new_group_div").val("").hide();
-	}
+	});
 
 	/* MY ASSETS PAGE */
 	function MyAssetsPage() {
-		Lm.PageLoading();
-
 		if (Lm.AccountInfo.assetBalances && Lm.AccountInfo.assetBalances.length) {
 			var result = {
 				"assets": [],
@@ -1513,15 +1546,9 @@ var Lm = (function(Lm, $, undefined) {
 						Lm.MyAssetsPageLoaded(result);
 					}
 				});
-
-				if (Lm.CurrentPage != "my_assets") {
-					return;
-				}
 			}
 		} else {
-			$("#my_assets_table tbody").empty();
-			Lm.DataLoadFinished($("#my_assets_table"));
-			Lm.PageLoaded();
+			Lm.DataLoaded();
 		}
 	}
 
@@ -1595,30 +1622,25 @@ var Lm = (function(Lm, $, undefined) {
 				sign = "-";
 			}
 
-			rows += "<tr" + (tentative != -1 ? " class='tentative tentative-allow-links'" : "") + " data-asset='" +
-				String(asset.asset).escapeHTML() + "'>"+
-				"<td><a href='#' data-goto-asset='" +
-				String(asset.asset).escapeHTML() + "'>" + String(asset.name).escapeHTML() + "</a></td>"+
-				"<td class='quantity'>" + Lm.FormatQuantity(asset.balanceQNT, asset.decimals) +
-				(tentative != -1 ? " " + sign + " <span class='added_quantity'>" + Lm.FormatQuantity(tentative, asset.decimals) + "</span>" : "") + "</td>"+
-				"<td>" + Lm.FormatQuantity(asset.quantityQNT, asset.decimals) + "</td>"+
-				"<td>" + percentageAsset + "%</td>"+
-				"<td>" + (lowestAskOrder != -1 ? Lm.FormatOrderPricePerWholeQNT(lowestAskOrder, asset.decimals) : "/") + "</td>"+
-				"<td>" + (highestBidOrder != -1 ? Lm.FormatOrderPricePerWholeQNT(highestBidOrder, asset.decimals) : "/") + "</td>"+
-				"<td>" + (highestBidOrder != -1 ? Lm.FormatAmount(totalMilliLm) : "/") + "</td>"+
-				"<td><a href='#' data-toggle='modal' data-target='#transfer_asset_modal' data-asset='" +
-				String(asset.asset).escapeHTML() + "' data-name='" + String(asset.name).escapeHTML() + "' data-decimals='" +
-				String(asset.decimals).escapeHTML() + "'>Transfer</a></td></tr>";
+			rows += "<tr" + (tentative != -1 ? " class='tentative tentative-allow-links'" : "") + " data-asset='" + String(asset.asset).escapeHTML() + "'>"+
+			"<td><a href='#' data-goto-asset='" + String(asset.asset).escapeHTML() + "'>" + String(asset.name).escapeHTML() + "</a></td>"+
+			"<td class='quantity'>" + Lm.FormatQuantity(asset.balanceQNT, asset.decimals) + (tentative != -1 ? " " + sign +
+				" <span class='added_quantity'>" + Lm.FormatQuantity(tentative, asset.decimals) + "</span>" : "") + "</td>"+
+			"<td>" + Lm.FormatQuantity(asset.quantityQNT, asset.decimals) + "</td>"+
+			"<td>" + percentageAsset + "%</td>"+
+			"<td>" + (lowestAskOrder != -1 ? Lm.FormatOrderPricePerWholeQNT(lowestAskOrder, asset.decimals) : "/") + "</td>"+
+			"<td>" + (highestBidOrder != -1 ? Lm.FormatOrderPricePerWholeQNT(highestBidOrder, asset.decimals) : "/") + "</td>"+
+			"<td>" + (highestBidOrder != -1 ? Lm.FormatAmount(totalMilliLm) : "/") + "</td>"+
+			"<td><a href='#' data-toggle='modal' data-target='#transfer_asset_modal' data-asset='" + String(asset.asset).escapeHTML() +
+			"' data-name='" + String(asset.name).escapeHTML() + "' data-decimals='" + String(asset.decimals).escapeHTML() + "'>" +
+			$.t("transfer") + "</a></td></tr>";
 		}
 
-		$("#my_assets_table tbody").empty().append(rows);
-		Lm.DataLoadFinished($("#my_assets_table"));
-
-		Lm.PageLoaded();
+		Lm.DataLoaded(rows);
 	}
 
-	function IncomingMyAssets() {
-		Lm.Pages.MyAssets();
+	function MyAssetsIncoming() {
+		Lm.LoadPage("my_assets");
 	}
 
 	function TransferAssetModal_OnShow(e) {
@@ -1630,7 +1652,7 @@ var Lm = (function(Lm, $, undefined) {
 
 		$("#transfer_asset_asset").val(assetId);
 		$("#transfer_asset_decimals").val(decimals);
-		$("#transfer_asset_name").html(String(assetName).escapeHTML());
+		$("#transfer_asset_name, #transfer_asset_quantity_name").html(String(assetName).escapeHTML());
 		$("#transer_asset_available").html("");
 
 		var confirmedBalance = 0;
@@ -1657,25 +1679,37 @@ var Lm = (function(Lm, $, undefined) {
 		var availableAssetsMessage = "";
 
 		if (confirmedBalance == unconfirmedBalance) {
-			availableAssetsMessage = " - " + Lm.FormatQuantity(confirmedBalance, decimals) + " available for transfer";
+			availableAssetsMessage = " - " + $.t("available_for_transfer", {
+				"qty": Lm.FormatQuantity(confirmedBalance, decimals)
+			});
 		} else {
-			availableAssetsMessage = " - " + Lm.FormatQuantity(unconfirmedBalance, decimals) + " available for transfer (" +
-				Lm.FormatQuantity(confirmedBalance, decimals) + " total)";
+			availableAssetsMessage = " - " + $.t("available_for_transfer", {
+				"qty": Lm.FormatQuantity(unconfirmedBalance, decimals)
+			}) + " (" + Lm.FormatQuantity(confirmedBalance, decimals) + " " + $.t("total_lowercase") + ")";
 		}
 
 		$("#transfer_asset_available").html(availableAssetsMessage);
-	});
+	}
 
 	function TransferAssetForm($modal) {
 		var data = Lm.GetFormData($modal.find("form:first"));
+
+		if (!data.quantity) {
+			return {
+				"error": $.t("error_not_specified", {
+					"name": Lm.GetTranslatedFieldName("quantity").toLowerCase()
+				}).capitalize()
+			};
+		}
 
 		if (!Lm.ShowedFormWarning) {
 			if (Lm.Settings["asset_transfer_warning"] && Lm.Settings["asset_transfer_warning"] != 0) {
 				if (new Big(data.quantity).cmp(new Big(Lm.Settings["asset_transfer_warning"])) > 0) {
 					Lm.ShowedFormWarning = true;
 					return {
-						"error": "Quantity specified is higher than " + String(Lm.Settings["asset_transfer_warning"]).escapeHTML() +
-							". Are you sure you want to continue? Click the submit button again to confirm."
+						"error": $.t("error_max_asset_transfer_warning", {
+							"qty": String(Lm.Settings["asset_transfer_warning"]).escapeHTML()
+						})
 					};
 				}
 			}
@@ -1685,12 +1719,25 @@ var Lm = (function(Lm, $, undefined) {
 			data.quantityQNT = Lm.ConvertToQNT(data.quantity, data.decimals);
 		} catch (e) {
 			return {
-				"error": "Incorrect quantity: " + e
+				"error": $.t("error_incorrect_quantity_plus", {
+					"err": e.escapeHTML()
+				})
 			};
 		}
 
 		delete data.quantity;
 		delete data.decimals;
+
+		if (!data.add_message) {
+			delete data.add_message;
+			delete data.message;
+			delete data.encrypt_message;
+		} else if (!Lm.DgsBlockPassed) {
+			data.comment = data.message;
+			delete data.add_message;
+			delete data.message;
+			delete data.encrypt_message;
+		}
 
 		return {
 			"data": data
@@ -1698,10 +1745,10 @@ var Lm = (function(Lm, $, undefined) {
 	}
 
 	function TransferAssetCompleteForm(response, data) {
-		Lm.Pages.MyAssets();
+		Lm.LoadPage("my_assets");
 	}
 
-	function Body_OnClick(e, th) {
+	function Body_OnClick(th, e) {
 		e.preventDefault();
 
 		var $visible_modal = $(".modal.in");
@@ -1711,7 +1758,7 @@ var Lm = (function(Lm, $, undefined) {
 		}
 
 		Lm.GoToAsset(th.data("goto-asset"));
-	});
+	}
 
 	function GoToAsset(asset) {
 		Lm.AssetSearch = false;
@@ -1739,7 +1786,7 @@ var Lm = (function(Lm, $, undefined) {
 								Lm.LoadAsset(response);
 							});
 						} else {
-							$.growl("Could not find asset.", {
+							$.growl($.t("error_asset_not_found"), {
 								"type": "danger"
 							});
 						}
@@ -1752,8 +1799,6 @@ var Lm = (function(Lm, $, undefined) {
 	/* OPEN ORDERS PAGE */
 	function OpenOrdersPage() {
 		var loaded = 0;
-
-		Lm.PageLoading();
 
 		Lm.GetOpenOrders("ask", function() {
 			loaded++;
@@ -1901,7 +1946,9 @@ var Lm = (function(Lm, $, undefined) {
 		if (!orders.length) {
 			$("#open_" + type + "_orders_table tbody").empty();
 			Lm.DataLoadFinished($("#open_" + type + "_orders_table"));
+
 			callback();
+
 			return;
 		}
 
@@ -1932,8 +1979,7 @@ var Lm = (function(Lm, $, undefined) {
 				for (var j = 0; j < Lm.UnconfirmedTransactions.length; j++) {
 					var unconfirmedTransaction = Lm.UnconfirmedTransactions[j];
 
-					if (unconfirmedTransaction.type == 2 && unconfirmedTransaction.subtype == (type == "ask" ? 4 : 5) &&
-							unconfirmedTransaction.attachment.order == completeOrder.order) {
+					if (unconfirmedTransaction.type == 2 && unconfirmedTransaction.subtype == (type == "ask" ? 4 : 5) && unconfirmedTransaction.attachment.order == completeOrder.order) {
 						cancelled = true;
 						break;
 					}
@@ -1944,16 +1990,15 @@ var Lm = (function(Lm, $, undefined) {
 			completeOrder.quantityQNT = new BigInteger(completeOrder.quantityQNT);
 			completeOrder.totalMilliLm = new BigInteger(Lm.CalculateOrderTotalMilliLm(completeOrder.quantityQNT, completeOrder.priceMilliLm));
 
-			rows += "<tr data-order='" + String(completeOrder.order).escapeHTML() + "'" + (cancelled ? " class='tentative tentative-crossed'" :
-				(completeOrder.tentative ? " class='tentative'" : "")) + ">"+
+			rows += "<tr data-order='" + String(completeOrder.order).escapeHTML() + "'" +
+				(cancelled ? " class='tentative tentative-crossed'" : (completeOrder.tentative ? " class='tentative'" : "")) + ">"+
 				"<td><a href='#' data-goto-asset='" + String(completeOrder.asset).escapeHTML() + "'>" + completeOrder.assetName.escapeHTML() + "</a></td>"+
 				"<td>" + Lm.FormatQuantity(completeOrder.quantityQNT, completeOrder.decimals) + "</td>"+
 				"<td>" + Lm.FormatOrderPricePerWholeQNT(completeOrder.priceMilliLm, completeOrder.decimals) + "</td>"+
 				"<td>" + Lm.FormatAmount(completeOrder.totalMilliLm) + "</td>"+
 				"<td class='cancel'>" + (cancelled || completeOrder.tentative ? "/" :
-					"<a href='#' data-toggle='modal' data-target='#cancel_order_modal' data-order='" +
-					String(completeOrder.order).escapeHTML() + "' data-type='" + type + "'>Cancel</a>") +
-				"</td></tr>";
+					"<a href='#' data-toggle='modal' data-target='#cancel_order_modal' data-order='" + String(completeOrder.order).escapeHTML() +
+					"' data-type='" + type + "'>" + $.t("cancel") + "</a>") + "</td></tr>";
 		}
 
 		$("#open_" + type + "_orders_table tbody").empty().append(rows);
@@ -1964,9 +2009,9 @@ var Lm = (function(Lm, $, undefined) {
 		callback();
 	}
 
-	function IncomingOpenOrders(transactions) {
-		if (transactions || Lm.UnconfirmedTransactionsChange || Lm.State.isScanning) {
-			Lm.Pages.OpenOrders();
+	function OpenOrdersIncoming(transactions) {
+		if (Lm.HasTransactionUpdates(transactions)) {
+			Lm.LoadPage("open_orders");
 		}
 	}
 
@@ -1983,108 +2028,66 @@ var Lm = (function(Lm, $, undefined) {
 		}
 
 		$("#cancel_order_order").val(orderId);
-	});
+	}
 
 	function CancelOrderForm($modal) {
-		var orderType = $("#cancel_order_type").val();
+		var data = Lm.GetFormData($modal.find("form:first"));
+
+		var requestType = data.cancel_order_type;
+
+		delete data.cancel_order_type;
 
 		return {
-			"requestType": orderType,
-			"successMessage": $modal.find("input[name=success_message]").val().replace("__", (orderType == "cancelBidOrder" ? "buy" : "sell"))
+			"data": data,
+			"requestType": requestType
 		};
 	}
 
 	function CancelOrderCompleteForm(response, data) {
+		if (data.requestType == "cancelAskOrder") {
+			$.growl($.t("success_cancel_sell_order"), {
+				"type": "success"
+			});
+		} else {
+			$.growl($.t("success_cancel_buy_order"), {
+				"type": "success"
+			});
+		}
+
 		if (response.alreadyProcessed) {
 			return;
 		}
+
 		$("#open_orders_page tr[data-order=" + String(data.order).escapeHTML() + "]").addClass("tentative tentative-crossed").find("td.cancel").html("/");
 	}
 
 
-	$("#asset_exchange_bookmark_this_asset").on("click", function() {
-		AssetExchangeBookmarkThisAsset_OnClick();
-	});
-
-	$("#asset_exchange_sidebar").on("click", "a", function(e, data) {
-		AssetExchangeSidebar_OnClick(e, data, $(this));
-	});
-
-	$("#asset_exchange_search").on("submit", function(e) {
-		AssetExchangeSearch_OnSubmit(e);
-	});
-
-	$("#asset_exchange_search input[name=q]").on("input", function(e) {
-		AssetExchangeSearchInput_OnInput(e, $(this));
-	});
-
-	$("#asset_exchange_clear_search").on("click", function() {
-		AssetExchangeClearSearch_OnClick();
-	});
-
-	$("#buy_asset_box .box-header, #sell_asset_box .box-header").click(function(e) {
-		BoxHeader_OnClick(e, $(this));
-	});
-
-	$("#asset_exchange_bid_orders_table tbody, #asset_exchange_ask_orders_table tbody").on("click", "td", function(e) {
-		AssetExchangeOrderTable_OnClick(e);
-	});
-
-	$("#sell_automatic_price, #buy_automatic_price").on("click", function(e) {
-		Lm.AutomaticPrice_OnClick(e, $(this));
-	});
-
-	$("#buy_asset_quantity, #buy_asset_price, #sell_asset_quantity, #sell_asset_price, #buy_asset_fee, #sell_asset_fee").keydown(function(e) {
-		Asset_OnKeyDown(e);
-	});
-
-	$("#sell_asset_quantity, #sell_asset_price, #buy_asset_quantity, #buy_asset_price").keyup(function(e) {
-		AssetPrice_OnKeyUp(e, $(this));
-	});
-
-	$("#asset_order_modal").on("show.bs.modal", function(e) {
-		AssetOrderModal_OnShow(e);
-	});
-
-	$("#asset_exchange_sidebar_group_context").on("click", "a", function(e) {
-		AssetExchangeSidebarGroupContext_OnClick(e, $(this));
-	});
-
-	$("#asset_exchange_sidebar_context").on("click", "a", function(e) {
-		AssetExchangeSidebarContext_OnClick(e, $(this));
-	});
-
-	$("#asset_exchange_group_group").on("change", function() {
-		AssetExchangeGroupGroup_OnChange($(this));
-	});
-
-	$("#asset_exchange_group_modal").on("hidden.bs.modal", function(e) {
-		AssetExchangeGroupModal_OnHidden();
-	});
-
-	$("#transfer_asset_modal").on("show.bs.modal", function(e) {
-		TransferAssetModal_OnShow(e);
-	});
-
-	$("body").on("click", "a[data-goto-asset]", function(e) {
-		Body_OnClick(e, $(this));
-	});
-
-	$("#cancel_order_modal").on("show.bs.modal", function(e) {
-		CancelOrderModal_OnShow(e);
-	});
+	$("#asset_exchange_bookmark_this_asset").on("click", AssetExchangeBookmarkThisAsset_OnClick);
+	$("#asset_exchange_sidebar").on("click", "a", function(e, data) { AssetExchangeSidebar_OnClick($(this), e, data); });
+	$("#asset_exchange_search").on("submit", AssetExchangeClearSearch_OnClick);
+	$("#asset_exchange_search input[name=q]").on("input", function(e) { AssetExchangeSearchInput_OnInput($(this), e); });
+	$("#buy_asset_box .box-header, #sell_asset_box .box-header").click(function(e) { BoxHeader_OnClick($(this), e); });
+	$("#asset_exchange_bid_orders_table tbody, #asset_exchange_ask_orders_table tbody").on("click", "td", AssetExchangeOrderTable_OnClick);
+	$("#sell_automatic_price, #buy_automatic_price").on("click", function(e) { AutomaticPrice_OnClick($(this), e); });
+	$("#buy_asset_quantity, #buy_asset_price, #sell_asset_quantity, #sell_asset_price, #buy_asset_fee, #sell_asset_fee").keydown(function(e) { Asset_OnKeyDown($(this), e); });
+	$("#sell_asset_quantity, #sell_asset_price, #buy_asset_quantity, #buy_asset_price").keyup(function(e) { AssetPrice_OnKeyUp($(this), e); });
+	$("#asset_order_modal").on("show.bs.modal", function(e) { AssetOrderModal_OnShow($(this), e); });
+	$("#asset_exchange_sidebar_group_context").on("click", "a", function(e) { AssetExchangeSidebarGroupContext_OnClick($(this), e); });
+	$("#asset_exchange_sidebar_context").on("click", "a", function(e) { AssetExchangeSidebarContext_OnClick($(this), e); });
+	$("#asset_exchange_group_group").on("change", function() { AssetExchangeGroupGroup_OnChange($(this)); });
+	$("#transfer_asset_modal").on("show.bs.modal", TransferAssetModal_OnShow);
+	$("body").on("click", "a[data-goto-asset]", function(e) { Body_OnClick($(this), e); });
+	$("#cancel_order_modal").on("show.bs.modal", function(e) { CancelOrderModal_OnShow(e); });
 
 
-	//Lm.Pages.asset_exchange = AssetExchangePage; // deprecated
 	Lm.Pages.AssetExchange = AssetExchangePage;
 	Lm.CacheAsset = CacheAsset;
 	Lm.Forms.AddAssetBookmark = AddAssetBookmarkForm;
-	Lm.Forms.AddAssetBookmarkComplete = AddAssetBookmarkCompleteFrom;
+	Lm.Forms.AddAssetBookmarkComplete = AddAssetBookmarkCompleteForm;
 	Lm.SaveAssetBookmarks = SaveAssetBookmarks;
 	Lm.PositionAssetSidebar = PositionAssetSidebar;
 	Lm.LoadAssetExchangeSidebar = LoadAssetExchangeSidebar;
-	//Lm.Incoming.asset_exchange = IncomingAssetExchange; // deprecated
-	Lm.Incoming.AssetExchange = IncomingAssetExchange;
+	Lm.Incoming.AssetExchange = AssetExchangeIncoming;
 	Lm.LoadAsset = LoadAsset;
 	Lm.LoadAssetOrders = LoadAssetOrders;
 	Lm.IsUserCancelledOrder = IsUserCancelledOrder;
@@ -2096,18 +2099,15 @@ var Lm = (function(Lm, $, undefined) {
 	Lm.Pages.MyAssets = MyAssetsPage;
 	Lm.CheckMyAssetsPageLoaded = CheckMyAssetsPageLoaded;
 	Lm.MyAssetsPageLoaded = MyAssetsPageLoaded;
-	Lm.Incoming.my_assets = IncomingMyAssets; // deprecated
-	Lm.Incoming.MyAssets = IncomingMyAssets;
+	Lm.Incoming.MyAssets = MyAssetsIncoming;
 	Lm.Forms.TransferAsset = TransferAssetForm;
 	Lm.Forms.TransferAssetComplete = TransferAssetCompleteForm;
 	Lm.GoToAsset = GoToAsset;
-	//Lm.Pages.open_orders = OpenOrdersPage; // deprecated
 	Lm.Pages.OpenOrders = OpenOrdersPage;
 	Lm.GetOpenOrders = GetOpenOrders;
 	Lm.GetUnconfirmedOrders = GetUnconfirmedOrders;
 	Lm.OpenOrdersLoaded = OpenOrdersLoaded;
-	//Lm.Incoming.open_orders = IncomingOpenOrders; // deprecated
-	Lm.Incoming.OpenOrders = IncomingOpenOrders;
+	Lm.Incoming.OpenOrders = OpenOrdersIncoming;
 	Lm.Forms.CancelOrder = CancelOrderForm;
 	Lm.Forms.CancelOrderComplete = CancelOrderCompleteForm;
 	return Lm;

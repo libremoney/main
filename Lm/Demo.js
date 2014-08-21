@@ -10,6 +10,7 @@
 //var LmAttachment = require(__dirname + '/LmAttachment');
 var AttachmentGroupCreate = require(__dirname + '/Groups/Attachment_GroupCreate');
 var Blocks = require(__dirname + '/Blocks');
+var BigInt = require(__dirname + '/Util/BigInteger');
 var LmBlock = require(__dirname + '/Blocks/Block');
 //var LmBlockchainProcessor = require(__dirname + '/LmBlockchainProcessor');
 var Constants = require(__dirname + '/Constants');
@@ -168,11 +169,17 @@ function Init(callback) {
 
 					Logger.info('Block #0 is created');
 
-					InitProjects(UserProf1983, function() {
-						// Load configuration
-						//InitialiseLm();
-						if (callback)
-							callback(null);
+					InitProjects(UserProf1983, function(err) {
+						if (err) callback(err);
+						InitTr06(function(err) {
+							if (err) callback(err);
+							InitTr07(function(err) {
+								InitTr08(function(err) {
+									if (callback)
+										callback(err);
+								});
+							});
+						});
 					});
 				});
 			});
@@ -331,5 +338,99 @@ function InitProjects(UserProf1983, callback) {
 
 	callback(null);
 }
+
+function InitTr06(callback) {
+	// 100KLm from LMA-TVZT-PRDS-FB8M-4P3E4 (2391470422895685625) to LMA-CTB9-KKFC-YCFK-5S3MJ (4056679539821339943)
+	var tr = Transactions.CreateTransaction({
+		type: Transactions.Types.Payment.Ordinary,
+		timestamp: 4172799000, // 30.06.2014 23:59:59
+		deadline: 255,
+		senderPublicKey: new Array(),
+		recipientId: '4056679539821339943',
+		amountMilliLm: 100000000,
+		feeMilliLm: 1,
+		referencedTransactionFullHash: 0,
+		signature: null,
+		blockId: 0,
+		height: 0,
+		id: 11,
+		senderId: '2391470422895685625',
+		blockTimestamp: 0,
+		fullHash: 0
+	});
+	Transactions.SaveTransaction(tr, function(err) {
+		callback(err, tr);
+	});
+}
+
+function InitTr07(callback) {
+	// 50KLm from LMA-TVZT-PRDS-FB8M-4P3E4 (2391470422895685625) to LMA-CTB9-KKFC-YCFK-5S3MJ (4056679539821339943)
+	var tr = Transactions.CreateTransaction({
+		type: Transactions.Types.Payment.Ordinary,
+		timestamp: 6851199000, // 31.07.2014 23:59:59
+		deadline: 255,
+		senderPublicKey: new Array(),
+		recipientId: '4056679539821339943',
+		amountMilliLm: 50000000,
+		feeMilliLm: 1,
+		referencedTransactionFullHash: 0,
+		signature: null,
+		blockId: 0,
+		height: 0,
+		id: 12,
+		senderId: '2391470422895685625',
+		blockTimestamp: 0,
+		fullHash: 0
+	});
+	Transactions.SaveTransaction(tr, function(err) {
+		// 50KLm from LMA-TVZT-PRDS-FB8M-4P3E4 (2391470422895685625) to (16837332202370815306)
+		var tr = Transactions.CreateTransaction({
+			type: Transactions.Types.Payment.Ordinary,
+			timestamp: 6851199000, // 31.07.2014 23:59:59
+			deadline: 255,
+			senderPublicKey: new Array(),
+			recipientId: '16837332202370815306',
+			amountMilliLm: 50000000,
+			feeMilliLm: 1,
+			referencedTransactionFullHash: 0,
+			signature: null,
+			blockId: 0,
+			height: 0,
+			id: 13,
+			senderId: '2391470422895685625',
+			blockTimestamp: 0,
+			fullHash: 0
+		});
+		Transactions.SaveTransaction(tr, function(err) {
+			callback(err, tr);
+		});
+	});
+}
+
+function InitTr08(callback) {
+	// 100Lm from LMA-CTB9-KKFC-YCFK-5S3MJ (4056679539821339943) to LMA-6UL7-FJV2-X5V3-AVNDE (alextattooist)
+	//https://forum.btcsec.com/index.php?/topic/8176-libremoney/page-2#entry188067
+	var tr = Transactions.CreateTransaction({
+		type: Transactions.Types.Payment.Ordinary,
+		timestamp: 6851200000, // 01.08.2014 00:00:00
+		deadline: 255,
+		senderPublicKey: new Array(),
+		recipientId: '0',
+		amountMilliLm: 100000,
+		feeMilliLm: 1,
+		referencedTransactionFullHash: 0,
+		signature: null,
+		blockId: 0,
+		height: 0,
+		id: 14,
+		senderId: '4056679539821339943',
+		blockTimestamp: 0,
+		fullHash: 0
+	});
+	Transactions.SaveTransaction(tr, function(err) {
+		callback(err, tr);
+	});
+}
+
 
 exports.Init = Init;

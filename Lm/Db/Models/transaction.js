@@ -15,7 +15,7 @@ function InitTransactionModel(mongoose, modelName) {
 		deadline: { type: Number, required: true }, //SMALLINT
 		sender_public_key: [Number], //sender_public_key: { type: [Number], required: true }, //BINARY(32)
 		recipient_id: { type: Number, required: true }, //BIGINT
-		amount: { type: Number, required: true }, //BIGINT
+		amount: {type: String, required: true }, //{ type: Number, required: true }, //BIGINT
 		fee: { type: Number, required: true }, //BIGINT
 		height: { type: Number, required: true }, //INT
 		block_id: { type: Number, required: true }, //BIGINT
@@ -23,7 +23,7 @@ function InitTransactionModel(mongoose, modelName) {
 		timestamp: { type: Number, required: true }, //INT
 		type: { type: Number, required: true }, //TINYINT
 		subtype: { type: Number, required: true }, //TINYINT
-		sender_id: { type: Number, required: true }, //BIGINT
+		sender_id: { type: String, required: true }, //{ type: Number, required: true }, //BIGINT
 		block_timestamp: { type: Number, required: true }, //INT
 		full_hash: [Number], //full_hash: { type: [Number], required: true }, //BINARY(32)
 		referenced_transaction_full_hash: [Number], //BINARY(32)

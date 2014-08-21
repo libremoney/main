@@ -1,20 +1,137 @@
+/**
+ * @depends {lm.js}
+ */
 var Lm = (function(Lm, $, undefined) {
 	Lm.ConfirmedFormWarning = false;
 
-	Lm.Forms = {
-		"errorMessages": {}
-	};
+	Lm.Forms = {};
 
 
-	function ModalFormKeydown(e, th) {
-		if (e.which == "13") {
-			e.preventDefault();
-			if (Lm.Settings["submit_on_enter"] && e.target.type != "textarea") {
-				th.submit();
+	function GetSuccessMessage(requestType) {
+		var ignore = ["asset_exchange_change_group_name", "asset_exchange_group", "add_contact", "update_contact", "delete_contact",
+			"send_message", "decrypt_messages", "start_forging", "stop_forging", "generate_token", "send_money", "set_alias", "add_asset_bookmark", "sell_alias"
+		];
+
+		if (ignore.indexOf(requestType) != -1) {
+			return "";
+		} else {
+			var key = "success_" + requestType;
+
+			if ($.i18n.exists(key)) {
+				return $.t(key);
 			} else {
-				return false;
+				return "";
 			}
 		}
+	}
+
+	function GetErrorMessage(requestType) {
+		var ignore = ["start_forging", "stop_forging", "generate_token", "validate_token"];
+
+		if (ignore.indexOf(requestType) != -1) {
+			return "";
+		} else {
+			var key = "error_" + requestType;
+
+			if ($.i18n.exists(key)) {
+				return $.t(key);
+			} else {
+				return "";
+			}
+		}
+	}
+
+	function AddMessageData(data, requestType) {
+		if (requestType == "sendMessage") {
+			data.add_message = true;
+		}
+
+		if (!data.add_message && !data.add_note_to_self) {
+			delete data.message;
+			delete data.note_to_self;
+			delete data.encrypt_message;
+			delete data.add_message;
+			delete data.add_note_to_self;
+
+			return data;
+		} else if (!data.add_message) {
+			delete data.message;
+			delete data.encrypt_message;
+			delete data.add_message;
+		} else if (!data.add_note_to_self) {
+			delete data.note_to_self;
+			delete data.add_note_to_self;
+		}
+
+		data["_extra"] = {
+			"message": data.message,
+			"note_to_self": data.note_to_self
+		};
+
+		if (data.add_message && data.message) {
+			if (!Lm.DgsBlockPassed) {
+				data.message = converters.stringToHexString(data.message);
+			} else if (data.encrypt_message) {
+				try {
+					var options = {};
+
+					if (data.recipient) {
+						options.account = data.recipient;
+					} else if (data.encryptedMessageRecipient) {
+						options.account = data.encryptedMessageRecipient;
+						delete data.encryptedMessageRecipient;
+					}
+
+					if (data.recipientPublicKey) {
+						options.publicKey = data.recipientPublicKey;
+					}
+
+					var encrypted = Lm.EncryptNote(data.message, options, data.secretPhrase);
+
+					data.encryptedMessageData = encrypted.message;
+					data.encryptedMessageNonce = encrypted.nonce;
+					data.messageToEncryptIsText = "true";
+
+					delete data.message;
+				} catch (err) {
+					throw err;
+				}
+			} else {
+				data.messageIsText = "true";
+			}
+		} else {
+			delete data.message;
+		}
+
+		if (data.add_note_to_self && data.note_to_self) {
+			if (!Lm.DgsBlockPassed) {
+				delete data.note_to_self;
+			} else {
+				try {
+					var options = {};
+
+					var encrypted = Lm.EncryptNote(data.note_to_self, {
+						"publicKey": converters.hexStringToByteArray(Lm.GeneratePublicKey(data.secretPhrase))
+					}, data.secretPhrase);
+
+					data.encryptToSelfMessageData = encrypted.message;
+					data.encryptToSelfMessageNonce = encrypted.nonce;
+					data.messageToEncryptToSelfIsText = "true";
+
+					delete data.note_to_self;
+				} catch (err) {
+					throw err;
+				}
+			}
+		} else {
+			delete data.note_to_self;
+		}
+
+		delete data.add_message;
+		delete data.encrypt_message;
+		delete data.add_note_to_self;
+
+		return data;
 	}
 
 	function SubmitForm($modal, $btn) {
@@ -28,56 +145,105 @@ var Lm = (function(Lm, $, undefined) {
 		$modal.find("button").prop("disabled", true);
 		$btn.button("loading");
 
-		var requestType = $modal.find("input[name=request_type]").val();
-		var successMessage = $modal.find("input[name=success_message]").val();
-		var errorMessage = $modal.find("input[name=error_message]").val();
+		if ($btn.data("form")) {
+			var $form = $modal.find("form#" + $btn.data("form"));
+			if (!$form.length) {
+				$form = $modal.find("form:first");
+			}
+		} else {
+			var $form = $modal.find("form:first");
+		}
+
+		var requestType = $form.find("input[name=request_type]").val();
+		var requestTypeKey = requestType.replace(/([A-Z])/g, function($1) {
+			return "_" + $1.toLowerCase();
+		});
+
+		var successMessage = GetSuccessMessage(requestTypeKey);
+		var errorMessage = GetErrorMessage(requestTypeKey);
+
 		var data = null;
 
 		var formFunction = Lm["forms"][requestType];
+		var formErrorFunction = Lm["forms"][requestType + "Error"];
+
+		if (typeof formErrorFunction != "function") {
+			formErrorFunction = false;
+		}
 
 		var originalRequestType = requestType;
 
-		var $form = $modal.find("form:first");
-
 		if (Lm.DownloadingBlockchain) {
-			$modal.find(".error_message").html("Please wait until the blockchain has finished downloading.").show();
+			$form.find(".error_message").html($.t("error_blockchain_downloading")).show();
+			if (formErrorFunction) {
+				formErrorFunction();
+			}
 			Lm.UnlockForm($modal, $btn);
 			return;
 		} else if (Lm.State.isScanning) {
-			$modal.find(".error_message").html("The blockchain is currently being rescanned. Please wait a minute and then try submitting again.").show();
+			$form.find(".error_message").html($.t("error_form_blockchain_rescanning")).show();
+			if (formErrorFunction) {
+				formErrorFunction();
+			}
 			Lm.UnlockForm($modal, $btn);
 			return;
 		}
 
 		var invalidElement = false;
 
+		//TODO
 		$form.find(":input").each(function() {
 			if ($(this).is(":invalid")) {
 				var error = "";
-				var name = String($(this).attr("name")).capitalize();
+				var name = String($(this).attr("name")).replace("MilliLm", "").replace("Lm", "").capitalize();
 				var value = $(this).val();
 
 				if ($(this).hasAttr("max")) {
-					var max = $(this).attr("max");
+					if (!/^[\-\d\.]+$/.test(value)) {
+						error = $.t("error_not_a_number", {
+							"field": Lm.GetTranslatedFieldName(name).toLowerCase()
+						}).capitalize();
+					} else {
+						var max = $(this).attr("max");
 
-					if (value > max) {
-						error = name.escapeHTML() + ": Maximum value is " + String(max).escapeHTML() + ".";
+						if (value > max) {
+							error = $.t("error_max_value", {
+								"field": Lm.GetTranslatedFieldName(name).toLowerCase(),
+								"max": max
+							}).capitalize();
+						}
 					}
 				}
 
 				if ($(this).hasAttr("min")) {
-					var min = $(this).attr("min");
+					if (!/^[\-\d\.]+$/.test(value)) {
+						error = $.t("error_not_a_number", {
+							"field": Lm.GetTranslatedFieldName(name).toLowerCase()
+						}).capitalize();
+					} else {
+						var min = $(this).attr("min");
 
-					if (value < min) {
-						error = name.escapeHTML() + ": Minimum value is " + String(min).escapeHTML() + ".";
+						if (value < min) {
+							error = $.t("error_min_value", {
+								"field": Lm.GetTranslatedFieldName(name).toLowerCase(),
+								"min": min
+							}).capitalize();
+						}
 					}
 				}
 
 				if (!error) {
-					error = name.escapeHTML() + " is invalid.";
+					error = $.t("error_invalid_field", {
+						"field": Lm.GetTranslatedFieldName(name).toLowerCase()
+					}).capitalize();
 				}
 
-				$modal.find(".error_message").html(error).show();
+				$form.find(".error_message").html(error).show();
+
+				if (formErrorFunction) {
+					formErrorFunction();
+				}
+
 				Lm.UnlockForm($modal, $btn);
 				invalidElement = true;
 				return false;
@@ -88,13 +254,16 @@ var Lm = (function(Lm, $, undefined) {
 			return;
 		}
 
-		if (typeof formFunction == 'function') {
+		if (typeof formFunction == "function") {
 			var output = formFunction($modal);
 
 			if (!output) {
 				return;
 			} else if (output.error) {
-				$modal.find(".error_message").html(output.error.escapeHTML()).show();
+				$form.find(".error_message").html(output.error.escapeHTML()).show();
+				if (formErrorFunction) {
+					formErrorFunction();
+				}
 				Lm.UnlockForm($modal, $btn);
 				return;
 			} else {
@@ -104,10 +273,10 @@ var Lm = (function(Lm, $, undefined) {
 				if (output.data) {
 					data = output.data;
 				}
-				if (output.successMessage) {
+				if ("successMessage" in output) {
 					successMessage = output.successMessage;
 				}
-				if (output.errorMessage) {
+				if ("errorMessage" in output) {
 					errorMessage = output.errorMessage;
 				}
 				if (output.stop) {
@@ -118,19 +287,25 @@ var Lm = (function(Lm, $, undefined) {
 		}
 
 		if (!data) {
-			data = Lm.GetFormData($modal.find("form:first"));
-		}
-
-		if (data.deadline) {
-			data.deadline = String(data.deadline * 60); //hours to minutes
+			data = Lm.GetFormData($form);
 		}
 
 		if (data.recipient) {
 			data.recipient = $.trim(data.recipient);
-			if (!/^\d+$/.test(data.recipient) && !/^LMA\-[A-Z0-9]+\-[A-Z0-9]+\-[A-Z0-9]+\-[A-Z0-9]+/i.test(data.recipient)) {
+			if (/^\d+$/.test(data.recipient)) {
+				$form.find(".error_message").html($.t("error_numeric_ids_not_allowed")).show();
+				if (formErrorFunction) {
+					formErrorFunction(false, data);
+				}
+				Lm.UnlockForm($modal, $btn);
+				return;
+			} else if (!/^LMA\-[A-Z0-9]+\-[A-Z0-9]+\-[A-Z0-9]+\-[A-Z0-9]+/i.test(data.recipient)) {
 				var convertedAccountId = $modal.find("input[name=converted_account_id]").val();
 				if (!convertedAccountId || (!/^\d+$/.test(convertedAccountId) && !/^LMA\-[A-Z0-9]+\-[A-Z0-9]+\-[A-Z0-9]+\-[A-Z0-9]+/i.test(convertedAccountId))) {
-					$modal.find(".error_message").html("Invalid account ID.").show();
+					$form.find(".error_message").html($.t("error_account_id")).show();
+					if (formErrorFunction) {
+						formErrorFunction(false, data);
+					}
 					Lm.UnlockForm($modal, $btn);
 					return;
 				} else {
@@ -142,8 +317,26 @@ var Lm = (function(Lm, $, undefined) {
 			}
 		}
 
+		try {
+			data = Lm.AddMessageData(data, requestType);
+		} catch (err) {
+			$form.find(".error_message").html(String(err.message).escapeHTML()).show();
+			if (formErrorFunction) {
+				formErrorFunction();
+			}
+			Lm.UnlockForm($modal, $btn);
+			return;
+		}
+
+		if (data.deadline) {
+			data.deadline = String(data.deadline * 60); //hours to minutes
+		}
+
 		if ("secretPhrase" in data && !data.secretPhrase.length && !Lm.RememberPassword) {
-			$modal.find(".error_message").html("Secret phrase is a required field.").show();
+			$form.find(".error_message").html($.t("error_passphrase_required")).show();
+			if (formErrorFunction) {
+				formErrorFunction(false, data);
+			}
 			Lm.UnlockForm($modal, $btn);
 			return;
 		}
@@ -152,7 +345,12 @@ var Lm = (function(Lm, $, undefined) {
 			if ("amountLm" in data && Lm.Settings["amount_warning"] && Lm.Settings["amount_warning"] != "0") {
 				if (new BigInteger(Lm.ConvertToMilliLm(data.amountLm)).compareTo(new BigInteger(Lm.Settings["amount_warning"])) > 0) {
 					Lm.ShowedFormWarning = true;
-					$modal.find(".error_message").html("You amount is higher than " + Lm.FormatAmount(Lm.Settings["amount_warning"]) + " Lm. Are you sure you want to continue? Click the submit button again to confirm.").show();
+					$form.find(".error_message").html($.t("error_max_amount_warning", {
+						"lm": Lm.FormatAmount(Lm.Settings["amount_warning"])
+					})).show();
+					if (formErrorFunction) {
+						formErrorFunction(false, data);
+					}
 					Lm.UnlockForm($modal, $btn);
 					return;
 				}
@@ -161,26 +359,26 @@ var Lm = (function(Lm, $, undefined) {
 			if ("feeLm" in data && Lm.Settings["fee_warning"] && Lm.Settings["fee_warning"] != "0") {
 				if (new BigInteger(Lm.ConvertToMilliLm(data.feeLm)).compareTo(new BigInteger(Lm.Settings["fee_warning"])) > 0) {
 					Lm.ShowedFormWarning = true;
-					$modal.find(".error_message").html("You fee is higher than " + Lm.FormatAmount(Lm.Settings["fee_warning"]) +
-						" Lm. Are you sure you want to continue? Click the submit button again to confirm.").show();
+					$form.find(".error_message").html($.t("error_max_fee_warning", {
+						"lm": Lm.FormatAmount(Lm.Settings["fee_warning"])
+					})).show();
+					if (formErrorFunction) {
+						formErrorFunction(false, data);
+					}
 					Lm.UnlockForm($modal, $btn);
 					return;
 				}
 			}
 		}
 
+		if (data.doNotBroadcast) {
+			data.broadcast = "false";
+			delete data.doNotBroadcast;
+		}
+
 		Lm.SendRequest(requestType, data, function(response) {
-			if (response.errorCode) {
-				if (Lm.Forms.ErrorMessages[requestType] && Lm.Forms.ErrorMessages[requestType][response.errorCode]) {
-					$modal.find(".error_message").html(Lm.Forms.ErrorMessages[requestType][response.errorCode].escapeHTML()).show();
-				} else if (Lm.Forms.ErrorMessages[originalRequestType] && Lm.Forms.ErrorMessages[originalRequestType][response.errorCode]) {
-					$modal.find(".error_message").html(Lm.Forms.ErrorMessages[originalRequestType][response.errorCode].escapeHTML()).show();
-				} else {
-					$modal.find(".error_message").html(response.errorDescription ? response.errorDescription.escapeHTML() : "Unknown error occured.").show();
-				}
-				Lm.UnlockForm($modal, $btn);
-			} else if (response.fullHash) {
-				//should we add a fake transaction to the recent transactions?? or just wait until the next block comes!??
+			//todo check again.. response.error
+			if (response.fullHash) {
 				Lm.UnlockForm($modal, $btn);
 
 				if (!$modal.hasClass("modal-no-hide")) {
@@ -195,25 +393,40 @@ var Lm = (function(Lm, $, undefined) {
 
 				var formCompleteFunction = Lm["forms"][originalRequestType + "Complete"];
 
-				if (typeof formCompleteFunction == "function") {
-					data.requestType = requestType;
+				if (requestType != "parseTransaction") {
+					if (typeof formCompleteFunction == "function") {
+						data.requestType = requestType;
 
-					if (response.transaction) {
-						Lm.AddUnconfirmedTransaction(response.transaction, function(alreadyProcessed) {
-							response.alreadyProcessed = alreadyProcessed;
+						if (response.transaction) {
+							Lm.AddUnconfirmedTransaction(response.transaction, function(alreadyProcessed) {
+								response.alreadyProcessed = alreadyProcessed;
+								formCompleteFunction(response, data);
+							});
+						} else {
+							response.alreadyProcessed = false;
 							formCompleteFunction(response, data);
-						});
+						}
 					} else {
-						response.alreadyProcessed = false;
-						formCompleteFunction(response, data);
+						Lm.AddUnconfirmedTransaction(response.transaction);
 					}
 				} else {
-					Lm.AddUnconfirmedTransaction(response.transaction);
+					if (typeof formCompleteFunction == "function") {
+						data.requestType = requestType;
+						formCompleteFunction(response, data);
+					}
 				}
 
 				if (Lm.AccountInfo && !Lm.AccountInfo.publicKey) {
 					$("#dashboard_message").hide();
 				}
+			} else if (response.errorCode) {
+				$form.find(".error_message").html(response.errorDescription.escapeHTML()).show();
+
+				if (formErrorFunction) {
+					formErrorFunction(response, data);
+				}
+
+				Lm.UnlockForm($modal, $btn);
 			} else {
 				var sentToFunction = false;
 
@@ -231,7 +444,7 @@ var Lm = (function(Lm, $, undefined) {
 						}
 						formCompleteFunction(response, data);
 					} else {
-						errorMessage = "An unknown error occured.";
+						errorMessage = $.t("error_unknown");
 					}
 				}
 
@@ -259,15 +472,22 @@ var Lm = (function(Lm, $, undefined) {
 
 
 	$(".modal form input").keydown(function(e) {
-		return Lm.ModalFormKeydown(e, $(this));
+		if (e.which == "13") {
+			e.preventDefault();
+			if (Lm.Settings["submit_on_enter"] && e.target.type != "textarea") {
+				$(this).submit();
+			} else {
+				return false;
+			}
+		}
 	});
 
-	$(".modal button.btn-primary:not([data-dismiss=modal])").click(function() {
+	$(".modal button.btn-primary:not([data-dismiss=modal]):not([data-ignore=true])").click(function() {
 		Lm.SubmitForm($(this).closest(".modal"), $(this));
 	});
 
 
-	Lm.ModalFormKeydown = ModalFormKeydown;
+	Lm.AddMessageData = AddMessageData;
 	Lm.SubmitForm = SubmitForm;
 	Lm.UnlockForm = UnlockForm;
 	return Lm;

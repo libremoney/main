@@ -12,7 +12,7 @@ var CreatorPublicKey = [
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 	];
 
-var Recipients = [2391470422895685625];
+var Recipients = [2391470422895685625]; // LMA-TVZT-PRDS-FB8M-4P3E4
 
 var Amounts = [1000000];
 

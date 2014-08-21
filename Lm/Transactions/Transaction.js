@@ -37,8 +37,8 @@ fullHash
 function Transaction(data) {
 	if (data.senderPublicKey == null || typeof data.senderPublicKey != 'object' || typeof data.senderPublicKey.length == 'undefined')
 		throw new Error('Transaction: data.senderPublicKey mast be array');
-	if (typeof data.recipientId != 'number')
-		throw new Error('Transaction: data.recipientId not a number');
+	//if (typeof data.recipientId != 'number')
+	//	throw new Error('Transaction: data.recipientId not a number');
 	this.deadline = data.deadline; // Hour?
 	this.senderPublicKey = data.senderPublicKey;
 	this.recipientId = data.recipientId;

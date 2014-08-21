@@ -1,3 +1,7 @@
+/**
+ * @depends {../jquery.js}
+ */
+
 var PassPhraseGenerator = {
 	seeds: 0,
 	seedLimit: 512,

@@ -806,6 +806,51 @@
 			</div>
 		</section>
 	</div>
+
+
+	<div id="dgs_search_page" class="paginated page">
+		<section class="content-header">
+			<h1 data-i18n="search_marketplace">Search Marketplace</h1>
+			<div style="position:absolute;top:9px;right:9px;display:none;" id="dgs_search_top">
+				<form action="#" method="get" class="sidebar-form dgs_search" style="width:280px;margin:0;display:inline-block;vertical-align:middle;" autocomplete="off">
+					<div class="input-group">
+						<input type="text" name="q" class="form-control" placeholder="Search By Seller..." data-i18n="[placeholder]search_by_seller" id="dgs_search_account_top">
+						<span class="input-group-btn">
+							<button type="submit" name="seach" class="btn btn-flat"><i class="fa fa-search"></i></button>
+						</span>
+					</div>
+				</form>
+				<button id="dgs_clear_results" type="button" class="btn btn-default" data-i18n="clear_results">Clear Results</button>
+			</div>
+		</section>
+
+		<section class="content">
+			<div style="text-align:center" id="dgs_search_center">
+				<div style="margin:0 auto;width:auto;margin-top:150px;display:inline-block;border-top:2px solid rgba(0, 0, 0, 0.1);padding:12px" class="box">
+					<div class="box-body">
+						<p style="text-align:center;" data-i18n="dgs_search_description">Enter the seller's Account ID below to view their store.</p>
+						<form action="#" method="get" class="dgs_search sidebar-form" style="width:300px;margin:0;margin:0 auto;" autocomplete="off">
+							<div class="input-group">
+								<input type="text" name="q" class="form-control" placeholder="Seller's Account ID" data-i18n="[placeholder]seller_account_id" style="height:auto;" id="dgs_search_account_center" />
+								<span class="input-group-btn">
+									<button type="submit" name="seach" class="btn btn-flat"><i class="fa fa-search"></i></button>
+								</span>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+
+			<div id="dgs_search_results" class="data-container data-loading" style="display:none">
+				<div id="dgs_search_contents" class="dgs_page_contents">
+
+				</div>
+				<div class="data-loading-container"><img src="img/loading_indicator.gif" alt="Loading..." width="32" height="32" /></div>
+				<div class="data-empty-container"><p data-i18n="no_products_found">No products found.</p></div>
+			</div>
+			<div class="data-pagination"></div>
+		</section>
+	</div>
 </aside>
 
 </div> <!-- page -->
@@ -838,7 +883,7 @@ function AddToLog(Text) {
 }
 </script>
 
-<script src="js/jquery-2.1.0.js"></script>
+<script src="js/jquery.js"></script>
 <script src="js/bootstrap.js" type="text/javascript"></script>
 <!-- script src="js/3rdparty/ajaxretry.js"></script -->
 <script src="js/ajaxmultiqueue.js"></script>

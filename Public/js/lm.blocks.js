@@ -1,6 +1,10 @@
+/**
+ * @depends {lm.js}
+ */
 var Lm = (function(Lm, $, undefined) {
 	Lm.BlocksPageType = null;
 	Lm.TempBlocks = [];
+	var trackBlockchain = false;
 
 
 	function GetBlock(blockID, callback, pageRequest) {
@@ -8,7 +12,7 @@ var Lm = (function(Lm, $, undefined) {
 			"block": blockID
 		}, function(response) {
 			if (response.errorCode && response.errorCode == -1) {
-				Lm.GetBlock(blockID, callback, async);
+				Lm.GetBlock(blockID, callback, pageRequest);
 			} else {
 				if (callback) {
 					response.block = blockID;
@@ -29,27 +33,50 @@ var Lm = (function(Lm, $, undefined) {
 		if (Lm.Blocks.length < 10 && response.previousBlock) {
 			Lm.GetBlock(response.previousBlock, Lm.HandleInitialBlocks);
 		} else {
-			Lm.LastBlockHeight = Lm.Blocks[0].height;
+			Lm.CheckBlockHeight(Lm.Blocks[0].height);
 
-			//if no new blocks in 24 hours, show blockchain download progress..
-			if (Lm.State && Lm.State.time - Lm.Blocks[0].timestamp > 1000 * 60 * 60 * 24) {
-				Lm.DownloadingBlockchain = true;
-				$("#lm_update_explanation span").hide();
-				$("#downloading_blockchain, #lm_update_explanation_blockchain_sync").show();
-				$("#show_console").hide();
-				Lm.UpdateBlockchainDownloadProgress();
+			if (Lm.State) {
+				//if no new blocks in 6 hours, show blockchain download progress..
+				var timeDiff = Lm.State.time - Lm.Blocks[0].timestamp;
+				if (timeDiff > 60 * 60 * 18) {
+					if (timeDiff > 60 * 60 * 24 * 14) {
+						Lm.SetStateInterval(30);
+					} else if (timeDiff > 60 * 60 * 24 * 7) {
+						//second to last week
+						Lm.SetStateInterval(15);
+					} else {
+						//last week
+						Lm.SetStateInterval(10);
+					}
+					Lm.DownloadingBlockchain = true;
+					$("#lm_update_explanation span").hide();
+					$("#lm_update_explanation_wait").attr("style", "display: none !important");
+					$("#downloading_blockchain, #lm_update_explanation_blockchain_sync").show();
+					$("#show_console").hide();
+					Lm.UpdateBlockchainDownloadProgress();
+				} else {
+					//continue with faster state intervals if we still haven't reached current block from within 1 hour
+					if (timeDiff < 60 * 60) {
+						Lm.SetStateInterval(30);
+						trackBlockchain = false;
+					} else {
+						Lm.SetStateInterval(10);
+						trackBlockchain = true;
+					}
+				}
 			}
 
 			var rows = "";
 
 			for (var i = 0; i < Lm.Blocks.length; i++) {
 				var block = Lm.Blocks[i];
+
 				rows += "<tr><td><a href='#' data-block='" + String(block.height).escapeHTML() + "' data-blockid='" +
-					String(block.block).escapeHTML() + "' class='block'" +
-					(block.numberOfTransactions > 0 ? " style='font-weight:bold'" : "") + ">" + String(block.height).escapeHTML() + "</a></td>"+
-					"<td>" + Lm.FormatTimestamp(block.Timestamp) + "</td>"+
-					"<td>" + Lm.FormatAmount(block.TotalAmountMilliLm) + " + " + Lm.FormatAmount(block.TotalFeeMilliLm) + "</td>"+
-					"<td>" + Lm.FormatAmount(block.NumberOfTransactions) + "</td></tr>";
+					String(block.block).escapeHTML() + "' class='block'" + (block.numberOfTransactions > 0 ? " style='font-weight:bold'" : "") + ">" +
+					String(block.height).escapeHTML() + "</a></td>"+
+					"<td data-timestamp='" + String(block.timestamp).escapeHTML() + "'>" + Lm.FormatTimestamp(block.timestamp) + "</td>"+
+					"<td>" + Lm.FormatAmount(block.totalAmountMilliLm) + " + " + Lm.FormatAmount(block.totalFeeMilliLm) + "</td>"+
+					"<td>" + Lm.FormatAmount(block.numberOfTransactions) + "</td></tr>";
 			}
 
 			$("#dashboard_blocks_table tbody").empty().append(rows);
@@ -86,18 +113,37 @@ var Lm = (function(Lm, $, undefined) {
 				Lm.Blocks = Lm.Blocks.slice(0, 100);
 			}
 
-			//set new last block height
-			Lm.LastBlockHeight = Lm.Blocks[0].height;
+			Lm.CheckBlockHeight(Lm.Blocks[0].height);
 
-			Lm.Incoming.UpdateDashboardBlocks(newBlocks);
+			Lm.Incoming.updateDashboardBlocks(newBlocks);
 		} else {
 			Lm.TempBlocks.push(response);
 			Lm.GetBlock(response.previousBlock, Lm.HandleNewBlocks);
 		}
 	}
 
+	function CheckBlockHeight(blockHeight) {
+		if (blockHeight) {
+			Lm.LastBlockHeight = blockHeight;
+		}
+
+		if (!Lm.DgsBlockPassed) {
+			if ((!Lm.IsTestNet && (Lm.LastBlockHeight >= 213000 || (Lm.DownloadingBlockchain && Lm.State.lastBlockchainFeederHeight >= 213000))) ||
+					(Lm.IsTestNet && Lm.LastBlockHeight >= 117910)) {
+				Lm.DgsBlockPassed = true;
+				$(".dgs_block").not(".advanced, .optional_message, .optional_note").show();
+			}
+		}
+		if (!Lm.PKAnnouncementBlockPassed) {
+			if ((!Lm.IsTestNet && (Lm.LastBlockHeight >= 215000 || (Lm.DownloadingBlockchain && Lm.State.lastBlockchainFeederHeight >= 215000))) ||
+					(Lm.IsTestNet && Lm.LastBlockHeight >= 117910)) {
+				Lm.PKAnnouncementBlockPassed = true;
+			}
+		}
+	}
+
 	//we always update the dashboard page..
-	function IncomingUpdateDashboardBlocks(newBlocks) {
+	function UpdateDashboardBlocksIncoming(newBlocks) {
 		var newBlockCount = newBlocks.length;
 
 		if (newBlockCount > 10) {
@@ -106,17 +152,50 @@ var Lm = (function(Lm, $, undefined) {
 		}
 
 		if (Lm.DownloadingBlockchain) {
-			if (Lm.State && Lm.State.time - Lm.Blocks[0].timestamp < 1000 * 60 * 60 * 24) {
-				Lm.DownloadingBlockchain = false;
-				$("#dashboard_message").hide();
-				$("#downloading_blockchain, #lm_update_explanation_blockchain_sync").hide();
-				$("#show_console").show();
-				$.growl("The block chain is now up to date.", {
-					"type": "success"
-				});
-				Lm.CheckAliasVersions();
+			if (Lm.State) {
+				var timeDiff = Lm.State.time - Lm.Blocks[0].timestamp;
+				if (timeDiff < 60 * 60 * 18) {
+					if (timeDiff < 60 * 60) {
+						Lm.SetStateInterval(30);
+					} else {
+						Lm.SetStateInterval(10);
+						trackBlockchain = true;
+					}
+					Lm.DownloadingBlockchain = false;
+					$("#dashboard_message").hide();
+					$("#downloading_blockchain, #lm_update_explanation_blockchain_sync").hide();
+					$("#lm_update_explanation_wait").removeAttr("style");
+					if (Lm.Settings["console_log"] && !Lm.InApp) {
+						$("#show_console").show();
+					}
+					$.growl($.t("success_blockchain_up_to_date"), {
+						"type": "success"
+					});
+					Lm.CheckAliasVersions();
+					Lm.CheckIfOnAFork();
+				} else {
+					if (timeDiff > 60 * 60 * 24 * 14) {
+						Lm.SetStateInterval(30);
+					} else if (timeDiff > 60 * 60 * 24 * 7) {
+						//second to last week
+						Lm.SetStateInterval(15);
+					} else {
+						//last week
+						Lm.SetStateInterval(10);
+					}
+
+					Lm.UpdateBlockchainDownloadProgress();
+				}
+			}
+		} else if (trackBlockchain) {
+			var timeDiff = Lm.State.time - Lm.Blocks[0].timestamp;
+
+			//continue with faster state intervals if we still haven't reached current block from within 1 hour
+			if (timeDiff < 60 * 60) {
+				Lm.SetStateInterval(30);
+				trackBlockchain = false;
 			} else {
-				Lm.UpdateBlockchainDownloadProgress();
+				Lm.SetStateInterval(10);
 			}
 		}
 
@@ -124,11 +203,13 @@ var Lm = (function(Lm, $, undefined) {
 
 		for (var i = 0; i < newBlockCount; i++) {
 			var block = newBlocks[i];
-			rows += "<tr><td><a href='#' data-block='" + String(block.height).escapeHTML() +
-				"' data-blockid='" + String(block.block).escapeHTML() + "' class='block'" +
-				(block.numberOfTransactions > 0 ? " style='font-weight:bold'" : "") + ">" + String(block.height).escapeHTML() + "</a></td><td>" +
-				Lm.FormatTimestamp(block.Timestamp) + "</td><td>" + Lm.FormatAmount(block.TotalAmountMilliLm) + " + " +
-				Lm.FormatAmount(block.TotalFeeMilliLm) + "</td><td>" + Lm.FormatAmount(block.NumberOfTransactions) + "</td></tr>";
+
+			rows += "<tr><td><a href='#' data-block='" + String(block.height).escapeHTML() + "' data-blockid='" +
+				String(block.block).escapeHTML() + "' class='block'" + (block.numberOfTransactions > 0 ? " style='font-weight:bold'" : "") + ">" +
+				String(block.height).escapeHTML() + "</a></td>"+
+				"<td data-timestamp='" + String(block.timestamp).escapeHTML() + "'>" + Lm.FormatTimestamp(block.timestamp) + "</td>"+
+				"<td>" + Lm.FormatAmount(block.totalAmountMilliLm) + " + " + Lm.FormatAmount(block.totalFeeMilliLm) + "</td>"+
+				"<td>" + Lm.FormatAmount(block.numberOfTransactions) + "</td></tr>";
 		}
 
 		if (newBlockCount == 1) {
@@ -141,7 +222,7 @@ var Lm = (function(Lm, $, undefined) {
 
 		$("#dashboard_blocks_table tbody").prepend(rows);
 
-		//update number of confirmations... perhaps we should also update it in tne Lm.transactions array
+		//update number of confirmations... perhaps we should also update it in tne Lm.Transactions array
 		$("#dashboard_transactions_table tr.confirmed td.confirmations").each(function() {
 			if ($(this).data("incoming")) {
 				$(this).removeData("incoming");
@@ -154,21 +235,23 @@ var Lm = (function(Lm, $, undefined) {
 
 			if (confirmations <= 10) {
 				$(this).data("confirmations", nrConfirmations);
-				$(this).attr("data-content", Lm.FormatAmount(nrConfirmations, false, true) + " confirmations");
+				$(this).attr("data-content", $.t("x_confirmations", {
+					"x": Lm.FormatAmount(nrConfirmations, false, true)
+				}));
 
 				if (nrConfirmations > 10) {
 					nrConfirmations = '10+';
 				}
 				$(this).html(nrConfirmations);
 			} else {
-				$(this).attr("data-content", Lm.FormatAmount(nrConfirmations, false, true) + " confirmations");
+				$(this).attr("data-content", $.t("x_confirmations", {
+					"x": Lm.FormatAmount(nrConfirmations, false, true)
+				}));
 			}
 		});
 	}
 
 	function BlocksPage() {
-		Lm.PageLoading();
-
 		if (Lm.BlocksPageType == "forged_blocks") {
 			$("#forged_fees_total_box, #forged_blocks_total_box").show();
 			$("#blocks_transactions_per_hour_box, #blocks_generation_time_box").hide();
@@ -179,7 +262,7 @@ var Lm = (function(Lm, $, undefined) {
 			}, function(response) {
 				if (response.blockIds && response.blockIds.length) {
 					var blocks = [];
-					var nr_blocks = 0;
+					var nrBlocks = 0;
 
 					var blockIds = response.blockIds.reverse().slice(0, 100);
 
@@ -201,17 +284,12 @@ var Lm = (function(Lm, $, undefined) {
 
 							block["block"] = input.block;
 							blocks[input["_extra"].nr] = block;
-							nr_blocks++;
+							nrBlocks++;
 
-							if (nr_blocks == blockIds.length) {
+							if (nrBlocks == blockIds.length) {
 								Lm.BlocksPageLoaded(blocks);
 							}
 						});
-
-						if (Lm.CurrentPage != "blocks") {
-							blocks = {};
-							return;
-						}
 					}
 				} else {
 					Lm.BlocksPageLoaded([]);
@@ -241,8 +319,8 @@ var Lm = (function(Lm, $, undefined) {
 		}
 	}
 
-	function IncomingBlocks() {
-		Lm.Pages.Blocks();
+	function BlocksIncoming() {
+		Lm.LoadPage("blocks");
 	}
 
 	function Finish100Blocks(response) {
@@ -263,22 +341,21 @@ var Lm = (function(Lm, $, undefined) {
 		for (var i = 0; i < blocks.length; i++) {
 			var block = blocks[i];
 
-			totalAmount = totalAmount.add(new BigInteger(block.TotalAmountMilliLm));
+			totalAmount = totalAmount.add(new BigInteger(block.totalAmountMilliLm));
 
-			totalFees = totalFees.add(new BigInteger(block.TotalFeeMilliLm));
+			totalFees = totalFees.add(new BigInteger(block.totalFeeMilliLm));
 
-			totalTransactions += block.NumberOfTransactions;
+			totalTransactions += block.numberOfTransactions;
 
-			rows += "<tr><td><a href='#' data-block='" + String(block.Height).escapeHTML() + "' data-blockid='" +
-				String(block.block).escapeHTML() + "' class='block'" +
-				(block.NumberOfTransactions > 0 ? " style='font-weight:bold'" : "") + ">" + String(block.Height).escapeHTML() + "</a></td>"+
-				"<td>" + Lm.FormatTimestamp(block.Timestamp) + "</td>"+
-				"<td>" + Lm.FormatAmount(block.TotalAmountMilliLm) + "</td>"+
-				"<td>" + Lm.FormatAmount(block.TotalFeeMilliLm) + "</td>"+
-				"<td>" + Lm.FormatAmount(block.NumberOfTransactions) + "</td>"+
-				"<td>" + (block.generator != Lm.Genesis ? "<a href='#' data-user='" + Lm.GetAccountFormatted(block, "generator") + "' class='user_info'>" +
-					Lm.GetAccountTitle(block, "generator") + "</a>" : "Genesis") + "</td>"+
-				"<td>" + Lm.FormatVolume(block.payloadLength) + "</td>"+
+			rows += "<tr><td><a href='#' data-block='" + String(block.height).escapeHTML() + "' data-blockid='" + String(block.block).escapeHTML() +
+				"' class='block'" + (block.numberOfTransactions > 0 ? " style='font-weight:bold'" : "") + ">" + String(block.height).escapeHTML() + "</a></td>"+
+				"<td>" + Lm.FormatTimestamp(block.timestamp) + "</td>" +
+				"<td>" + Lm.FormatAmount(block.totalAmountMilliLm) + "</td>" +
+				"<td>" + Lm.FormatAmount(block.totalFeeMilliLm) + "</td>" +
+				"<td>" + Lm.FormatAmount(block.numberOfTransactions) + "</td>" +
+				"<td>" + (block.generator != Lm.Genesis ? "<a href='#' data-user='" + Lm.GetAccountFormatted(block, "generator") +
+					"' class='user_info'>" + Lm.GetAccountTitle(block, "generator") + "</a>" : $.t("genesis")) + "</td>" +
+				"<td>" + Lm.FormatVolume(block.payloadLength) + "</td>" +
 				"<td>" + Math.round(block.baseTarget / 153722867 * 100).pad(4) + " %</td></tr>";
 		}
 
@@ -290,12 +367,9 @@ var Lm = (function(Lm, $, undefined) {
 			var startingTime = endingTime = time = 0;
 		}
 
-		$("#blocks_table tbody").empty().append(rows);
-		Lm.DataLoadFinished($("#blocks_table"));
-
 		if (blocks.length) {
-			var averageFee = new Big(totalFees.toString()).div(new Big("1000")).div(new Big(String(blocks.length))).toFixed(2);
-			var averageAmount = new Big(totalAmount.toString()).div(new Big("1000")).div(new Big(String(blocks.length))).toFixed(2);
+			var averageFee = new Big(totalFees.toString()).div(new Big("100000000")).div(new Big(String(blocks.length))).toFixed(2);
+			var averageAmount = new Big(totalAmount.toString()).div(new Big("100000000")).div(new Big(String(blocks.length))).toFixed(2);
 		} else {
 			var averageFee = 0;
 			var averageAmount = 0;
@@ -315,7 +389,7 @@ var Lm = (function(Lm, $, undefined) {
 			}
 
 			$("#forged_blocks_total").html(blockCount).removeClass("loading_dots");
-			$("#forged_fees_total").html(Lm.FormatStyledAmount(Lm.AccountInfo.ForgedBalanceMilliLm)).removeClass("loading_dots");
+			$("#forged_fees_total").html(Lm.FormatStyledAmount(Lm.AccountInfo.forgedBalanceMilliLm)).removeClass("loading_dots");
 		} else {
 			if (time == 0) {
 				$("#blocks_transactions_per_hour").html("0").removeClass("loading_dots");
@@ -325,31 +399,25 @@ var Lm = (function(Lm, $, undefined) {
 			$("#blocks_average_generation_time").html(Math.round(time / 100) + "s").removeClass("loading_dots");
 		}
 
-		Lm.PageLoaded();
+		Lm.DataLoaded(rows);
 	}
 
-	function BlocksPageTypeBtnClick(e, th) {
+	function BlocksPageTypeBtn_OnClick(th, e) {
 		//	$("#blocks_page_type li a").click(function(e) {
 		e.preventDefault();
 
-		var type = $.trim(th.text()).toLowerCase();
+		Lm.BlocksPageType = th.data("type");
 
-		if (type == "forged by you") {
-			Lm.BlocksPageType = "forged_blocks";
-		} else {
-			Lm.BlocksPageType = "";
-		}
-
-		$("#blocks_average_amount, #blocks_average_fee, #blocks_transactions_per_hour, #blocks_average_generation_time, #forged_blocks_total, #forged_fees_total")
-			.html("<span>.</span><span>.</span><span>.</span></span>").addClass("loading_dots");
+		$("#blocks_average_amount, #blocks_average_fee, #blocks_transactions_per_hour, #blocks_average_generation_time, #forged_blocks_total, #forged_fees_total").html("<span>.</span><span>.</span><span>.</span></span>").addClass("loading_dots");
 		$("#blocks_table tbody").empty();
 		$("#blocks_table").parent().addClass("data-loading").removeClass("data-empty");
 
-		Lm.Pages.blocks();
+		Lm.LoadPage("blocks");
 	}
 
-	function GotoForgetBlocksClick(e) {
+	function GotoForgetBlocks_OnClick(e) {
 		e.preventDefault();
+
 		$("#blocks_page_type").find(".btn:last").button("toggle");
 		Lm.BlocksPageType = "forged_blocks";
 		Lm.GoToPage("blocks");
@@ -357,23 +425,22 @@ var Lm = (function(Lm, $, undefined) {
 
 
 	$("#blocks_page_type .btn").click(function(e) {
-		Lm.BlocksPageTypeBtnClick(e, $(this));
+		BlocksPageTypeBtn_OnClick($(this), e);
 	});
 
 	$("#goto_forged_blocks").click(function(e) {
-		GotoForgetBlocksClick(e);
+		GotoForgetBlocks_OnClick(e);
 	});
 
 
 	Lm.GetBlock = GetBlock;
 	Lm.HandleInitialBlocks = HandleInitialBlocks;
 	Lm.HandleNewBlocks = HandleNewBlocks;
-	Lm.Incoming.UpdateDashboardBlocks = IncomingUpdateDashboardBlocks;
+	Lm.CheckBlockHeight = CheckBlockHeight;
+	Lm.Incoming.UpdateDashboardBlocks = UpdateDashboardBlocksIncoming;
 	Lm.Pages.Blocks = BlocksPage;
-	Lm.Incoming.Blocks = IncomingBlocks;
+	Lm.Incoming.Blocks = BlocksIncoming;
 	Lm.Finish100Blocks = Finish100Blocks;
 	Lm.BlocksPageLoaded = BlocksPageLoaded;
-	Lm.BlocksPageTypeBtnClick = BlocksPageTypeBtnClick;
-	Lm.GotoForgetBlocksClick = GotoForgetBlocksClick;
 	return Lm;
 }(Lm || {}, jQuery));

@@ -1,8 +1,11 @@
+/**
+ * @depends {lm.js}
+ */
 var Lm = (function(Lm, $, undefined) {
 	Lm.NewlyCreatedAccount = false;
 
 
-	function AccountPhraseSubmit(event) {
+	function AccountPhraseCustomPanel_OnSubmit(event) {
 		event.preventDefault()
 
 		var password = $("#registration_password").val();
@@ -11,22 +14,18 @@ var Lm = (function(Lm, $, undefined) {
 		var error = "";
 
 		if (password.length < 35) {
-			error = "Secret phrase must be at least 35 characters long.";
+			error = $.t("error_passphrase_length");
 		} else if (password.length < 50 && (!password.match(/[A-Z]/) || !password.match(/[0-9]/))) {
-			error = "Since your secret phrase is less than 50 characters long, it must contain numbers and uppercase letters.";
+			error = $.t("error_passphrase_strength");
 		} else if (password != repeat) {
-			error = "Secret phrases do not match.";
+			error = $.t("error_passphrase_match");
 		}
 
 		if (error) {
 			$("#account_phrase_custom_panel .callout").first().removeClass("callout-info").addClass("callout-danger").html(error);
 		} else {
 			$("#registration_password, #registration_password_repeat").val("");
-			Lm.Login(password, function() {
-				$.growl("Secret phrase confirmed successfully, you are now logged in.", {
-					"type": "success"
-				});
-			});
+			Lm.Login(password);
 		}
 	}
 
@@ -41,15 +40,21 @@ var Lm = (function(Lm, $, undefined) {
 	}
 
 	function Login(password, callback) {
-		$("#login_password, #registration_password, #registration_password_repeat").val("");
-
 		if (!password.length) {
-			$.growl("You must enter your secret phrase. If you don't have one, click the registration button below.", {
+			$.growl($.t("error_passphrase_required_login"), {
 				"type": "danger",
-				"offset": 60
+				"offset": 10
 			});
 			return;
+		} else if (!Lm.IsTestNet && password.length < 12 && $("#login_check_password_length").val() == 1) {
+			$("#login_check_password_length").val(0);
+			$("#login_error .callout").html($.t("error_passphrase_login_length"));
+			$("#login_error").show();
+			return;
 		}
+
+		$("#login_password, #registration_password, #registration_password_repeat").val("");
+		$("#login_check_password_length").val(1);
 
 		Lm.SendRequest("getBlockchainStatus", function(response) {
 			Login_GetBlockchainStatus_On(response, password, callback);
@@ -58,10 +63,9 @@ var Lm = (function(Lm, $, undefined) {
 
 	function Login_GetBlockchainStatus_On(response, password, callback) {
 		if (response.errorCode) {
-			Lm.AddToLog(1, 'response.errorCode='+response.errorCode);
-			$.growl("Could not connect to server.", {
+			$.growl($.t("error_server_connect"), {
 				"type": "danger",
-				"offset": 60
+				"offset": 10
 			});
 
 			return;
@@ -80,9 +84,14 @@ var Lm = (function(Lm, $, undefined) {
 	function Login_GetAccountId_On(response, password, callback) {
 		if (!response.errorCode) {
 			Lm.Account = String(response.accountId).escapeHTML();
+			Lm.PublicKey = Lm.GetPublicKey(converters.stringToHexString(password));
 		}
 
 		if (!Lm.Account) {
+			$.growl($.t("error_find_account_id"), {
+				"type": "danger",
+				"offset": 10
+			});
 			return;
 		}
 
@@ -91,9 +100,11 @@ var Lm = (function(Lm, $, undefined) {
 		if (lmAddress.set(Lm.Account)) {
 			Lm.AccountRS = lmAddress.toString();
 		} else {
-			$.growl("Could not generate Reed Solomon address.", {
-				"type": "danger"
+			$.growl($.t("error_generate_account_id"), {
+				"type": "danger",
+				"offset": 10
 			});
+			return;
 		}
 
 		Lm.SendRequest("getAccountPublicKey", {
@@ -105,9 +116,9 @@ var Lm = (function(Lm, $, undefined) {
 
 	function Login_GetAccountPublicKey_On(response, password, callback) {
 		if (response && response.publicKey && response.publicKey != Lm.GeneratePublicKey(password)) {
-			$.growl("This account is already taken. Please choose another pass phrase.", {
+			$.growl($.t("error_account_taken"), {
 				"type": "danger",
-				"offset": 60
+				"offset": 10
 			});
 			return;
 		}
@@ -115,53 +126,48 @@ var Lm = (function(Lm, $, undefined) {
 		if ($("#remember_password").is(":checked")) {
 			Lm.RememberPassword = true;
 			$("#remember_password").prop("checked", false);
-			sessionStorage.setItem("secret", password);
-			$.growl("Remember to log out at the end of your session so as to clear the password from memory.", {
-				"type": "danger",
-				"offset": 60
-			});
+			Lm.SetPassword(password);
 			$(".secret_phrase, .show_secret_phrase").hide();
 			$(".hide_secret_phrase").show();
 		}
 
-		//if (Lm.Settings["reed_solomon"]) {
-			$("#account_id").html(String(Lm.AccountRS).escapeHTML()).css("font-size", "11px");
-			$("#account_id2").html(String(Lm.AccountRS).escapeHTML()).css("font-size", "11px");
-		//} else {
-		//	$("#account_id").html(String(Lm.Account).escapeHTML()).css("font-size", "14px");
-		//}
+		$("#account_id").html(String(Lm.AccountRS).escapeHTML()).css("font-size", "12px");
 
 		var passwordNotice = "";
 
 		if (password.length < 35) {
-			passwordNotice = "Your secret phrase is less than 35 characters long. This is not secure.";
+			passwordNotice = $.t("error_passphrase_length_secure");
 		} else if (password.length < 50 && (!password.match(/[A-Z]/) || !password.match(/[0-9]/))) {
-			passwordNotice = "Your secret phrase does not contain numbers and uppercase letters. This is not secure.";
+			passwordNotice = $.t("error_passphrase_strength_secure");
 		}
 
 		if (passwordNotice) {
-			$.growl("<strong>Warning</strong>: " + passwordNotice, {
-				"type": "danger",
-				"offset": 60
+			$.growl("<strong>" + $.t("warning") + "</strong>: " + passwordNotice, {
+				"type": "danger"
 			});
+		}
+
+		if (Lm.State) {
+			Lm.CheckBlockHeight();
 		}
 
 		Lm.GetAccountInfo(true, function() {
 			Login_GetAccountInfo_On(response);
 		});
 
-		//Lm.GetAccountAliases();
-
 		Lm.Unlock();
 
 		if (Lm.IsOutdated) {
-			$.growl("A new LibreMoney release is available. It is recommended that you update.", {
-				"type": "danger",
-				"offset": 60
+			$.growl($.t("lm_update_available"), {
+				"type": "danger"
 			});
 		}
 
-		//Lm.SetupClipboardFunctionality(); - Prof1983
+		if (!Lm.DownloadingBlockchain) {
+			Lm.CheckIfOnAFork();
+		}
+
+		Lm.SetupClipboardFunctionality();
 
 		if (callback) {
 			callback();
@@ -176,17 +182,15 @@ var Lm = (function(Lm, $, undefined) {
 
 	function Login_GetAccountInfo_On(response) {
 		if (Lm.AccountInfo.currentLeasingHeightFrom) {
-			Lm.IsLeased = (Lm.LastBlockHeight >= Lm.AccountInfo.currentLeasingHeightFrom &&
-				Lm.LastBlockHeight <= Lm.AccountInfo.currentLeasingHeightTo);
+			Lm.IsLeased = (Lm.LastBlockHeight >= Lm.AccountInfo.currentLeasingHeightFrom && Lm.LastBlockHeight <= Lm.AccountInfo.currentLeasingHeightTo);
 		} else {
 			Lm.IsLeased = false;
 		}
 
 		//forging requires password to be sent to the server, so we don't do it automatically if not localhost
-		if (!Lm.AccountInfo.publicKey || Lm.AccountInfo.EffectiveBalanceLm == 0 || !Lm.IsLocalHost ||
-				Lm.DownloadingBlockchain || Lm.IsLeased) {
+		if (!Lm.AccountInfo.publicKey || Lm.AccountInfo.effectiveBalanceLm == 0 || !Lm.IsLocalHost || Lm.DownloadingBlockchain || Lm.IsLeased) {
 			$("#forging_indicator").removeClass("forging");
-			$("#forging_indicator span").html("Not Forging");
+			$("#forging_indicator span").html($.t("not_forging")).attr("data-i18n", "not_forging");
 			$("#forging_indicator").show();
 			Lm.IsForging = false;
 		} else if (Lm.IsLocalHost) {
@@ -195,11 +199,11 @@ var Lm = (function(Lm, $, undefined) {
 			}, function(response) {
 				if ("deadline" in response) {
 					$("#forging_indicator").addClass("forging");
-					$("#forging_indicator span").html("Forging");
+					$("#forging_indicator span").html($.t("forging")).attr("data-i18n", "forging");
 					Lm.IsForging = true;
 				} else {
 					$("#forging_indicator").removeClass("forging");
-					$("#forging_indicator span").html("Not Forging");
+					$("#forging_indicator span").html($.t("not_forging")).attr("data-i18n", "not_forging");
 					Lm.IsForging = false;
 				}
 				$("#forging_indicator").show();
@@ -208,28 +212,48 @@ var Lm = (function(Lm, $, undefined) {
 	}
 
 	function Logout(stopForging) {
-		$("#billing").css({display:"none"});
 		if (stopForging && Lm.IsForging) {
 			$("#stop_forging_modal .show_logout").show();
 			$("#stop_forging_modal").modal("show");
 		} else {
-			if (Lm.RememberPassword) {
-				sessionStorage.removeItem("secret");
-			}
+			Lm.SetDecryptionPassword("");
+			Lm.SetPassword("");
 			window.location.reload();
 		}
 	}
 
-	function LogoutClick(e) {
-		if (!Lm.IsForging) {
-			e.preventDefault();
-			Lm.Logout();
-		}
-	}
+	function RegisterAccount() {
+		$("#login_panel, #welcome_panel").hide();
+		$("#account_phrase_generator_panel").show();
+		$("#account_phrase_generator_panel step_3 .callout").hide();
 
-	function LogoutDropdown(e) {
-		if (!Lm.IsForging) {
-			e.preventDefault();
+		var $loading = $("#account_phrase_generator_loading");
+		var $loaded = $("#account_phrase_generator_loaded");
+
+		if (window.crypto || window.msCrypto) {
+			$loading.find("span.loading_text").html($.t("generating_passphrase_wait"));
+		}
+
+		$loading.show();
+		$loaded.hide();
+
+		if (typeof PassPhraseGenerator == "undefined") {
+			$.when(
+				$.getScript("js/crypto/3rdparty/seedrandom.js"),
+				$.getScript("js/crypto/passphrasegenerator.js")
+			).done(function() {
+				$loading.hide();
+				$loaded.show();
+
+				PassPhraseGenerator.generatePassPhrase("#account_phrase_generator_panel");
+			}).fail(function(jqxhr, settings, exception) {
+				alert($.t("error_word_list"));
+			});
+		} else {
+			$loading.hide();
+			$loaded.show();
+
+			PassPhraseGenerator.generatePassPhrase("#account_phrase_generator_panel");
 		}
 	}
 
@@ -241,21 +265,12 @@ var Lm = (function(Lm, $, undefined) {
 		$("#registration_password").focus();
 	}
 
-	function ShowLoginOrWelcomeScreen() {
-		if (Lm.HasLocalStorage && localStorage.getItem("logged_in")) {
-			Lm.ShowLoginScreen();
-		} else {
-			Lm.ShowWelcomeScreen();
-		}
+	function SetPassword(password) {
+		Lm.SetEncryptionPassword(password);
+		Lm.SetServerPassword(password);
 	}
 
 	function ShowLockscreen() {
-		Lm.AddToLog(Lm.DebugLevelEnum.Comment, 'Login.ShowLockscreen - begin');
-		Lm.AddToLog(Lm.DebugLevelEnum.Comment, 'Lm.HasLocalStorage='+Lm.HasLocalStorage);
-		Lm.AddToLog(Lm.DebugLevelEnum.Comment, 'localStorage.getItem(logged_in)='+localStorage.getItem("logged_in"));
-
-		Lm.GoToPage("login"); // Prof1983
-
 		if (Lm.HasLocalStorage && localStorage.getItem("logged_in")) {
 			setTimeout(function() {
 				$("#login_password").focus()
@@ -265,6 +280,14 @@ var Lm = (function(Lm, $, undefined) {
 		}
 
 		$("#center").show();
+	}
+
+	function ShowLoginOrWelcomeScreen() {
+		if (Lm.HasLocalStorage && localStorage.getItem("logged_in")) {
+			Lm.ShowLoginScreen();
+		} else {
+			Lm.ShowWelcomeScreen();
+		}
 	}
 
 	function ShowLoginScreen() {
@@ -278,62 +301,8 @@ var Lm = (function(Lm, $, undefined) {
 	}
 
 	function ShowWelcomeScreen() {
-		Lm.AddToLog(Lm.DebugLevelEnum.Comment, 'Login.ShowWelcomeScreen - begin');
 		$("#login_panel, account_phrase_custom_panel, #account_phrase_generator_panel, #account_phrase_custom_panel, #welcome_panel, #custom_passphrase_link").hide();
 		$("#welcome_panel").show();
-	}
-
-	function RegisterAccount() {
-		$("#login_panel, #welcome_panel").hide();
-		$("#account_phrase_generator_panel").show();
-		$("#account_phrase_generator_panel step_3 .callout").hide();
-
-		var $loading = $("#account_phrase_generator_loading");
-		var $loaded = $("#account_phrase_generator_loaded");
-
-		if (window.crypto || window.msCrypto) {
-			$loading.find("span.loading_text").html("Generating your secret phrase. Please wait");
-		}
-
-		$loading.show();
-		$loaded.hide();
-
-		if (typeof PassPhraseGenerator == "undefined") {
-			$.when(
-				$.getScript("js/crypto/seedrandom.js"),
-				$.getScript("js/crypto/passphrasegenerator.js")
-			).done(function() {
-				$loading.hide();
-				$loaded.show();
-
-				PassPhraseGenerator.generatePassPhrase("#account_phrase_generator_panel");
-			}).fail(function(jqxhr, settings, exception) {
-				alert("Could not load word list...");
-			});
-		} else {
-			$loading.hide();
-			$loaded.show();
-
-			PassPhraseGenerator.generatePassPhrase("#account_phrase_generator_panel");
-		}
-	}
-
-	function VerifyGeneratedPassphrase() {
-		var password = $.trim($("#account_phrase_generator_panel .step_3 textarea").val());
-
-		if (password != PassPhraseGenerator.passPhrase) {
-			$("#account_phrase_generator_panel .step_3 .callout").show();
-		} else {
-			Lm.NewlyCreatedAccount = true;
-			Lm.Login(password, function() {
-				$.growl("Secret phrase confirmed successfully, you are now logged in.", {
-					"type": "success"
-				});
-			});
-			PassPhraseGenerator.reset();
-			$("#account_phrase_generator_panel textarea").val("");
-			$("#account_phrase_generator_panel .step_3 .callout").hide();
-		}
 	}
 
 	function Unlock() {
@@ -341,7 +310,7 @@ var Lm = (function(Lm, $, undefined) {
 			localStorage.setItem("logged_in", true);
 		}
 
-		var userStyles = ["header", "sidebar", "page_header"];
+		var userStyles = ["header", "sidebar", "boxes"];
 
 		for (var i = 0; i < userStyles.length; i++) {
 			var color = Lm.Settings[userStyles[i] + "_color"];
@@ -353,31 +322,44 @@ var Lm = (function(Lm, $, undefined) {
 		var contentHeaderHeight = $(".content-header").height();
 		var navBarHeight = $("nav.navbar").height();
 
-		$(".content-splitter-right").css("bottom", (contentHeaderHeight + navBarHeight + 10) + "px");
+		//	$(".content-splitter-right").css("bottom", (contentHeaderHeight + navBarHeight + 10) + "px");
 
-		$("#billing").css({display: "block"});
 		$("#lockscreen").hide();
-		$("#login_page").hide();
 		$("body, html").removeClass("lockscreen");
-		Lm.GoToPage('about');
 
-		$("#nav_login").css({display:'none'})
-		$("#nav_logout").css({display:'block'});
+		$("#login_error").html("").hide();
 
 		$(document.documentElement).scrollTop(0);
 	}
 
+	function VerifyGeneratedPassphrase() {
+		var password = $.trim($("#account_phrase_generator_panel .step_3 textarea").val());
 
-	$("#account_phrase_custom_panel form").submit(function(event) {
-		Lm.AccountPhraseSubmit(event);
-	});
+		if (password != PassPhraseGenerator.passPhrase) {
+			$("#account_phrase_generator_panel .step_3 .callout").show();
+		} else {
+			Lm.NewlyCreatedAccount = true;
+			Lm.Login(password);
+			PassPhraseGenerator.reset();
+			$("#account_phrase_generator_panel textarea").val("");
+			$("#account_phrase_generator_panel .step_3 .callout").hide();
+		}
+	}
+
+
+	$("#account_phrase_custom_panel form").submit(AccountPhraseCustomPanel_OnSubmit);
 
 	$("#logout_button_container").on("show.bs.dropdown", function(e) {
-		Lm.LogoutDropdown(e);
+		if (!Lm.IsForging) {
+			e.preventDefault();
+		}
 	});
 
 	$("#logout_button").click(function(e) {
-		Lm.LogoutClick(e);
+		if (!Lm.IsForging) {
+			e.preventDefault();
+			Lm.Logout();
+		}
 	});
 
 
@@ -388,12 +370,10 @@ var Lm = (function(Lm, $, undefined) {
 	Lm.RegisterUserDefinedAccount = RegisterUserDefinedAccount;
 	Lm.RegisterAccount = RegisterAccount;
 	Lm.VerifyGeneratedPassphrase = VerifyGeneratedPassphrase;
-	Lm.AccountPhraseSubmit = AccountPhraseSubmit;
 	Lm.Login = Login;
-	Lm.LogoutClick = LogoutClick;
-	Lm.LogoutDropdown = LogoutDropdown;
 	Lm.ShowLockscreen = ShowLockscreen;
 	Lm.Unlock = Unlock;
 	Lm.Logout = Logout;
+	Lm.SetPassword = SetPassword;
 	return Lm;
 }(Lm || {}, jQuery));

@@ -1,3 +1,7 @@
+/**
+ * @depends {jquery.js}
+ */
+
 /*
  * jQuery.ajaxMultiQueue - A queue for multiple concurrent ajax requests
  * (c) 2013 Amir Grozki

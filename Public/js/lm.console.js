@@ -1,9 +1,11 @@
+/**
+ * @depends {lm.js}
+ */
 var Lm = (function(Lm, $, undefined) {
-
 	function ShowConsole() {
 		Lm.Console = window.open("", "console", "width=750,height=400,menubar=no,scrollbars=yes,status=no,toolbar=no,resizable=yes");
-		$(Lm.Console.document.head).html("<title>Console</title><style type='text/css'>body { background:black; color:white; font-family:courier-new,courier;font-size:14px; } pre { font-size:14px; } #console { padding-top:15px; }</style>");
-		$(Lm.Console.document.body).html("<div style='position:fixed;top:0;left:0;right:0;padding:5px;background:#efefef;color:black;'>Console opened. Logging started...<div style='float:right;text-decoration:underline;color:blue;font-weight:bold;cursor:pointer;' onclick='document.getElementById(\"console\").innerHTML=\"\"'>clear</div></div><div id='console'></div>");
+		$(Lm.Console.document.head).html("<title>" + $.t("console") + "</title><style type='text/css'>body { background:black; color:white; font-family:courier-new,courier;font-size:14px; } pre { font-size:14px; } #console { padding-top:15px; }</style>");
+		$(Lm.Console.document.body).html("<div style='position:fixed;top:0;left:0;right:0;padding:5px;background:#efefef;color:black;'>" + $.t("console_opened") + "<div style='float:right;text-decoration:underline;color:blue;font-weight:bold;cursor:pointer;' onclick='document.getElementById(\"console\").innerHTML=\"\"'>clear</div></div><div id='console'></div>");
 	}
 
 	function AddToConsole(url, type, data, response, error) {
@@ -79,7 +81,6 @@ var Lm = (function(Lm, $, undefined) {
 
 		return obj;
 	}
-
 
 	Lm.ShowConsole = ShowConsole;
 	Lm.AddToConsole = AddToConsole;
