@@ -1,5 +1,5 @@
 /**!
- * LibreMoney account 0.0
+ * LibreMoney account 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -12,11 +12,10 @@ var Logger = require(__dirname + '/../Util/Logger').GetLogger(module);
 
 
 function Account(id) {
-	this.id = 0;
+	this.id = id; // BigInt
 	if (id != Crypto.RsDecode(Crypto.RsEncode(id))) {
 		Logger.LogMessage("CRITICAL ERROR: Reed-Solomon encoding fails for " + id);
 	}
-	this.id = id;
 	this.height = Blockchain.GetLastBlock().GetHeight();
 	this.currentLeasingHeightFrom = Constants.MaxInt;
 
@@ -43,47 +42,39 @@ function Account(id) {
 	return this;
 }
 
-function GetId() {
-	return this.id;
-}
-
-function GetName() {
-	return this.name;
-}
-
-function GetDescription() {
-	return this.description;
-}
-
-function SetAccountInfo(name, description) {
-	this.name = Convert.EmptyToNull(name.trim());
-	this.description = Convert.EmptyToNull(description.trim());
-}
-
-function GetPublicKey() {
-	if (this.keyHeight == -1) {
-		return null;
+function DecryptFrom(encryptedData, recipientSecretPhrase) {
+	throw new Error('Not implementted');
+	/*
+	if (getPublicKey() == null) {
+		throw new IllegalArgumentException("Sender account doesn't have a public key set");
 	}
-	return publicKey;
+	return encryptedData.decrypt(Crypto.getPrivateKey(recipientSecretPhrase), publicKey);
+	*/
+}
+
+function EncryptTo(data, senderSecretPhrase) {
+	throw new Error('Not implementted');
+	/*
+	if (getPublicKey() == null) {
+		throw new IllegalArgumentException("Recipient account doesn't have a public key set");
+	}
+	return EncryptedData.encrypt(data, Crypto.getPrivateKey(senderSecretPhrase), publicKey);
+	*/
 }
 
 function GetBalanceMilliLm() {
 	return this.balanceMilliLm;
 }
 
-function GetUnconfirmedBalanceMilliLm() {
-	return this.unconfirmedBalanceMilliLm;
-}
-
-function GetForgedBalanceMilliLm() {
-	return this.forgedBalanceMilliLm;
+function GetDescription() {
+	return this.description;
 }
 
 function GetEffectiveBalanceLm() {
 	var lastBlock = Blockchain.GetLastBlock();
 
 	if (lastBlock.GetHeight() >= Constants.TransparentForgingBlock6
-			&& (this.publicKey == null || this.keyHeight == -1 || lastBlock.getHeight() - this.keyHeight <= 1440)) {
+			&& (this.GetPublicKey() == null || lastBlock.GetHeight() - this.keyHeight <= 1440)) {
 		return 0; // cfb: Accounts with the public key revealed less than 1440 blocks ago are not allowed to generate blocks
 	}
 
@@ -91,13 +82,13 @@ function GetEffectiveBalanceLm() {
 		if (this.height == 0) {
 			return this.GetBalanceMilliLm() / Constants.OneLm;
 		}
-		if (lastBlock.getHeight() - this.height < 1440) {
+		if (lastBlock.GetHeight() - this.height < 1440) {
 			return 0;
 		}
 		var receivedInlastBlock = 0;
 		var transactions = lastBlock.GetTransactions();
 		for (transaction in transactions) {
-			if (transaction.GetRecipientId().Equals(id)) {
+			if (this.id.equals(transaction.GetRecipientId())) {
 				receivedInlastBlock += transaction.GetAmountMilliLm();
 			}
 		}
@@ -109,6 +100,34 @@ function GetEffectiveBalanceLm() {
 	}
 
 	return this.GetLessorsGuaranteedBalanceMilliLm() / Constants.OneLm;
+}
+
+function GetForgedBalanceMilliLm() {
+	return this.forgedBalanceMilliLm;
+}
+
+function GetId() {
+	return this.id;
+}
+
+function GetName() {
+	return this.name;
+}
+
+function GetPublicKey() {
+	if (this.keyHeight == -1) {
+		return null;
+	}
+	return publicKey;
+}
+
+function GetUnconfirmedBalanceMilliLm() {
+	return this.unconfirmedBalanceMilliLm;
+}
+
+function SetAccountInfo(name, description) {
+	this.name = Convert.EmptyToNull(name.trim());
+	this.description = Convert.EmptyToNull(description.trim());
 }
 
 function GetLessorsGuaranteedBalanceMilliLm() {
@@ -270,7 +289,7 @@ function Apply(key, height) {
 	throw new Error('Not implementted');
 	/*
 	if (! setOrVerify(key, this.height)) {
-		throw new IllegalStateException("Generator public key mismatch");
+		throw new IllegalStateException("Public key mismatch");
 	}
 	if (this.publicKey == null) {
 		throw new IllegalStateException("Public key has not been set for account " + Convert.toUnsignedLong(id)
@@ -308,57 +327,72 @@ function GetAssetBalanceQNT(assetId) {
 function AddToAssetBalanceQNT(assetId, quantityQNT) {
 	throw new Error('Not implementted');
 	/*
+	Long assetBalance;
 	synchronized (this) {
-		Long assetBalance = assetBalances.get(assetId);
+		assetBalance = assetBalances.get(assetId);
 		assetBalance = assetBalance == null ? quantityQNT : Convert.safeAdd(assetBalance, quantityQNT);
-		if (assetBalance < 0) {
+		if (assetBalance > 0) {
+			assetBalances.put(assetId, assetBalance);
+		} else if (assetBalance == 0) {
+			assetBalances.remove(assetId);
+		} else {
 			throw new DoubleSpendingException("Negative asset balance for account " + Convert.toUnsignedLong(id));
 		}
-		assetBalances.put(assetId, assetBalance);
 	}
-	listeners.Notify(Event.ASSET_BALANCE, this);
-	assetListeners.Notify(Event.ASSET_BALANCE, new AccountAsset(id, assetId, assetBalances.get(assetId)));
+	listeners.notify(this, Event.ASSET_BALANCE);
+	assetListeners.notify(new AccountAsset(id, assetId, assetBalance), Event.ASSET_BALANCE);
 	*/
 }
 
 function AddToUnconfirmedAssetBalanceQNT(assetId, quantityQNT) {
 	throw new Error('Not implementted');
 	/*
+	Long unconfirmedAssetBalance;
 	synchronized (this) {
-		Long unconfirmedAssetBalance = unconfirmedAssetBalances.get(assetId);
+		unconfirmedAssetBalance = unconfirmedAssetBalances.get(assetId);
 		unconfirmedAssetBalance = unconfirmedAssetBalance == null ? quantityQNT : Convert.safeAdd(unconfirmedAssetBalance, quantityQNT);
-		if (unconfirmedAssetBalance < 0) {
+		if (unconfirmedAssetBalance > 0) {
+			unconfirmedAssetBalances.put(assetId, unconfirmedAssetBalance);
+		} else if (unconfirmedAssetBalance == 0) {
+			unconfirmedAssetBalances.remove(assetId);
+		} else {
 			throw new DoubleSpendingException("Negative unconfirmed asset balance for account " + Convert.toUnsignedLong(id));
 		}
-		unconfirmedAssetBalances.put(assetId, unconfirmedAssetBalance);
 	}
-	listeners.Notify(Event.UNCONFIRMED_ASSET_BALANCE, this);
-	assetListeners.Notify(Event.UNCONFIRMED_ASSET_BALANCE, new AccountAsset(id, assetId, unconfirmedAssetBalances.get(assetId)));
+	listeners.notify(this, Event.UNCONFIRMED_ASSET_BALANCE);
+	assetListeners.notify(new AccountAsset(id, assetId, unconfirmedAssetBalance), Event.UNCONFIRMED_ASSET_BALANCE);
 	*/
 }
 
 function AddToAssetAndUnconfirmedAssetBalanceQNT(assetId, quantityQNT) {
 	throw new Error('Not implementted');
 	/*
+	Long assetBalance;
+	Long unconfirmedAssetBalance;
 	synchronized (this) {
-		Long assetBalance = assetBalances.get(assetId);
+		assetBalance = assetBalances.get(assetId);
 		assetBalance = assetBalance == null ? quantityQNT : Convert.safeAdd(assetBalance, quantityQNT);
-		if (assetBalance < 0) {
+		if (assetBalance > 0) {
+			assetBalances.put(assetId, assetBalance);
+		} else if (assetBalance == 0) {
+			assetBalances.remove(assetId);
+		} else {
 			throw new DoubleSpendingException("Negative unconfirmed asset balance for account " + Convert.toUnsignedLong(id));
 		}
-		assetBalances.put(assetId, assetBalance);
-
-		Long unconfirmedAssetBalance = unconfirmedAssetBalances.get(assetId);
+		unconfirmedAssetBalance = unconfirmedAssetBalances.get(assetId);
 		unconfirmedAssetBalance = unconfirmedAssetBalance == null ? quantityQNT : Convert.safeAdd(unconfirmedAssetBalance, quantityQNT);
-		if (unconfirmedAssetBalance < 0) {
+		if (unconfirmedAssetBalance > 0) {
+			unconfirmedAssetBalances.put(assetId, unconfirmedAssetBalance);
+		} else if (unconfirmedAssetBalance == 0) {
+			unconfirmedAssetBalances.remove(assetId);
+		} else {
 			throw new DoubleSpendingException("Negative unconfirmed asset balance for account " + Convert.toUnsignedLong(id));
 		}
-		unconfirmedAssetBalances.put(assetId, unconfirmedAssetBalance);
 	}
-	listeners.Notify(Event.ASSET_BALANCE, this);
-	listeners.Notify(Event.UNCONFIRMED_ASSET_BALANCE, this);
-	assetListeners.Notify(Event.ASSET_BALANCE, new AccountAsset(id, assetId, assetBalances.get(assetId)));
-	assetListeners.Notify(Event.UNCONFIRMED_ASSET_BALANCE, new AccountAsset(id, assetId, unconfirmedAssetBalances.get(assetId)));
+	listeners.notify(this, Event.ASSET_BALANCE);
+	listeners.notify(this, Event.UNCONFIRMED_ASSET_BALANCE);
+	assetListeners.notify(new AccountAsset(id, assetId, assetBalance), Event.ASSET_BALANCE);
+	assetListeners.notify(new AccountAsset(id, assetId, unconfirmedAssetBalance), Event.UNCONFIRMED_ASSET_BALANCE);
 	*/
 }
 
@@ -482,40 +516,41 @@ function CheckBalance() {
 }
 
 
-Account.prototype.GetId = GetId;
-Account.prototype.GetName = GetName;
-Account.prototype.GetDescription = GetDescription;
-Account.prototype.GetPublicKey = GetPublicKey;
-Account.prototype.GetBalanceMilliLm = GetBalanceMilliLm;
-Account.prototype.GetUnconfirmedBalanceMilliLm = GetUnconfirmedBalanceMilliLm;
-Account.prototype.GetForgedBalanceMilliLm = GetForgedBalanceMilliLm;
-Account.prototype.GetEffectiveBalanceLm = GetEffectiveBalanceLm;
-Account.prototype.GetLessorsGuaranteedBalanceMilliLm = GetLessorsGuaranteedBalanceMilliLm;
-Account.prototype.GetGuaranteedBalanceMilliLm = GetGuaranteedBalanceMilliLm;
-Account.prototype.GetUnconfirmedAssetBalanceQNT = GetUnconfirmedAssetBalanceQNT;
-Account.prototype.GetAssetBalancesQNT = GetAssetBalancesQNT;
-Account.prototype.GetUnconfirmedAssetBalancesQNT = GetUnconfirmedAssetBalancesQNT;
-Account.prototype.GetCurrentLesseeId = GetCurrentLesseeId;
-Account.prototype.GetNextLesseeId = GetNextLesseeId;
-Account.prototype.GetCurrentLeasingHeightFrom = GetCurrentLeasingHeightFrom;
-Account.prototype.GetCurrentLeasingHeightTo = GetCurrentLeasingHeightTo;
-Account.prototype.GetNextLeasingHeightFrom = GetNextLeasingHeightFrom;
-Account.prototype.GetNextLeasingHeightTo = GetNextLeasingHeightTo;
-Account.prototype.GetLessorIds = GetLessorIds;
-Account.prototype.LeaseEffectiveBalance = LeaseEffectiveBalance;
-Account.prototype.SetOrVerify = SetOrVerify;
-Account.prototype.Apply = Apply;
-Account.prototype.Undo = Undo;
-Account.prototype.GetAssetBalanceQNT = GetAssetBalanceQNT;
-Account.prototype.AddToAssetBalanceQNT = AddToAssetBalanceQNT;
-Account.prototype.AddToUnconfirmedAssetBalanceQNT = AddToUnconfirmedAssetBalanceQNT;
 Account.prototype.AddToAssetAndUnconfirmedAssetBalanceQNT = AddToAssetAndUnconfirmedAssetBalanceQNT;
-Account.prototype.AddToBalanceMilliLm = AddToBalanceMilliLm;
-Account.prototype.AddToUnconfirmedBalanceMilliLm = AddToUnconfirmedBalanceMilliLm;
+Account.prototype.AddToAssetBalanceQNT = AddToAssetBalanceQNT;
 Account.prototype.AddToBalanceAndUnconfirmedBalanceMilliLm = AddToBalanceAndUnconfirmedBalanceMilliLm;
+Account.prototype.AddToBalanceMilliLm = AddToBalanceMilliLm;
 Account.prototype.AddToForgedBalanceMilliLm = AddToForgedBalanceMilliLm;
 Account.prototype.AddToGuaranteedBalanceMilliLm = AddToGuaranteedBalanceMilliLm;
+Account.prototype.AddToUnconfirmedAssetBalanceQNT = AddToUnconfirmedAssetBalanceQNT;
+Account.prototype.AddToUnconfirmedBalanceMilliLm = AddToUnconfirmedBalanceMilliLm;
+Account.prototype.Apply = Apply;
 Account.prototype.CheckBalance = CheckBalance;
+Account.prototype.EncryptTo = EncryptTo;
+Account.prototype.GetId = GetId;
+Account.prototype.GetAssetBalanceQNT = GetAssetBalanceQNT;
+Account.prototype.GetAssetBalancesQNT = GetAssetBalancesQNT;
+Account.prototype.GetBalanceMilliLm = GetBalanceMilliLm;
+Account.prototype.GetCurrentLeasingHeightFrom = GetCurrentLeasingHeightFrom;
+Account.prototype.GetCurrentLeasingHeightTo = GetCurrentLeasingHeightTo;
+Account.prototype.GetCurrentLesseeId = GetCurrentLesseeId;
+Account.prototype.GetDescription = GetDescription;
+Account.prototype.GetEffectiveBalanceLm = GetEffectiveBalanceLm;
+Account.prototype.GetForgedBalanceMilliLm = GetForgedBalanceMilliLm;
+Account.prototype.GetGuaranteedBalanceMilliLm = GetGuaranteedBalanceMilliLm;
+Account.prototype.GetLessorIds = GetLessorIds;
+Account.prototype.GetLessorsGuaranteedBalanceMilliLm = GetLessorsGuaranteedBalanceMilliLm;
+Account.prototype.GetName = GetName;
+Account.prototype.GetNextLeasingHeightFrom = GetNextLeasingHeightFrom;
+Account.prototype.GetNextLeasingHeightTo = GetNextLeasingHeightTo;
+Account.prototype.GetNextLesseeId = GetNextLesseeId;
+Account.prototype.GetPublicKey = GetPublicKey;
+Account.prototype.GetUnconfirmedBalanceMilliLm = GetUnconfirmedBalanceMilliLm;
+Account.prototype.GetUnconfirmedAssetBalanceQNT = GetUnconfirmedAssetBalanceQNT;
+Account.prototype.GetUnconfirmedAssetBalancesQNT = GetUnconfirmedAssetBalancesQNT;
+Account.prototype.LeaseEffectiveBalance = LeaseEffectiveBalance;
+Account.prototype.SetOrVerify = SetOrVerify;
+Account.prototype.Undo = Undo;
 
 
 module.exports = Account;

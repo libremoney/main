@@ -126,20 +126,7 @@ var Lm = (function(Lm, $, undefined) {
 		if (blockHeight) {
 			Lm.LastBlockHeight = blockHeight;
 		}
-
-		if (!Lm.DgsBlockPassed) {
-			if ((!Lm.IsTestNet && (Lm.LastBlockHeight >= 213000 || (Lm.DownloadingBlockchain && Lm.State.lastBlockchainFeederHeight >= 213000))) ||
-					(Lm.IsTestNet && Lm.LastBlockHeight >= 117910)) {
-				Lm.DgsBlockPassed = true;
-				$(".dgs_block").not(".advanced, .optional_message, .optional_note").show();
-			}
-		}
-		if (!Lm.PKAnnouncementBlockPassed) {
-			if ((!Lm.IsTestNet && (Lm.LastBlockHeight >= 215000 || (Lm.DownloadingBlockchain && Lm.State.lastBlockchainFeederHeight >= 215000))) ||
-					(Lm.IsTestNet && Lm.LastBlockHeight >= 117910)) {
-				Lm.PKAnnouncementBlockPassed = true;
-			}
-		}
+		//no checks needed at the moment
 	}
 
 	//we always update the dashboard page..

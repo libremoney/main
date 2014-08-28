@@ -88,8 +88,9 @@ function Run1() {
 function Run2() {
 	/*
 	boolean processedAll = true;
+	int requestCount = 0;
 	outer:
-	while (true) {
+	while (forkBlocks.size() < 1440 && requestCount++ < 10) {
 		JSONArray nextBlocks = getNextBlocks(peer, currentBlockId);
 		if (nextBlocks == null || nextBlocks.size() == 0) {
 			break;
@@ -100,12 +101,12 @@ function Run2() {
 				BlockImpl block;
 				try {
 					block = parseBlock(blockData);
-				} catch (NxtException.ValidationException e) {
+				} catch (NxtException.NotCurrentlyValidException e) {
 					Logger.logDebugMessage("Cannot validate block: " + e.toString()
 							+ ", will try again later", e);
 					processedAll = false;
 					break outer;
-				} catch (RuntimeException e) {
+				} catch (RuntimeException|NxtException.ValidationException e) {
 					Logger.logDebugMessage("Failed to parse block: " + e.toString(), e);
 					peer.blacklist();
 					return;
@@ -249,16 +250,7 @@ function ProcessFork(peer, forkBlocks, commonBlock) {
 	synchronized (blockchain) {
 		BigInteger curCumulativeDifficulty = blockchain.getLastBlock().getCumulativeDifficulty();
 
-		try {
-			Long lastBlockId = blockchain.getLastBlock().getId();
-			while (! lastBlockId.equals(commonBlock.getId()) && ! lastBlockId.equals(Genesis.GENESIS_BLOCK_ID)) {
-				lastBlockId = popLastBlock();
-			}
-		} catch (TransactionType.UndoNotSupportedException e) {
-			Logger.logDebugMessage(e.getMessage());
-			Logger.logDebugMessage("Popping off last block not possible, will do a rescan");
-			resetTo(commonBlock);
-		}
+		popOffTo(commonBlock);
 
 		int pushedForkBlocks = 0;
 		if (blockchain.getLastBlock().getId().equals(commonBlock.getId())) {
@@ -276,11 +268,27 @@ function ProcessFork(peer, forkBlocks, commonBlock) {
 		}
 
 		if (pushedForkBlocks > 0 && blockchain.getLastBlock().getCumulativeDifficulty().compareTo(curCumulativeDifficulty) < 0) {
-			Logger.logDebugMessage("Rescan caused by peer " + peer.getPeerAddress() + ", blacklisting");
+			Logger.logDebugMessage("Pop off caused by peer " + peer.getPeerAddress() + ", blacklisting");
 			peer.blacklist();
-			resetTo(commonBlock);
+			popOffTo(commonBlock);
 		}
 	} // synchronized
+	*/
+}
+
+function PopOffTo(commonBlock) {
+	throw new Error('Not implementted');
+	/*
+	try {
+		Long lastBlockId = blockchain.getLastBlock().getId();
+		while (! lastBlockId.equals(commonBlock.getId()) && ! lastBlockId.equals(Genesis.GENESIS_BLOCK_ID)) {
+			lastBlockId = popLastBlock();
+		}
+	} catch (TransactionType.UndoNotSupportedException e) {
+		Logger.logDebugMessage(e.getMessage());
+		Logger.logDebugMessage("Popping off last block not possible, will do a rescan");
+		resetTo(commonBlock);
+	}
 	*/
 }
 
@@ -301,7 +309,8 @@ function ResetTo(commonBlock) {
 }
 
 
-exports.Run = Run;
-exports.GetCommonMilestoneBlockId = GetCommonMilestoneBlockId;
 exports.GetCommonBlockId = GetCommonBlockId;
+exports.GetCommonMilestoneBlockId = GetCommonMilestoneBlockId;
 exports.GetNextBlocks = GetNextBlocks;
+exports.PopOffTo = PopOffTo;
+exports.Run = Run;

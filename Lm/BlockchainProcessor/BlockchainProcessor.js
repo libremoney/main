@@ -1,5 +1,5 @@
 /**!
- * LibreMoney BlockchainProcessor 0.0
+ * LibreMoney BlockchainProcessor 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -34,9 +34,10 @@ var Event = {
 	BLOCK_SCANNED:3,
 	RESCAN_BEGIN:4,
 	RESCAN_END:5,
-	BEFORE_BLOCK_APPLY:6,
-	AFTER_BLOCK_APPLY:7,
-	BEFORE_BLOCK_UNDO:8
+	BEFORE_BLOCK_ACCEPT:6,
+	BEFORE_BLOCK_APPLY:7,
+	AFTER_BLOCK_APPLY:8,
+	BEFORE_BLOCK_UNDO:9
 }
 
 
@@ -170,7 +171,7 @@ function Init(callback) {
 		AddGenesisBlock(function() {
 			Scan();
 		});
-	});
+	}, false);
 
 	//ThreadPool.ScheduleThread(GetMoreBlocksThread.Run, 1000, 'GetMoreBlocksThread');
 
@@ -178,15 +179,19 @@ function Init(callback) {
 }
 
 function FullReset() {
-	Logger.info("Deleting blockchain...");
-	//Blocks.deleteBlock(Genesis.GENESIS_BLOCK_ID); // fails with stack overflow in H2
 	Blocks.DeleteAll();
 	AddGenesisBlock(function() {
 		Scan();
 	});
 }
 
-function GenerateBlock(secretPhrase) {
+function GenerateBlock1(previousBlockHeight) {
+	return previousBlockHeight < Constants.TRANSPARENT_FORGING_BLOCK ? 1
+			: previousBlockHeight < Constants.NQT_BLOCK ? 2
+			: 3;
+}
+
+function GenerateBlock2(secretPhrase, blockTimestamp) {
 	throw new Error('Not implementted');
 	/*
 	Set<TransactionImpl> sortedTransactions = new TreeSet<>();
@@ -197,6 +202,11 @@ function GenerateBlock(secretPhrase) {
 		}
 	}
 
+	BlockImpl previousBlock = blockchain.getLastBlock();
+	if (previousBlock.getHeight() < Constants.DIGITAL_GOODS_STORE_BLOCK) {
+		return true;
+	}
+
 	SortedMap<Long, TransactionImpl> newTransactions = new TreeMap<>();
 	Map<TransactionType, Set<String>> duplicates = new HashMap<>();
 
@@ -204,16 +214,18 @@ function GenerateBlock(secretPhrase) {
 	long totalFeeNQT = 0;
 	int payloadLength = 0;
 
-	int blockTimestamp = Convert.getEpochTime();
-
-	while (payloadLength <= Constants.MaxPayloadLength) {
+	while (payloadLength <= Constants.MAX_PAYLOAD_LENGTH && newTransactions.size() <= Constants.MAX_NUMBER_OF_TRANSACTIONS) {
 
 		int prevNumberOfNewTransactions = newTransactions.size();
 
 		for (TransactionImpl transaction : sortedTransactions) {
 
 			int transactionLength = transaction.getSize();
-			if (newTransactions.get(transaction.getId()) != null || payloadLength + transactionLength > Constants.MaxPayloadLength) {
+			if (newTransactions.get(transaction.getId()) != null || payloadLength + transactionLength > Constants.MAX_PAYLOAD_LENGTH) {
+				continue;
+			}
+
+			if (transaction.getVersion() != transactionProcessor.getTransactionVersion(previousBlock.getHeight())) {
 				continue;
 			}
 
@@ -226,9 +238,18 @@ function GenerateBlock(secretPhrase) {
 			}
 
 			try {
-				transaction.validateAttachment();
-			} catch (NxtException.ValidationException e) {
+				transaction.validate();
+			} catch (NxtException.NotCurrentlyValidException e) {
 				continue;
+			} catch (NxtException.ValidationException e) {
+				transactionProcessor.removeUnconfirmedTransactions(Collections.singletonList(transaction));
+				continue;
+			}
+
+			if (!EconomicClustering.verifyFork(transaction)) {
+				Logger.logDebugMessage("Including transaction that was generated on a fork: " + transaction.getStringId()
+						+ " ecBlockHeight " + transaction.getECBlockHeight() + " ecBlockId " + Convert.toUnsignedLong(transaction.getECBlockId()));
+				//continue;
 			}
 
 			newTransactions.put(transaction.getId(), transaction);
@@ -252,49 +273,47 @@ function GenerateBlock(secretPhrase) {
 
 	byte[] payloadHash = digest.digest();
 
-	BlockImpl previousBlock = blockchain.getLastBlock();
-	if (previousBlock.getHeight() < Constants.ASSET_EXCHANGE_BLOCK) {
-		return;
-	}
-
 	digest.update(previousBlock.getGenerationSignature());
 	byte[] generationSignature = digest.digest(publicKey);
 
 	BlockImpl block;
-	int version = 3;
 	byte[] previousBlockHash = Crypto.sha256().digest(previousBlock.getBytes());
 
 	try {
 
-		block = new BlockImpl(version, blockTimestamp, previousBlock.getId(), totalAmountNQT, totalFeeNQT, payloadLength,
-					payloadHash, publicKey, generationSignature, null, previousBlockHash, new ArrayList<>(newTransactions.values()));
+		block = new BlockImpl(getBlockVersion(previousBlock.getHeight()), blockTimestamp, previousBlock.getId(), totalAmountNQT, totalFeeNQT, payloadLength,
+				payloadHash, publicKey, generationSignature, null, previousBlockHash, new ArrayList<>(newTransactions.values()));
 
 	} catch (NxtException.ValidationException e) {
 		// shouldn't happen because all transactions are already validated
 		Logger.logMessage("Error generating block", e);
-		return;
+		return true;
 	}
 
 	block.sign(secretPhrase);
 
 	if (isScanning) {
-		return;
+		return true;
 	}
 
 	block.setPrevious(previousBlock);
 
 	try {
 		pushBlock(block);
-		blockListeners.Notify(Event.BLOCK_GENERATED, block);
-		Logger.logDebugMessage("Account " + Convert.toUnsignedLong(block.getGeneratorId()) + " generated block " + block.getStringId());
+		blockListeners.notify(block, Event.BLOCK_GENERATED);
+		Logger.logDebugMessage("Account " + Convert.toUnsignedLong(block.getGeneratorId()) + " generated block " + block.getStringId()
+				+ " at height " + block.getHeight());
+		return true;
 	} catch (TransactionNotAcceptedException e) {
 		Logger.logDebugMessage("Generate block failed: " + e.getMessage());
 		Transaction transaction = e.getTransaction();
 		Logger.logDebugMessage("Removing invalid transaction: " + transaction.getStringId());
 		transactionProcessor.removeUnconfirmedTransactions(Collections.singletonList((TransactionImpl)transaction));
+		return false;
 	} catch (BlockNotAcceptedException e) {
 		Logger.logDebugMessage("Generate block failed: " + e.getMessage());
 	}
+	return true;
 	*/
 }
 
@@ -346,7 +365,7 @@ function PushBlock(block) {
 				throw new BlockOutOfOrderException("Previous block id doesn't match");
 			}
 
-			if (! verifyVersion(block, previousLastBlock.getHeight())) {
+			if (block.getVersion() != getBlockVersion(previousLastBlock.getHeight())) {
 				throw new BlockNotAcceptedException("Invalid version " + block.getVersion());
 			}
 
@@ -382,27 +401,37 @@ function PushBlock(block) {
 					// cfb: Block 303 contains a transaction which expired before the block timestamp
 					if (transaction.getTimestamp() > curTime + 15 || transaction.getTimestamp() > block.getTimestamp() + 15
 							|| (transaction.getExpiration() < block.getTimestamp() && previousLastBlock.getHeight() != 303)) {
-						throw new TransactionNotAcceptedException("Invalid transaction timestamp " + transaction.getTimestamp()
-								+ " for transaction " + transaction.getStringId() + ", current time is " + curTime
-								+ ", block timestamp is " + block.getTimestamp(), transaction);
+						throw new TransactionNotAcceptedException("Invalid transaction timestamp " + transaction.getTimestamp() +
+								" for transaction " + transaction.getStringId() + ", current time is " + curTime +
+								", block timestamp is " + block.getTimestamp(), transaction);
 					}
 					if (Transactions.HasTransaction(transaction.getId())) {
-						throw new TransactionNotAcceptedException("Transaction " + transaction.getStringId()
-								+ " is already in the blockchain", transaction);
+						throw new TransactionNotAcceptedException("Transaction " + transaction.getStringId() +
+								" is already in the blockchain", transaction);
 					}
-					if (!transaction.verify()) {
-						throw new TransactionNotAcceptedException("Signature verification failed for transaction "
-								+ transaction.getStringId() + " at height " + previousLastBlock.getHeight(), transaction);
+					if (transaction.getVersion() != transactionProcessor.getTransactionVersion(previousLastBlock.getHeight())) {
+						throw new TransactionNotAcceptedException("Invalid transaction version " + transaction.getVersion() +
+								" at height " + previousLastBlock.getHeight(), transaction);
+					}
+					if (!transaction.verifySignature()) {
+						throw new TransactionNotAcceptedException("Signature verification failed for transaction " +
+						transaction.getStringId() + " at height " + previousLastBlock.getHeight(), transaction);
+					}
+					if (!EconomicClustering.verifyFork(transaction)) {
+						Logger.logDebugMessage("Block " + block.getStringId() + " height " + (previousLastBlock.getHeight() + 1) +
+								" contains transaction that was generated on a fork: " +
+								transaction.getStringId() + " ecBlockHeight " + transaction.getECBlockHeight() + " ecBlockId " +
+								Convert.toUnsignedLong(transaction.getECBlockId()));
 					}
 					if (transaction.getId().equals(Long.valueOf(0L))) {
 						throw new TransactionNotAcceptedException("Invalid transaction id", transaction);
 					}
 					if (transaction.isDuplicate(duplicates)) {
-						throw new TransactionNotAcceptedException("Transaction is a duplicate: "
-								+ transaction.getStringId(), transaction);
+						throw new TransactionNotAcceptedException("Transaction is a duplicate: " +
+								transaction.getStringId(), transaction);
 					}
 					try {
-						transaction.validateAttachment();
+						transaction.validate();
 					} catch (NxtException.ValidationException e) {
 						throw new TransactionNotAcceptedException(e.getMessage(), transaction);
 					}
@@ -429,7 +458,7 @@ function PushBlock(block) {
 				}
 
 				block.setPrevious(previousLastBlock);
-
+				blockListeners.notify(block, Event.BEFORE_BLOCK_ACCEPT);
 				addBlock(block);
 
 				unappliedUnconfirmed.removeAll(appliedUnconfirmed);
@@ -482,8 +511,8 @@ function PopLastBlock() {
 
 	/*
 	} catch (RuntimeException e) {
-		Logger.logDebugMessage("Error popping last block: " + e.getMessage());
-		throw new TransactionType.UndoNotSupportedException(e.getMessage());
+		Logger.logDebugMessage("Error popping last block: " + e.toString(), e);
+		throw new TransactionType.UndoNotSupportedException(e.toString());
 	}
 	*/
 }
@@ -493,32 +522,7 @@ function RemoveListener(eventType, listener) {
 }
 
 function ParseBlock(blockData) {
-	throw new Error('Not implementted');
-	/*
-	int version = ((Long)blockData.get("version")).intValue();
-	int timestamp = ((Long)blockData.get("timestamp")).intValue();
-	Long previousBlock = Convert.parseUnsignedLong((String) blockData.get("previousBlock"));
-	long totalAmountNQT = ((Long)blockData.get("totalAmountNQT"));
-	long totalFeeNQT = ((Long)blockData.get("totalFeeNQT"));
-	int payloadLength = ((Long)blockData.get("payloadLength")).intValue();
-	byte[] payloadHash = Convert.parseHexString((String) blockData.get("payloadHash"));
-	byte[] generatorPublicKey = Convert.parseHexString((String) blockData.get("generatorPublicKey"));
-	byte[] generationSignature = Convert.parseHexString((String) blockData.get("generationSignature"));
-	byte[] blockSignature = Convert.parseHexString((String) blockData.get("blockSignature"));
-	byte[] previousBlockHash = version == 1 ? null : Convert.parseHexString((String) blockData.get("previousBlockHash"));
-
-	SortedMap<Long, TransactionImpl> blockTransactions = new TreeMap<>();
-	JSONArray transactionsData = (JSONArray)blockData.get("transactions");
-	for (Object transactionData : transactionsData) {
-		TransactionImpl transaction = transactionProcessor.parseTransaction((JSONObject) transactionData);
-		if (blockTransactions.put(transaction.getId(), transaction) != null) {
-			throw new NxtException.ValidationException("Block contains duplicate transactions: " + transaction.getStringId());
-		}
-	}
-
-	return new BlockImpl(version, timestamp, previousBlock, totalAmountNQT, totalFeeNQT, payloadLength, payloadHash, generatorPublicKey,
-			generationSignature, blockSignature, previousBlockHash, new ArrayList<>(blockTransactions.values()));
-	*/
+	return Blocks.ParseBlock(blockData);
 }
 
 function Scan() {
@@ -529,7 +533,7 @@ function Scan() {
 	}
 	Core.Clear();
 	/*
-xx
+	Account.clear();
 	Alias.clear();
 	Asset.clear();
 	Order.clear();
@@ -537,32 +541,57 @@ xx
 	Trade.clear();
 	Vote.clear();
 	DigitalGoodsStore.clear();
+	Set<TransactionImpl> lostTransactions = new HashSet<>(transactionProcessor.getAllUnconfirmedTransactions());
 	transactionProcessor.clear();
 	Generator.clear();
-	blockchain.setLastBlock(Blocks.FindBlock(Genesis.GENESIS_BLOCK_ID));
-	Account.addOrGetAccount(Genesis.CREATOR_ID).apply(Genesis.CreatorPublicKey, 0);
-	try (Connection con = Db.getConnection(); PreparedStatement pstmt = con.prepareStatement("SELECT * FROM block ORDER BY db_id ASC")) {
+	blockchain.setLastBlock(BlockDb.findBlock(Genesis.GENESIS_BLOCK_ID));
+	Account.addOrGetAccount(Genesis.CREATOR_ID).apply(Genesis.CREATOR_PUBLIC_KEY, 0);
+	try (Connection con = Db.getConnection();
+		 PreparedStatement pstmt = con.prepareStatement("SELECT * FROM block ORDER BY db_id ASC");
+		 ResultSet rs = pstmt.executeQuery()) {
 		Long currentBlockId = Genesis.GENESIS_BLOCK_ID;
-		BlockImpl currentBlock;
-		ResultSet rs = pstmt.executeQuery();
-		try {
-			while (rs.next()) {
-				currentBlock = Blocks.LoadBlock(con, rs);
+		BlockImpl currentBlock = null;
+		while (rs.next()) {
+			try {
+				currentBlock = BlockDb.loadBlock(con, rs);
 				if (! currentBlock.getId().equals(currentBlockId)) {
-					throw new NxtException.ValidationException("Database blocks in the wrong order!");
+					throw new NxtException.NotValidException("Database blocks in the wrong order!");
 				}
 				if (validateAtScan && ! currentBlockId.equals(Genesis.GENESIS_BLOCK_ID)) {
 					if (!currentBlock.verifyBlockSignature() || !currentBlock.verifyGenerationSignature()) {
-						throw new NxtException.ValidationException("Invalid block signature");
+						throw new NxtException.NotValidException("Invalid block signature");
 					}
-					if (! verifyVersion(currentBlock, blockchain.getHeight())) {
-						throw new NxtException.ValidationException("Invalid block version");
+					if (currentBlock.getVersion() != getBlockVersion(blockchain.getHeight())) {
+						throw new NxtException.NotValidException("Invalid block version");
+					}
+					byte[] blockBytes = currentBlock.getBytes();
+					JSONObject blockJSON = (JSONObject) JSONValue.parse(currentBlock.getJSONObject().toJSONString());
+					if (! Arrays.equals(blockBytes, parseBlock(blockJSON).getBytes())) {
+						throw new NxtException.NotValidException("Block JSON cannot be parsed back to the same block");
 					}
 					for (TransactionImpl transaction : currentBlock.getTransactions()) {
-						if (!transaction.verify()) {
-							throw new NxtException.ValidationException("Invalid transaction signature");
+						if (!transaction.verifySignature()) {
+							throw new NxtException.NotValidException("Invalid transaction signature");
 						}
-						transaction.validateAttachment();
+						if (transaction.getVersion() != transactionProcessor.getTransactionVersion(blockchain.getHeight())) {
+							throw new NxtException.NotValidException("Invalid transaction version");
+						}
+						if (! EconomicClustering.verifyFork(transaction)) {
+							Logger.logDebugMessage("Found transaction that was generated on a fork: " + transaction.getStringId()
+									+ " in block " + currentBlock.getStringId() + " at height " + currentBlock.getHeight()
+									+ " ecBlockHeight " + transaction.getECBlockHeight() + " ecBlockId " + Convert.toUnsignedLong(transaction.getECBlockId()));
+							//throw new NxtException.NotValidException("Invalid transaction fork");
+						}
+						transaction.validate();
+						byte[] transactionBytes = transaction.getBytes();
+						if (currentBlock.getHeight() > Constants.NQT_BLOCK
+								&& ! Arrays.equals(transactionBytes, transactionProcessor.parseTransaction(transactionBytes).getBytes())) {
+							throw new NxtException.NotValidException("Transaction bytes cannot be parsed back to the same transaction");
+						}
+						JSONObject transactionJSON = (JSONObject) JSONValue.parse(transaction.getJSONObject().toJSONString());
+						if (! Arrays.equals(transactionBytes, transactionProcessor.parseTransaction(transactionJSON).getBytes())) {
+							throw new NxtException.NotValidException("Transaction JSON cannot be parsed back to the same transaction");
+						}
 					}
 				}
 				for (TransactionImpl transaction : currentBlock.getTransactions()) {
@@ -571,25 +600,37 @@ xx
 								+ transaction.getStringId(), transaction);
 					}
 				}
+				blockListeners.notify(currentBlock, Event.BEFORE_BLOCK_ACCEPT);
 				blockchain.setLastBlock(currentBlock);
-				blockListeners.Notify(Event.BEFORE_BLOCK_APPLY, currentBlock);
+				blockListeners.notify(currentBlock, Event.BEFORE_BLOCK_APPLY);
 				currentBlock.apply();
 				for (TransactionImpl transaction : currentBlock.getTransactions()) {
 					transaction.apply();
 				}
-				blockListeners.Notify(Event.AFTER_BLOCK_APPLY, currentBlock);
-				blockListeners.Notify(Event.BLOCK_SCANNED, currentBlock);
+				blockListeners.notify(currentBlock, Event.AFTER_BLOCK_APPLY);
+				blockListeners.notify(currentBlock, Event.BLOCK_SCANNED);
 				currentBlockId = currentBlock.getNextBlockId();
+			} catch (NxtException|RuntimeException e) {
+				Logger.logDebugMessage(e.toString(), e);
+				Logger.logDebugMessage("Applying block " + Convert.toUnsignedLong(currentBlockId) + " at height "
+						+ (currentBlock == null ? 0 : currentBlock.getHeight()) + " failed, deleting from database");
+				if (currentBlock != null) {
+					lostTransactions.addAll(currentBlock.getTransactions());
+				}
+				while (rs.next()) {
+					try {
+						currentBlock = BlockDb.loadBlock(con, rs);
+						lostTransactions.addAll(currentBlock.getTransactions());
+					} catch (NxtException.ValidationException ignore) {}
+				}
+				BlockDb.deleteBlocksFrom(currentBlockId);
+				scan();
 			}
-		} catch (NxtException|RuntimeException e) {
-			Logger.logDebugMessage(e.toString(), e);
-			Logger.logDebugMessage("Applying block " + Convert.toUnsignedLong(currentBlockId) + " failed, deleting from database");
-			Blocks.DeleteBlocksFrom(currentBlockId);
-			scan();
 		}
 	} catch (SQLException e) {
 		throw new RuntimeException(e.toString(), e);
 	}
+	transactionProcessor.processTransactions(lostTransactions, true);
 	validateAtScan = false;
 	Logger.logMessage("...done");
 	isScanning = false;
@@ -614,7 +655,8 @@ exports.Event = Event;
 
 exports.AddBlock = AddBlock;
 exports.AddListener = AddListener;
-exports.GenerateBlock = GenerateBlock;
+exports.GenerateBlock1 = GenerateBlock1;
+exports.GenerateBlock2 = GenerateBlock2;
 exports.GetLastBlockchainFeeder = GetLastBlockchainFeeder;
 exports.GetLastBlockchainFeederHeight = GetLastBlockchainFeederHeight;
 exports.FullReset = FullReset;

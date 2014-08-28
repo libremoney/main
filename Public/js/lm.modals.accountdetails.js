@@ -1,41 +1,49 @@
+/**
+ * @depends {lm.js}
+ * @depends {lm.modals.js}
+ */
 var Lm = (function(Lm, $, undefined) {
 
 	function AccountDetailsModal_OnShow(e) {
+		$("#account_details_modal_qr_code").empty().qrcode({
+			"text": Lm.AccountRS,
+			"width": 128,
+			"height": 128
+		});
+
 		$("#account_details_modal_balance").show();
 
-		if (Lm.AccountInfo.errorCode) {
+		if (Lm.AccountInfo.errorCode && Lm.AccountInfo.errorCode != 5) {
 			$("#account_balance_table").hide();
-
-			if (Lm.AccountInfo.errorCode == 5) {
-				$("#account_balance_warning").html("Your account is brand new. You should fund it with some coins. Your account ID is <strong>" +
-					Lm.Account + "</strong>").show();
-			} else {
-				$("#account_balance_warning").html(Lm.AccountInfo.errorDescription.escapeHTML()).show();
-			}
+			//todo
+			$("#account_balance_warning").html(String(Lm.AccountInfo.errorDescription).escapeHTML()).show();
 		} else {
 			$("#account_balance_warning").hide();
 
-			$("#account_balance_balance").html(Lm.FormatAmount(new BigInteger(Lm.AccountInfo.BalanceMilliLm)) + " Lm");
-			$("#account_balance_unconfirmed_balance").html(Lm.FormatAmount(new BigInteger(Lm.AccountInfo.UnconfirmedBalanceMilliLm)) + " Lm");
-			$("#account_balance_effective_balance").html(Lm.FormatAmount(Lm.AccountInfo.EffectiveBalanceLm) + " Lm");
-			$("#account_balance_guaranteed_balance").html(Lm.FormatAmount(new BigInteger(Lm.AccountInfo.GuaranteedBalanceMilliLm)) + " Lm");
+			if (Lm.AccountInfo.errorCode && Lm.AccountInfo.errorCode == 5) {
+				$("#account_balance_balance, #account_balance_unconfirmed_balance, #account_balance_effective_balance, #account_balance_guaranteed_balance").html("0 Lm");
+				$("#account_balance_public_key").html(String(Lm.PublicKey).escapeHTML());
+				$("#account_balance_account_rs").html(String(Lm.AccountRS).escapeHTML());
+				$("#account_balance_account").html(String(Lm.Account).escapeHTML());
+			} else {
+				$("#account_balance_balance").html(Lm.FormatAmount(new BigInteger(Lm.AccountInfo.balanceMilliLm)) + " Lm");
+				$("#account_balance_unconfirmed_balance").html(Lm.FormatAmount(new BigInteger(Lm.AccountInfo.unconfirmedBalanceMilliLm)) + " Lm");
+				$("#account_balance_effective_balance").html(Lm.FormatAmount(Lm.AccountInfo.effectiveBalanceLm) + " Lm");
+				$("#account_balance_guaranteed_balance").html(Lm.FormatAmount(new BigInteger(Lm.AccountInfo.guaranteedBalanceMilliLm)) + " Lm");
 
-			$("#account_balance_public_key").html(String(Lm.AccountInfo.publicKey).escapeHTML());
-			$("#account_balance_account_id").html(String(Lm.Account).escapeHTML());
-			$("#account_balance_account_rs").html(String(Lm.AccountInfo.accountRS).escapeHTML());
+				$("#account_balance_public_key").html(String(Lm.AccountInfo.publicKey).escapeHTML());
+				$("#account_balance_account_rs").html(String(Lm.AccountInfo.accountRS).escapeHTML());
+				$("#account_balance_account").html(String(Lm.Account).escapeHTML());
 
-			if (!Lm.AccountInfo.publicKey) {
-				$("#account_balance_public_key").html("/");
-				$("#account_balance_warning").html("Your account does not have a public key! This means it's not as protected as other accounts. "+
-						"You must make an outgoing transaction to fix this issue. "+
-						"(<a href='#' data-toggle='modal' data-target='#send_message_modal'>send a message</a>, "+
-						"<a href='#' data-toggle='modal' data-target='#register_alias_modal'>buy an alias</a>, "+
-						"<a href='#' data-toggle='modal' data-target='#send_money_modal'>send Lm</a>, ...)").show();
+				if (!Lm.AccountInfo.publicKey) {
+					$("#account_balance_public_key").html("/");
+					$("#account_balance_warning").html($.t("no_public_key_warning") + " " + $.t("public_key_actions")).show();
+				}
 			}
 		}
 	}
 
-	function AccountDetailsModalNavLi_OnClick(e, th) {
+	function AccountDetailsModalNavLi_OnClick(th, e) {
 		e.preventDefault();
 
 		var tab = th.data("tab");
@@ -50,10 +58,11 @@ var Lm = (function(Lm, $, undefined) {
 		content.show();
 	}
 
-	function AccountDetailsModal_OnHidden(e, th) {
+	function AccountDetailsModal_OnHidden(th, e) {
 		th.find(".account_details_modal_content").hide();
 		th.find("ul.nav li.active").removeClass("active");
 		$("#account_details_balance_nav").addClass("active");
+		$("#account_details_modal_qr_code").empty();
 	}
 
 
@@ -62,11 +71,11 @@ var Lm = (function(Lm, $, undefined) {
 	});
 
 	$("#account_details_modal ul.nav li").click(function(e) {
-		AccountDetailsModalNavLi_OnClick(e, $(this));
+		AccountDetailsModalNavLi_OnClick($(this), e);
 	});
 
 	$("#account_details_modal").on("hidden.bs.modal", function(e) {
-		AccountDetailsModal_OnHidden(e, $(this));
+		AccountDetailsModal_OnHidden($(this), e);
 	});
 
 

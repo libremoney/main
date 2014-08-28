@@ -1,12 +1,13 @@
+/**
+ * @depends {lm.js}
+ */
 var Lm = (function(Lm, $, undefined) {
 
 	function PollsPage() {
-		Lm.PageLoading();
-
 		Lm.SendRequest("getPollIds+", function(response) {
 			if (response.pollIds && response.pollIds.length) {
 				var polls = {};
-				var nr_polls = 0;
+				var nrPolls = 0;
 
 				for (var i = 0; i < response.pollIds.length; i++) {
 					Lm.SendRequest("getTransaction+", {
@@ -21,9 +22,9 @@ var Lm = (function(Lm, $, undefined) {
 							polls[input.transaction] = poll;
 						}
 
-						nr_polls++;
+						nrPolls++;
 
-						if (nr_polls == response.pollIds.length) {
+						if (nrPolls == response.pollIds.length) {
 							var rows = "";
 
 							if (Lm.UnconfirmedTransactions.length) {
@@ -37,18 +38,18 @@ var Lm = (function(Lm, $, undefined) {
 											pollDescription = pollDescription.substring(0, 100) + "...";
 										}
 
-										rows += "<tr class='tentative'><td>" + String(unconfirmedTransaction.attachment.name).escapeHTML() + "</td>"+
-											"<td>" + pollDescription.escapeHTML() + "</td>"+
+										rows += "<tr class='tentative'><td>" + String(unconfirmedTransaction.attachment.name).escapeHTML() + "</td>" +
+											"<td>" + pollDescription.escapeHTML() + "</td>" +
 											"<td>" + (unconfirmedTransaction.sender != Lm.Genesis ? "<a href='#' data-user='" +
 												Lm.GetAccountFormatted(unconfirmedTransaction, "sender") + "' class='user_info'>" +
-												Lm.GetAccountTitle(unconfirmedTransaction, "sender") + "</a>" : "Genesis") + "</td>"+
-											"<td>" + Lm.FormatTimestamp(unconfirmedTransaction.timestamp) + "</td>"+
+												Lm.GetAccountTitle(unconfirmedTransaction, "sender") + "</a>" : "Genesis") + "</td>" +
+											"<td>" + Lm.FormatTimestamp(unconfirmedTransaction.timestamp) + "</td>" +
 											"<td><a href='#'>Vote (todo)</td></tr>";
 									}
 								}
 							}
 
-							for (var i = 0; i < nr_polls; i++) {
+							for (var i = 0; i < nrPolls; i++) {
 								var poll = polls[response.pollIds[i]];
 
 								if (!poll) {
@@ -61,41 +62,29 @@ var Lm = (function(Lm, $, undefined) {
 									pollDescription = pollDescription.substring(0, 100) + "...";
 								}
 
-								rows += "<tr><td>" + String(poll.attachment.name).escapeHTML() + "</td>"+
-									"<td>" + pollDescription.escapeHTML() + "</td>"+
+								rows += "<tr><td>" + String(poll.attachment.name).escapeHTML() + "</td>" +
+									"<td>" + pollDescription.escapeHTML() + "</td>" +
 									"<td>" + (poll.sender != Lm.Genesis ? "<a href='#' data-user='" + Lm.GetAccountFormatted(poll, "sender") +
-										"' class='user_info'>" + Lm.GetAccountTitle(poll, "sender") + "</a>" : "Genesis") + "</td>"+
-									"<td>" + Lm.FormatTimestamp(poll.timestamp) + "</td>"+
+										"' class='user_info'>" + Lm.GetAccountTitle(poll, "sender") + "</a>" : "Genesis") + "</td>" +
+									"<td>" + Lm.FormatTimestamp(poll.timestamp) + "</td>" +
 									"<td><a href='#'>Vote (todo)</td></tr>";
 							}
 
-							$("#polls_table tbody").empty().append(rows);
-							Lm.DataLoadFinished($("#polls_table"));
-
-							Lm.PageLoaded();
-
-							polls = {};
+							Lm.DataLoaded(rows);
 						}
 					});
-
-					if (Lm.CurrentPage != "polls") {
-						polls = {};
-						return;
-					}
 				}
 			} else {
-				$("#polls_table tbody").empty();
-				Lm.DataLoadFinished($("#polls_table"));
-				Lm.PageLoaded();
+				Lm.DataLoaded();
 			}
 		});
 	}
 
-	function IncomingPolls() {
-		Lm.Pages.Polls();
+	function PollsIncoming() {
+		Lm.LoadPage("polls");
 	}
 
-	function CreatePollAnswers_OnClick(e, th) {
+	function CreatePollAnswers_OnClick(th, e) {
 		e.preventDefault();
 
 		if ($("#create_poll_answers > .form-group").length == 1) {
@@ -151,17 +140,14 @@ var Lm = (function(Lm, $, undefined) {
 		if (Lm.CurrentPage == "polls") {
 			var $table = $("#polls_table tbody");
 
-			var date = new Date(Date.UTC(2014, 05, 13, 16, 53, 20, 0)).getTime();
+			var date = new Date(Date.UTC(2013, 10, 24, 12, 0, 0, 0)).getTime();
 
 			var now = parseInt(((new Date().getTime()) - date) / 1000, 10);
 
-			var account = (Lm.Settings["reed_solomon"] ? Lm.AccountRS : Lm.Account);
-
-			var rowToAdd = "<tr class='tentative'>"+
-				"<td>" + String(data.name).escapeHTML() + " - <strong>Pending</strong></td><td>" + String(data.description).escapeHTML() + "</td>"+
-				"<td><a href='#' data-user='" + Lm.GetAccountFormatted(account) + "' class='user_info'>" + Lm.GetAccountTitle(account) + "</a></td>"+
-				"<td>" + Lm.FormatTimestamp(now) + "</td>"+
-				"<td>/</td></tr>";
+			var rowToAdd = "<tr class='tentative'><td>" + String(data.name).escapeHTML() + " - <strong>" + $.t("pending") + "</strong></td>" +
+				"<td>" + String(data.description).escapeHTML() + "</td>" +
+				"<td><a href='#' data-user='" + Lm.GetAccountFormatted(Lm.AccountRS) + "' class='user_info'>" + Lm.GetAccountTitle(Lm.AccountRS) + "</a></td>" +
+				"<td>" + Lm.FormatTimestamp(now) + "</td><td>/</td></tr>";
 
 			$table.prepend(rowToAdd);
 
@@ -176,7 +162,7 @@ var Lm = (function(Lm, $, undefined) {
 
 
 	$("#create_poll_answers").on("click", "button.btn.remove_answer", function(e) {
-		CreatePollAnswers_OnClick(e, $(this));
+		CreatePollAnswers_OnClick($(this), e);
 	});
 
 	$("#create_poll_answers_add").click(function(e) {
@@ -185,7 +171,7 @@ var Lm = (function(Lm, $, undefined) {
 
 
 	Lm.Pages.Polls = PollsPage;
-	Lm.Incoming.Polls = IncomingPolls;
+	Lm.Incoming.Polls = PollsIncoming;
 	Lm.Forms.CreatePoll = CreatePollForm;
 	Lm.Forms.CreatePollComplete = CreatePollCompleteForm;
 	Lm.Forms.CastVote = CastVoteForm;

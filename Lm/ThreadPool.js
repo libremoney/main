@@ -1,5 +1,5 @@
 /**!
- * LibreMoney ThreadPool 0.0
+ * LibreMoney ThreadPool 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -9,10 +9,48 @@ var Logger = require(__dirname + '/Logger').GetLogger(module);
 
 var scheduledThreadPool;
 var backgroundJobs = new Array();
-var runBeforeStartJobs = new Array();
+var beforeStartJobs = new Array();
+var lastBeforeStartJobs = new Array();
 
 
 // ----
+
+function RunAll(jobs) {
+	for (var i = 0; jobs.length > i; i++) {
+		jobs[i]();
+	}
+	// TODO
+	/*
+	List<Thread> threads = new ArrayList<>();
+	final StringBuffer errors = new StringBuffer();
+	for (final Runnable runnable : jobs) {
+		Thread thread = new Thread() {
+			@Override
+			public void run() {
+				try {
+					runnable.run();
+				} catch (Throwable t) {
+					errors.append(t.getMessage()).append('\n');
+					throw t;
+				}
+			}
+		};
+		thread.setDaemon(true);
+		thread.start();
+		threads.add(thread);
+	}
+	for (Thread thread : threads) {
+		try {
+			thread.join();
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+	}
+	if (errors.length() > 0) {
+		throw new RuntimeException("Errors running startup tasks:\n" + errors.toString());
+	}
+	*/
+}
 
 function Sheduler(job) {
 	this.job = job;
@@ -38,21 +76,29 @@ Sheduler.prototype.Shutdown = Sheduler_Shutdown;
 
 // ----
 
-function RunBeforeStart(runnable) {
+function RunBeforeStart(runnable, runLast) {
 	if (scheduledThreadPool) {
 		throw new Error("IllegalStateException: Executor service already started");
 	}
-	runBeforeStartJobs.push(runnable);
+	if (runLast) {
+		lastBeforeStartJobs.push(runnable);
+	} else {
+		beforeStartJobs.push(runnable);
 }
 
 function ScheduleThread(runnable, delay, name) {
+	ScheduleThread2(runnable, delay, TimeUnit.SECONDS);
+}
+
+function ScheduleThread2(runnable, delay, timeUnit) {
 	if (scheduledThreadPool) {
 		throw new Error("Executor service already started, no new jobs accepted");
 	}
 	backgroundJobs.push({
 		runnable: runnable,
 		delay: delay,
-		name: name
+		name: name,
+		timeUnit: timeUnit.toMillis(delay)
 	});
 }
 
@@ -62,30 +108,36 @@ function Start() {
 	}
 
 	Logger.debug("Running " + runBeforeStartJobs.length + " final tasks...");
-	for (var i = 0;  runBeforeStartJobs.length > i; i++) {
-		runBeforeStartJobs[i]();
-	}
+	runAll(beforeStartJobs);
 	runBeforeStartJobs.length = 0;
+
+	Logger.debug("Running " + lastBeforeStartJobs.size() + " final tasks...");
+	runAll(lastBeforeStartJobs);
+	lastBeforeStartJobs.length = 0;
+
 	Logger.debug("Starting " + backgroundJobs.length + " background jobs");
 	scheduledThreadPool = [];
 	for (var i = 0; backgroundJobs.length > i; i++) {
 		var sheduler = new Sheduler(backgroundJobs[i]);
 		scheduledThreadPool.push(sheduler);
 	}
+	// TODO
 	/*
 	scheduledThreadPool = Executors.newScheduledThreadPool(backgroundJobs.size());
 	for (Map.Entry<Runnable,Integer> entry : backgroundJobs.entrySet()) {
-		scheduledThreadPool.scheduleWithFixedDelay(entry.getKey(), 0, entry.getValue(), TimeUnit.SECONDS);
+		scheduledThreadPool.scheduleWithFixedDelay(entry.getKey(), 0, entry.getValue(), TimeUnit.MILLISECONDS);
 	}
 	*/
-	backgroundJobs = null;
+	backgroundJobs.length = 0;
 }
 
 function Shutdown() {
-	Logger.debug("Stopping background jobs...");
-	ShutdownExecutor(scheduledThreadPool);
-	scheduledThreadPool = null;
-	Logger.debug("...Done");
+	if (scheduledThreadPool != null) {
+		Logger.debug("Stopping background jobs...");
+		ShutdownExecutor(scheduledThreadPool);
+		scheduledThreadPool.length = 0;
+		Logger.debug("...Done");
+	}
 }
 
 function ShutdownExecutor(executor) {
@@ -107,8 +159,10 @@ function ShutdownExecutor(executor) {
 }
 
 
+exports.RunAll = RunAll;
 exports.RunBeforeStart = RunBeforeStart;
 exports.ScheduleThread = ScheduleThread;
-exports.Start = Start;
+exports.ScheduleThread2 = ScheduleThread2;
 exports.Shutdown = Shutdown;
 exports.ShutdownExecutor = ShutdownExecutor;
+exports.Start = Start;

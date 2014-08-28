@@ -1,5 +1,5 @@
 /**!
- * LibreMoney Constants 0.0
+ * LibreMoney Constants 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -9,7 +9,7 @@ exports.MinInt = -2147483648;
 
 exports.BlockHeaderLength = 232;
 exports.MaxNumberOfTransactions = 255;
-exports.MaxPayloadLength = exports.MaxNumberOfTransactions * 160;
+exports.MaxPayloadLength = exports.MaxNumberOfTransactions * 176;
 exports.MaxBalanceLm = 1000000;
 exports.OneLm = 1000;
 exports.MaxBalanceMilliLm = exports.MaxBalanceLm * exports.OneLm;
@@ -21,6 +21,7 @@ exports.MaxAliasUriLength = 1000;
 exports.MaxAliasLength = 100;
 
 exports.MaxArbitraryMessageLength = 1000;
+exports.MaxEncryptedMessageLength = 1000;
 
 exports.MaxAccountNameLength = 100;
 exports.MaxAccountDescriptionLength = 1000;
@@ -37,12 +38,11 @@ exports.MaxPollDescriptionLength = 1000;
 exports.MaxPollOptionLength = 100;
 exports.MaxPollOptionCount = 100;
 
-exports.MaxDigitalGoodsQuantity = 1000000000;
-exports.MaxDigitalGoodsListingNameLength = 100;
-exports.MaxDigitalGoodsListingDescriptionLength = 1000;
-exports.MaxDigitalGoodsListingTagsLength = 100;
-exports.MaxDigitalGoodsNoteLength = 1000;
-exports.MaxDigitalGoodsLength = 1000;
+exports.MaxDgsQuantity = 1000000000;
+exports.MaxDgsNameLength = 100;
+exports.MaxDgsListingDescriptionLength = 1000;
+exports.MaxDgsListingTagsLength = 100;
+exports.MaxDgsLength = 10240;
 
 exports.MaxHubAnnouncementUris = 100;
 exports.MaxHubAnnouncementUriLength = 1000;
@@ -57,12 +57,18 @@ exports.MaxUserNameLength = 10;
 exports.MaxUserDescriptionLength = 1000;
 
 exports.IsTestnet = false; //Config.GetBooleanProperty("lm.isTestnet");
+exports.IsOffline = false; //Lm.GetBooleanProperty("nxt.isOffline");
 
 exports.UnconfirmedPoolDepositMilliLm = 100 * exports.OneLm;
 
 exports.EpochBeginning = 1400000000000; // 13.05.2014 16:53:20 UTC = Date.UTC(2014, 05, 13, 16, 53, 20, 0)
 exports.Alphabet = "0123456789abcdefghijklmnopqrstuvwxyz"; //36
 
+/* cfb: This constant defines a straight edge when "longest chain"
+rule is outweighed by "economic majority" rule; the terminator
+is set as number of seconds before the current time. */
+exports.EC_RULE_TERMINATOR = 600;
+exports.EC_BLOCK_DISTANCE_LIMIT = 60;
 
 exports.TYPE_PAYMENT = 0;
 exports.TYPE_MESSAGING = 1;

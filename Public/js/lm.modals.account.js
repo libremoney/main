@@ -1,10 +1,13 @@
+/**
+ * @depends {lm.js}
+ * @depends {lm.modals.js}
+ */
 var Lm = (function(Lm, $, undefined) {
-
 	Lm.UserInfoModal = {
 		"user": 0
 	};
 
-	$("#blocks_table, #polls_table, #contacts_table, #transactions_table, #dashboard_transactions_table, #asset_account, #asset_exchange_ask_orders_table, #asset_exchange_bid_orders_table, #account_details_modal, #transaction_info_modal, #alias_info_table").on("click", "a[data-user]", function(e) {
+	$("#blocks_table, #polls_table, #contacts_table, #transactions_table, #dashboard_transactions_table, #asset_account, #asset_exchange_ask_orders_table, #asset_exchange_bid_orders_table, #alias_info_table, .dgs_page_contents, .modal-content, #register_alias_modal").on("click", "a[data-user]", function(e) {
 		e.preventDefault();
 
 		var account = $(this).data("user");
@@ -18,17 +21,17 @@ var Lm = (function(Lm, $, undefined) {
 		}
 
 		if (typeof account == "object") {
-			Lm.UserInfoModal.user = account.account;
+			Lm.UserInfoModal.User = account.account;
 		} else {
-			Lm.UserInfoModal.user = account;
+			Lm.UserInfoModal.User = account;
 			Lm.FetchingModalData = true;
 		}
 
-		$("#user_info_modal_account").html(Lm.GetAccountFormatted(Lm.UserInfoModal.user));
+		$("#user_info_modal_account").html(Lm.GetAccountFormatted(Lm.UserInfoModal.User));
 
-		$("#user_info_modal_actions button").data("account", Lm.UserInfoModal.user);
+		$("#user_info_modal_actions button").data("account", Lm.UserInfoModal.User);
 
-		if (Lm.UserInfoModal.user in Lm.Contacts) {
+		if (Lm.UserInfoModal.User in Lm.Contacts) {
 			$("#user_info_modal_add_as_contact").hide();
 		} else {
 			$("#user_info_modal_add_as_contact").show();
@@ -36,7 +39,7 @@ var Lm = (function(Lm, $, undefined) {
 
 		if (Lm.FetchingModalData) {
 			Lm.SendRequest("getAccount", {
-				"account": Lm.UserInfoModal.user
+				"account": Lm.UserInfoModal.User
 			}, function(response) {
 				Lm.ProcessAccountModalData(response);
 				Lm.FetchingModalData = false;
@@ -47,14 +50,14 @@ var Lm = (function(Lm, $, undefined) {
 
 		$("#user_info_modal_transactions").show();
 
-		Lm.UserInfoModal.transactions();
+		Lm.UserInfoModal.Transactions();
 	}
 
 	function ProcessAccountModalData(account) {
-		if (account.UnconfirmedBalanceMilliLm == "0") {
+		if (account.unconfirmedBalanceMilliLm == "0") {
 			$("#user_info_modal_account_balance").html("0");
 		} else {
-			$("#user_info_modal_account_balance").html(Lm.FormatAmount(account.UnconfirmedBalanceMilliLm) + " Lm");
+			$("#user_info_modal_account_balance").html(Lm.FormatAmount(account.unconfirmedBalanceMilliLm) + " Lm");
 		}
 
 		if (account.name) {
@@ -74,22 +77,22 @@ var Lm = (function(Lm, $, undefined) {
 		$("#user_info_modal").modal("show");
 	}
 
-	function UserInfoModal_OnHidden(e, th) {
-		th.find(".user_info_modal_content").hide();
-		th.find(".user_info_modal_content table tbody").empty();
-		th.find(".user_info_modal_content:not(.data-loading,.data-never-loading)").addClass("data-loading");
-		th.find("ul.nav li.active").removeClass("active");
+	$("#user_info_modal").on("hidden.bs.modal", function(e) {
+		$(this).find(".user_info_modal_content").hide();
+		$(this).find(".user_info_modal_content table tbody").empty();
+		$(this).find(".user_info_modal_content:not(.data-loading,.data-never-loading)").addClass("data-loading");
+		$(this).find("ul.nav li.active").removeClass("active");
 		$("#user_info_transactions").addClass("active");
-		Lm.UserInfoModal.user = 0;
-	}
+		Lm.UserInfoModal.User = 0;
+	});
 
-	function UserInfoModalNav_OnClick(e, th) {
+	$("#user_info_modal ul.nav li").click(function(e) {
 		e.preventDefault();
 
-		var tab = th.data("tab");
+		var tab = $(this).data("tab");
 
-		th.siblings().removeClass("active");
-		th.addClass("active");
+		$(this).siblings().removeClass("active");
+		$(this).addClass("active");
 
 		$(".user_info_modal_content").hide();
 
@@ -100,144 +103,141 @@ var Lm = (function(Lm, $, undefined) {
 		if (content.hasClass("data-loading")) {
 			Lm.UserInfoModal[tab]();
 		}
-	}
+	});
 
 	/*some duplicate methods here...*/
 	function UserInfoModal_Transactions(type) {
-		Lm.SendRequest("getAccountTransactionIds", {
-			"account": Lm.UserInfoModal.user,
-			"timestamp": 0
+		Lm.SendRequest("getAccountTransactions", {
+			"account": Lm.UserInfoModal.User,
+			"firstIndex": 0,
+			"lastIndex": 100
 		}, function(response) {
-			if (response.transactionIds && response.transactionIds.length) {
-				var transactions = {};
-				var nr_transactions = 0;
+			if (response.transactions && response.transactions.length) {
+				var rows = "";
 
-				var transactionIds = response.transactionIds.reverse().slice(0, 100);
+				for (var i = 0; i < response.transactions.length; i++) {
+					var transaction = response.transactions[i];
 
-				for (var i = 0; i < transactionIds.length; i++) {
-					Lm.SendRequest("getTransaction", {
-						"transaction": transactionIds[i]
-					}, function(transaction, input) {
-						transactions[input.transaction] = transaction;
-						nr_transactions++;
+					var transactionType = "Unknown";
 
-						if (nr_transactions == transactionIds.length) {
-							var rows = "";
-
-							for (var i = 0; i < nr_transactions; i++) {
-								var transaction = transactions[transactionIds[i]];
-
-								var transactionType = "Unknown";
-
-								if (transaction.type == 0) {
-									transactionType = "Ordinary payment";
-								} else if (transaction.type == 1) {
-									switch (transaction.subtype) {
-										case 0:
-											transactionType = "Arbitrary message";
-											break;
-										case 1:
-											transactionType = "Alias assignment";
-											break;
-										case 2:
-											transactionType = "Poll creation";
-											break;
-										case 3:
-											transactionType = "Vote casting";
-											break;
-										case 4:
-											transactionType = "Hub Announcement";
-											break;
-										case 5:
-											transactionType = "Account Info";
-											break;
+					if (transaction.type == 0) {
+						transactionType = $.t("ordinary_payment");
+					} else if (transaction.type == 1) {
+						switch (transaction.subtype) {
+							case 0:
+								transactionType = $.t("arbitrary_message");
+								break;
+							case 1:
+								transactionType = $.t("alias_assignment");
+								break;
+							case 2:
+								transactionType = $.t("poll_creation");
+								break;
+							case 3:
+								transactionType = $.t("vote_casting");
+								break;
+							case 4:
+								transactionType = $.t("hub_announcement");
+								break;
+							case 5:
+								transactionType = $.t("account_info");
+								break;
+							case 6:
+								if (transaction.attachment.priceMilliLm == "0") {
+									if (transaction.sender == transaction.recipient) {
+										transactionType = $.t("alias_sale_cancellation");
+									} else {
+										transactionType = $.t("alias_transfer");
 									}
-								} else if (transaction.type == 2) {
-									switch (transaction.subtype) {
-										case 0:
-											transactionType = "Asset issuance";
-											break;
-										case 1:
-											transactionType = "Asset transfer";
-											break;
-										case 2:
-											transactionType = "Ask order placement";
-											break;
-										case 3:
-											transactionType = "Bid order placement";
-											break;
-										case 4:
-											transactionType = "Ask order cancellation";
-											break;
-										case 5:
-											transactionType = "Bid order cancellation";
-											break;
-									}
-								} else if (transaction.type == 3) {
-									switch (transaction.subtype) {
-										case 0:
-											transactionType = "Digital Goods Listing";
-											break;
-										case 1:
-											transactionType = "Digital Goods Delisting";
-											break;
-										case 2:
-											transactionType = "Digtal Goods Price Change";
-											break;
-										case 3:
-											transactionType = "Digital Goods Quantity Change";
-											break;
-										case 4:
-											transactionType = "Digital Goods Purchase";
-											break;
-										case 5:
-											transactionType = "Digital Goods Delivery";
-											break;
-										case 6:
-											transactionType = "Digital Goods Feedback";
-											break;
-										case 7:
-											transactionType = "Digital Goods Refund";
-											break;
-									}
-								} else if (transaction.type == 4) {
-									switch (transaction.subtype) {
-										case 0:
-											transactionType = "Balance Leasing";
-											break;
-									}
-								}
-
-								if (/^LMA\-/i.test(Lm.UserInfoModal.user)) {
-									var receiving = (transaction.recipientRS == Lm.UserInfoModal.user);
 								} else {
-									var receiving = (transaction.recipient == Lm.UserInfoModal.user);
+									transactionType = $.t("alias_sale");
 								}
-
-								if (transaction.AmountMilliLm) {
-									transaction.Amount = new BigInteger(transaction.AmountMilliLm);
-									transaction.Fee = new BigInteger(transaction.FeeMilliLm);
-								}
-
-								var account = (receiving ? "sender" : "recipient");
-
-								rows += "<tr><td>" + Lm.FormatTimestamp(transaction.timestamp) + "</td>"+
-									"<td>" + transactionType + "</td>"+
-									"<td style='width:5px;padding-right:0;'>" + (transaction.type == 0 ? (receiving ?
-										"<i class='fa fa-plus-circle' style='color:#65C62E'></i>" :
-										"<i class='fa fa-minus-circle' style='color:#E04434'></i>") : "") + "</td>"+
-									"<td " + (transaction.type == 0 && receiving ? " style='color:#006400;'" :
-										(!receiving && transaction.amount > 0 ? " style='color:red'" : "")) + ">" +
-									Lm.FormatAmount(transaction.amount) + "</td>"+
-									"<td " + (!receiving ? " style='color:red'" : "") + ">" + Lm.FormatAmount(transaction.fee) + "</td>"+
-									"<td>" + Lm.GetAccountTitle(transaction, account) + "</td></tr>";
-							}
-
-							$("#user_info_modal_transactions_table tbody").empty().append(rows);
-							Lm.DataLoadFinished($("#user_info_modal_transactions_table"));
+								break;
+							case 7:
+								transactionType = $.t("alias_buy");
+								break;
 						}
-					});
+					} else if (transaction.type == 2) {
+						switch (transaction.subtype) {
+							case 0:
+								transactionType = $.t("asset_issuance");
+								break;
+							case 1:
+								transactionType = $.t("asset_transfer");
+								break;
+							case 2:
+								transactionType = $.t("ask_order_placement");
+								break;
+							case 3:
+								transactionType = $.t("bid_order_placement");
+								break;
+							case 4:
+								transactionType = $.t("ask_order_cancellation");
+								break;
+							case 5:
+								transactionType = $.t("bid_order_cancellation");
+								break;
+						}
+					} else if (transaction.type == 3) {
+						switch (transaction.subtype) {
+							case 0:
+								transactionType = $.t("market_listing");
+								break;
+							case 1:
+								transactionType = $.t("market_removal");
+								break;
+							case 2:
+								transactionType = $.t("market_price_change");
+								break;
+							case 3:
+								transactionType = $.t("market_quantity_change");
+								break;
+							case 4:
+								transactionType = $.t("market_purchase");
+								break;
+							case 5:
+								transactionType = $.t("market_delivery");
+								break;
+							case 6:
+								transactionType = $.t("market_feedback");
+								break;
+							case 7:
+								transactionType = $.t("market_refund");
+								break;
+						}
+					} else if (transaction.type == 4) {
+						switch (transaction.subtype) {
+							case 0:
+								transactionType = $.t("balance_leasing");
+								break;
+						}
+					}
+
+					if (/^LMA\-/i.test(Lm.UserInfoModal.User)) {
+						var receiving = (transaction.recipientRS == Lm.UserInfoModal.User);
+					} else {
+						var receiving = (transaction.recipient == Lm.UserInfoModal.User);
+					}
+
+					if (transaction.amountMilliLm) {
+						transaction.amount = new BigInteger(transaction.amountMilliLm);
+						transaction.fee = new BigInteger(transaction.feeMilliLm);
+					}
+
+					var account = (receiving ? "sender" : "recipient");
+
+					rows += "<tr><td>" + Lm.FormatTimestamp(transaction.timestamp) + "</td><td>" + transactionType +
+						"</td><td style='width:5px;padding-right:0;'>" +
+						(transaction.type == 0 ? (receiving ? "<i class='fa fa-plus-circle' style='color:#65C62E'></i>" :
+							"<i class='fa fa-minus-circle' style='color:#E04434'></i>") : "") + "</td><td " +
+						(transaction.type == 0 && receiving ? " style='color:#006400;'" :
+							(!receiving && transaction.amount > 0 ? " style='color:red'" : "")) + ">" +
+						Lm.FormatAmount(transaction.amount) + "</td><td " + (!receiving ? " style='color:red'" : "") + ">" +
+						Lm.FormatAmount(transaction.fee) + "</td><td>" + Lm.GetAccountTitle(transaction, account) + "</td></tr>";
 				}
+
+				$("#user_info_modal_transactions_table tbody").empty().append(rows);
+				Lm.DataLoadFinished($("#user_info_modal_transactions_table"));
 			} else {
 				$("#user_info_modal_transactions_table tbody").empty();
 				Lm.DataLoadFinished($("#user_info_modal_transactions_table"));
@@ -247,9 +247,11 @@ var Lm = (function(Lm, $, undefined) {
 
 	function UserInfoModal_Aliases() {
 		Lm.SendRequest("getAliases", {
-			"account": Lm.UserInfoModal.user,
+			"account": Lm.UserInfoModal.User,
 			"timestamp": 0
 		}, function(response) {
+			var rows = "";
+
 			if (response.aliases && response.aliases.length) {
 				var aliases = response.aliases;
 
@@ -263,8 +265,6 @@ var Lm = (function(Lm, $, undefined) {
 					}
 				});
 
-				var rows = "";
-
 				var alias_account_count = 0,
 					alias_uri_count = 0,
 					empty_alias_count = 0,
@@ -273,10 +273,7 @@ var Lm = (function(Lm, $, undefined) {
 				for (var i = 0; i < alias_count; i++) {
 					var alias = aliases[i];
 
-					rows += "<tr data-alias='" + String(alias.aliasName).toLowerCase().escapeHTML() + "'>"+
-						"<td class='alias'>" + String(alias.aliasName).escapeHTML() + "</td>"+
-						"<td class='uri'>" + (alias.aliasURI.indexOf("http") === 0 ? "<a href='" + String(alias.aliasURI).escapeHTML() +
-							"' target='_blank'>" + String(alias.aliasURI).escapeHTML() + "</a>" : String(alias.aliasURI).escapeHTML()) + "</td></tr>";
+					rows += "<tr data-alias='" + String(alias.aliasName).toLowerCase().escapeHTML() + "'><td class='alias'>" + String(alias.aliasName).escapeHTML() + "</td><td class='uri'>" + (alias.aliasURI.indexOf("http") === 0 ? "<a href='" + String(alias.aliasURI).escapeHTML() + "' target='_blank'>" + String(alias.aliasURI).escapeHTML() + "</a>" : String(alias.aliasURI).escapeHTML()) + "</td></tr>";
 					if (!alias.uri) {
 						empty_alias_count++;
 					} else if (alias.aliasURI.indexOf("http") === 0) {
@@ -285,19 +282,42 @@ var Lm = (function(Lm, $, undefined) {
 						alias_account_count++;
 					}
 				}
-
-				$("#user_info_modal_aliases_table tbody").empty().append(rows);
-				Lm.DataLoadFinished($("#user_info_modal_aliases_table"));
-			} else {
-				$("#user_info_modal_aliases_table tbody").empty();
-				Lm.DataLoadFinished($("#user_info_modal_aliases_table"));
 			}
+
+			$("#user_info_modal_aliases_table tbody").empty().append(rows);
+			Lm.DataLoadFinished($("#user_info_modal_aliases_table"));
+		});
+	}
+
+	function UserInfoModal_Marketplace() {
+		Lm.SendRequest("getDGSGoods", {
+			"seller": Lm.UserInfoModal.User,
+			"firstIndex": 0,
+			"lastIndex": 100
+		}, function(response) {
+			var rows = "";
+
+			if (response.goods && response.goods.length) {
+				for (var i = 0; i < response.goods.length; i++) {
+					var good = response.goods[i];
+					if (good.name.length > 150) {
+						good.name = good.name.substring(0, 150) + "...";
+					}
+					rows += "<tr><td><a href='#' data-goto-goods='" + String(good.goods).escapeHTML() + "' data-seller='" +
+						String(Lm.UserInfoModal.User).escapeHTML() + "'>" + String(good.name).escapeHTML() + "</a></td>" +
+						"<td>" + Lm.FormatAmount(good.priceMilliLm) + " Lm</td>" +
+						"<td>" + Lm.Format(good.quantity) + "</td></tr>";
+				}
+			}
+
+			$("#user_info_modal_marketplace_table tbody").empty().append(rows);
+			Lm.DataLoadFinished($("#user_info_modal_marketplace_table"));
 		});
 	}
 
 	function UserInfoModal_Assets() {
 		Lm.SendRequest("getAccount", {
-			"account": Lm.UserInfoModal.user
+			"account": Lm.UserInfoModal.User
 		}, function(response) {
 			if (response.assetBalances && response.assetBalances.length) {
 				var assets = {};
@@ -309,7 +329,7 @@ var Lm = (function(Lm, $, undefined) {
 						ignoredAssets++;
 
 						if (nrAssets + ignoredAssets == response.assetBalances.length) {
-							Lm.UserInfoModal.addIssuedAssets(assets);
+							Lm.UserInfoModal.AddIssuedAssets(assets);
 						}
 						continue;
 					}
@@ -327,19 +347,19 @@ var Lm = (function(Lm, $, undefined) {
 						nrAssets++;
 
 						if (nrAssets + ignoredAssets == response.assetBalances.length) {
-							Lm.UserInfoModal.addIssuedAssets(assets);
+							Lm.UserInfoModal.AddIssuedAssets(assets);
 						}
 					});
 				}
 			} else {
-				Lm.UserInfoModal.addIssuedAssets({});
+				Lm.UserInfoModal.AddIssuedAssets({});
 			}
 		});
 	}
 
 	function UserInfoModal_AddIssuedAssets(assets) {
 		Lm.SendRequest("getAssetsByIssuer", {
-			"account": Lm.UserInfoModal.user
+			"account": Lm.UserInfoModal.User
 		}, function(response) {
 			if (response.assets && response.assets[0] && response.assets[0].length) {
 				$.each(response.assets[0], function(key, issuedAsset) {
@@ -352,9 +372,9 @@ var Lm = (function(Lm, $, undefined) {
 					}
 				});
 
-				Lm.UserInfoModal.assetsLoaded(assets);
+				Lm.UserInfoModal.AssetsLoaded(assets);
 			} else if (!$.isEmptyObject(assets)) {
-				Lm.UserInfoModal.assetsLoaded(assets);
+				Lm.UserInfoModal.AssetsLoaded(assets);
 			} else {
 				$("#user_info_modal_assets_table tbody").empty();
 				Lm.DataLoadFinished($("#user_info_modal_assets_table"));
@@ -401,9 +421,9 @@ var Lm = (function(Lm, $, undefined) {
 
 			rows += "<tr" + (asset.issued ? " class='asset_owner'" : "") + "><td><a href='#' data-goto-asset='" +
 				String(asset.asset).escapeHTML() + "'" + (asset.issued ? " style='font-weight:bold'" : "") + ">" +
-				String(asset.name).escapeHTML() + "</a></td>"+
-				"<td class='quantity'>" + Lm.FormatQuantity(asset.balanceQNT, asset.decimals) + "</td>"+
-				"<td>" + Lm.FormatQuantity(asset.quantityQNT, asset.decimals) + "</td>"+
+				String(asset.name).escapeHTML() + "</a></td><td class='quantity'>" +
+				Lm.FormatQuantity(asset.balanceQNT, asset.decimals) + "</td>" +
+				"<td>" + Lm.FormatQuantity(asset.quantityQNT, asset.decimals) + "</td>" +
 				"<td>" + percentageAsset + "%</td></tr>";
 		}
 
@@ -413,19 +433,11 @@ var Lm = (function(Lm, $, undefined) {
 	}
 
 
-	$("#user_info_modal").on("hidden.bs.modal", function(e) {
-		UserInfoModal_OnHidden(e, $(this));
-	});
-
-	$("#user_info_modal ul.nav li").click(function(e) {
-		UserInfoModalNav_OnClick(e, $(this))
-	});
-
-
 	Lm.ShowAccountModal = ShowAccountModal;
 	Lm.ProcessAccountModalData = ProcessAccountModalData;
 	Lm.UserInfoModal.Transactions = UserInfoModal_Transactions;
 	Lm.UserInfoModal.Aliases = UserInfoModal_Aliases;
+	Lm.UserInfoModal.Marketplace = UserInfoModal_Marketplace;
 	Lm.UserInfoModal.Assets = UserInfoModal_Assets;
 	Lm.UserInfoModal.AddIssuedAssets = UserInfoModal_AddIssuedAssets;
 	Lm.UserInfoModal.AssetsLoaded = UserInfoModal_AssetsLoaded;

@@ -1,3 +1,6 @@
+/**
+ * @depends {lm.js}
+ */
 var Lm = (function(Lm, $, undefined) {
 	Lm.LastTransactionsTimestamp = 0;
 	Lm.LastTransactions = "";
@@ -10,32 +13,27 @@ var Lm = (function(Lm, $, undefined) {
 
 
 	function GetInitialTransactions() {
-		Lm.SendRequest("getAccountTransactionIds", {
+		Lm.SendRequest("getAccountTransactions", {
 			"account": Lm.Account,
-			"timestamp": 0
+			"firstIndex": 0,
+			"lastIndex": 10
 		}, function(response) {
-			if (response.transactionIds && response.transactionIds.length) {
-				var transactionIds = response.transactionIds.reverse().slice(0, 10);
-				var nrTransactions = 0;
+			if (response.transactions && response.transactions.length) {
 				var transactions = [];
+				var transactionIds = [];
 
-				for (var i = 0; i < transactionIds.length; i++) {
-					Lm.SendRequest("getTransaction", {
-						"transaction": transactionIds[i]
-					}, function(transaction, input) {
-						nrTransactions++;
+				for (var i = 0; i < response.transactions.length; i++) {
+					var transaction = response.transactions[i];
 
-						transaction.transaction = input.transaction;
-						transaction.confirmed = true;
-						transactions.push(transaction);
+					transaction.confirmed = true;
+					transactions.push(transaction);
 
-						if (nrTransactions == transactionIds.length) {
-							Lm.GetUnconfirmedTransactions(function(unconfirmedTransactions) {
-								Lm.HandleInitialTransactions(transactions.concat(unconfirmedTransactions), transactionIds);
-							});
-						}
-					});
+					transactionIds.push(transaction.transaction);
 				}
+
+				Lm.GetUnconfirmedTransactions(function(unconfirmedTransactions) {
+					Lm.HandleInitialTransactions(transactions.concat(unconfirmedTransactions), transactionIds);
+				});
 			} else {
 				Lm.GetUnconfirmedTransactions(function(unconfirmedTransactions) {
 					Lm.HandleInitialTransactions(unconfirmedTransactions, []);
@@ -73,26 +71,21 @@ var Lm = (function(Lm, $, undefined) {
 					transaction.fee = new BigInteger(transaction.feeMilliLm);
 				}
 
-				rows += "<tr class='" + (!transaction.confirmed ? "tentative" : "confirmed") + "'>"+
-					"<td><a href='#' data-transaction='" +
-					String(transaction.transaction).escapeHTML() + "'>" +
-					Lm.FormatTimestamp(transaction.timestamp) + "</a></td><td style='width:5px;padding-right:0;'>" +
-					(transaction.type == 0 ? (receiving ? "<i class='fa fa-plus-circle' style='color:#65C62E'></i>" :
-						"<i class='fa fa-minus-circle' style='color:#E04434'></i>") : "") +
-					"</td>"+
+				rows += "<tr class='" + (!transaction.confirmed ? "tentative" : "confirmed") + "'>" +
+					"<td><a href='#' data-transaction='" + String(transaction.transaction).escapeHTML() + "' data-timestamp='" +
+					String(transaction.timestamp).escapeHTML() + "'>" + Lm.FormatTimestamp(transaction.timestamp) + "</a></td>" +
+					"<td style='width:5px;padding-right:0;'>" + (transaction.type == 0 ?
+						(receiving ? "<i class='fa fa-plus-circle' style='color:#65C62E'></i>" :
+							"<i class='fa fa-minus-circle' style='color:#E04434'></i>") : "") + "</td>" +
 					"<td><span" + (transaction.type == 0 && receiving ? " style='color:#006400'" :
-						(!receiving && transaction.amount > 0 ? " style='color:red'" : "")) +
-						">" + Lm.FormatAmount(transaction.amount) + "</span> "+
-						"<span" + ((!receiving && transaction.type == 0) ? " style='color:red'" : "") + ">+</span> "+
-						"<span" + (!receiving ? " style='color:red'" : "") + ">" + Lm.FormatAmount(transaction.fee) + "</span></td>"+
-					"<td>" + (transaction[account] != Lm.Genesis ? "<a href='#' data-user='" + Lm.GetAccountFormatted(transaction, account) +
-						"' data-user-id='" + String(transaction[account]).escapeHTML() + "' data-user-rs='" +
-						String(transaction[account + "RS"]).escapeHTML() + "' class='user_info'>" +
-						Lm.GetAccountTitle(transaction, account) + "</a>" : "Genesis") + "</td>"+
-					"<td class='confirmations' data-confirmations='" + String(transaction.confirmations).escapeHTML() + "' data-content='" +
-						Lm.FormatAmount(transaction.confirmations) + " confirmations' data-container='body' data-initial='true'>" +
-						(transaction.confirmations > 10 ? "10+" : String(transaction.confirmations).escapeHTML()) +
-					"</td></tr>";
+						(!receiving && transaction.amount > 0 ? " style='color:red'" : "")) + ">" +
+					Lm.FormatAmount(transaction.amount) + "</span> " +
+					"<span" + ((!receiving && transaction.type == 0) ? " style='color:red'" : "") + ">+</span> " +
+					"<span" + (!receiving ? " style='color:red'" : "") + ">" + Lm.FormatAmount(transaction.fee) + "</span></td>" +
+					"<td>" + Lm.GetAccountLink(transaction, account) + "</td>" +
+					"<td class='confirmations' data-confirmations='" + String(transaction.confirmations).escapeHTML() +
+					"' data-content='" + Lm.FormatAmount(transaction.confirmations) + " confirmations' data-container='body' data-initial='true'>" +
+					(transaction.confirmations > 10 ? "10+" : String(transaction.confirmations).escapeHTML()) + "</td></tr>";
 			}
 
 			$("#dashboard_transactions_table tbody").empty().append(rows);
@@ -107,7 +100,7 @@ var Lm = (function(Lm, $, undefined) {
 			"timestamp": Lm.LastTransactionsTimestamp
 		}, function(response) {
 			if (response.transactionIds && response.transactionIds.length) {
-				var transactionIds = response.transactionIds.reverse().slice(0, 10);
+				var transactionIds = response.transactionIds.slice(0, 10);
 
 				if (transactionIds.toString() == Lm.LastTransactions) {
 					Lm.GetUnconfirmedTransactions(function(unconfirmedTransactions) {
@@ -124,7 +117,7 @@ var Lm = (function(Lm, $, undefined) {
 
 				//if we have a new transaction, we just get them all.. (10 max)
 				for (var i = 0; i < transactionIds.length; i++) {
-					Lm.SendRequest('getTransaction', {
+					Lm.SendRequest("getTransaction", {
 						"transaction": transactionIds[i]
 					}, function(transaction, input) {
 						nrTransactions++;
@@ -149,58 +142,57 @@ var Lm = (function(Lm, $, undefined) {
 	}
 
 	function GetUnconfirmedTransactions(callback) {
-		Lm.SendRequest("getUnconfirmedTransactionIds", {
+		Lm.SendRequest("getUnconfirmedTransactions", {
 			"account": Lm.Account
 		}, function(response) {
-			if (response.unconfirmedTransactionIds && response.unconfirmedTransactionIds.length) {
-				var unconfirmedTransactionIds = response.unconfirmedTransactionIds.reverse();
-
-				var nr_transactions = 0;
-
+			if (response.unconfirmedTransactions && response.unconfirmedTransactions.length) {
 				var unconfirmedTransactions = [];
-				var unconfirmedTransactionIdArray = [];
+				var unconfirmedTransactionIds = [];
 
-				for (var i = 0; i < unconfirmedTransactionIds.length; i++) {
-					Lm.SendRequest('getTransaction', {
-						"transaction": unconfirmedTransactionIds[i]
-					}, function(transaction, input) {
-						nr_transactions++;
+				response.unconfirmedTransactions.sort(function(x, y) {
+					if (x.timestamp < y.timestamp) {
+						return 1;
+					} else if (x.timestamp > y.timestamp) {
+						return -1;
+					} else {
+						return 0;
+					}
+				});
 
-						transaction.transaction = input.transaction;
-						transaction.confirmed = false;
-						transaction.unconfirmed = true;
-						transaction.confirmations = "/";
+				for (var i = 0; i < response.unconfirmedTransactions.length; i++) {
+					var unconfirmedTransaction = response.unconfirmedTransactions[i];
 
-						if (transaction.attachment) {
-							for (var key in transaction.attachment) {
-								if (!transaction.hasOwnProperty(key)) {
-									transaction[key] = transaction.attachment[key];
-								}
+					unconfirmedTransaction.confirmed = false;
+					unconfirmedTransaction.unconfirmed = true;
+					unconfirmedTransaction.confirmations = "/";
+
+					if (unconfirmedTransaction.attachment) {
+						for (var key in unconfirmedTransaction.attachment) {
+							if (!unconfirmedTransaction.hasOwnProperty(key)) {
+								unconfirmedTransaction[key] = unconfirmedTransaction.attachment[key];
 							}
 						}
+					}
 
-						unconfirmedTransactions.push(transaction);
-						unconfirmedTransactionIdArray.push(transaction.transaction);
+					unconfirmedTransactions.push(unconfirmedTransaction);
+					unconfirmedTransactionIds.push(unconfirmedTransaction.transaction);
+				}
 
-						if (nr_transactions == unconfirmedTransactionIds.length) {
-							Lm.UnconfirmedTransactions = unconfirmedTransactions;
+				Lm.UnconfirmedTransactions = unconfirmedTransactions;
 
-							var unconfirmedTransactionIdString = unconfirmedTransactionIdArray.toString();
+				var unconfirmedTransactionIdString = unconfirmedTransactionIds.toString();
 
-							if (unconfirmedTransactionIdString != Lm.UnconfirmedTransactionIds) {
-								Lm.UnconfirmedTransactionsChange = true;
-								Lm.UnconfirmedTransactionIds = unconfirmedTransactionIdString;
-							} else {
-								Lm.UnconfirmedTransactionsChange = false;
-							}
+				if (unconfirmedTransactionIdString != Lm.UnconfirmedTransactionIds) {
+					Lm.UnconfirmedTransactionsChange = true;
+					Lm.UnconfirmedTransactionIds = unconfirmedTransactionIdString;
+				} else {
+					Lm.UnconfirmedTransactionsChange = false;
+				}
 
-							if (callback) {
-								callback(unconfirmedTransactions);
-							} else if (Lm.UnconfirmedTransactionsChange) {
-								Lm.Incoming.updateDashboardTransactions(unconfirmedTransactions, true);
-							}
-						}
-					});
+				if (callback) {
+					callback(unconfirmedTransactions);
+				} else if (Lm.UnconfirmedTransactionsChange) {
+					Lm.Incoming.UpdateDashboardTransactions(unconfirmedTransactions, true);
 				}
 			} else {
 				Lm.UnconfirmedTransactions = [];
@@ -216,7 +208,7 @@ var Lm = (function(Lm, $, undefined) {
 				if (callback) {
 					callback([]);
 				} else if (Lm.UnconfirmedTransactionsChange) {
-					Lm.Incoming.updateDashboardTransactions([], true);
+					Lm.Incoming.UpdateDashboardTransactions([], true);
 				}
 			}
 		});
@@ -243,14 +235,16 @@ var Lm = (function(Lm, $, undefined) {
 		if (confirmedTransactionIds.length || Lm.UnconfirmedTransactionsChange) {
 			transactions.sort(Lm.SortArray);
 
-			Lm.Incoming.updateDashboardTransactions(transactions, confirmedTransactionIds.length == 0);
+			Lm.Incoming.UpdateDashboardTransactions(transactions, confirmedTransactionIds.length == 0);
 		}
 
 		//always refresh peers and unconfirmed transactions..
-		if (Lm.CurrentPage == "peers" || (Lm.CurrentPage == "transactions" && Lm.TransactionsPageType == "unconfirmed")) {
-			Lm.Incoming.UnconfirmedTransactions();
+		if (Lm.CurrentPage == "peers") {
+			Lm.Incoming.Peers();
+		} else if (Lm.CurrentPage == "transactions" && Lm.TransactionsPageType == "unconfirmed") {
+			Lm.Incoming.Transactions();
 		} else {
-			if (!oldBlock || Lm.UnconfirmedTransactionsChange || Lm.State.isScanning) {
+			if (!oldBlock || Lm.UnconfirmedTransactionsChange) {
 				if (Lm.Incoming[Lm.CurrentPage]) {
 					Lm.Incoming[Lm.CurrentPage](transactions);
 				}
@@ -262,7 +256,7 @@ var Lm = (function(Lm, $, undefined) {
 		return b.timestamp - a.timestamp;
 	}
 
-	function UpdateDashboardTransactions(newTransactions, unconfirmed) {
+	function UpdateDashboardTransactionsIncoming(newTransactions, unconfirmed) {
 		var newTransactionCount = newTransactions.length;
 
 		if (newTransactionCount) {
@@ -285,27 +279,22 @@ var Lm = (function(Lm, $, undefined) {
 					transaction.fee = new BigInteger(transaction.feeMilliLm);
 				}
 
-				rows += "<tr class='" + (!transaction.confirmed ? "tentative" : "confirmed") + "'>"+
-					"<td><a href='#' data-transaction='" + String(transaction.transaction).escapeHTML() + "'>" +
-					Lm.FormatTimestamp(transaction.timestamp) + "</a></td>"+
+				rows += "<tr class='" + (!transaction.confirmed ? "tentative" : "confirmed") + "'>" +
+					"<td><a href='#' data-transaction='" + String(transaction.transaction).escapeHTML() +
+					"' data-timestamp='" + String(transaction.timestamp).escapeHTML() + "'>" + Lm.FormatTimestamp(transaction.timestamp) + "</a></td>" +
 					"<td style='width:5px;padding-right:0;'>" + (transaction.type == 0 ?
 						(receiving ? "<i class='fa fa-plus-circle' style='color:#65C62E'></i>" :
-							"<i class='fa fa-minus-circle' style='color:#E04434'></i>") : "") +
-					"</td>"+
+							"<i class='fa fa-minus-circle' style='color:#E04434'></i>") : "") + "</td>" +
 					"<td><span" + (transaction.type == 0 && receiving ? " style='color:#006400'" :
-						(!receiving && transaction.amount > 0 ? " style='color:red'" : "")) + ">" + Lm.FormatAmount(transaction.amount) + "</span> "+
-					"<span" + ((!receiving && transaction.type == 0) ? " style='color:red'" : "") + ">+</span> "+
-					"<span" + (!receiving ? " style='color:red'" : "") + ">" + Lm.FormatAmount(transaction.fee) + "</span></td>"+
-					"<td>" + (transaction[account] != Lm.Genesis ? "<a href='#' data-user='" + Lm.GetAccountFormatted(transaction, account) +
-						"' data-user-id='" + String(transaction[account]).escapeHTML() + "' data-user-rs='" +
-						String(transaction[account + "RS"]).escapeHTML() + "' class='user_info'>" +
-						Lm.GetAccountTitle(transaction, account) + "</a>" : "Genesis") +
-					"</td>"+
+						(!receiving && transaction.amount > 0 ? " style='color:red'" : "")) + ">" +
+					Lm.FormatAmount(transaction.amount) + "</span> " +
+					"<span" + ((!receiving && transaction.type == 0) ? " style='color:red'" : "") + ">+</span> " +
+					"<span" + (!receiving ? " style='color:red'" : "") + ">" + Lm.FormatAmount(transaction.fee) + "</span></td>" +
+					"<td>" + Lm.GetAccountLink(transaction, account) + "</td>" +
 					"<td class='confirmations' data-confirmations='" + String(transaction.confirmations).escapeHTML() +
-						"' data-content='" + (transaction.confirmed ? Lm.FormatAmount(transaction.confirmations) +
-							" confirmations" : "Unconfirmed transaction") +
-						"' data-container='body' data-initial='true'>" + (transaction.confirmations > 10 ? "10+" :
-							String(transaction.confirmations).escapeHTML()) + "</td></tr>";
+					"' data-content='" + (transaction.confirmed ? Lm.FormatAmount(transaction.confirmations) + " " +$.t("confirmations") :
+						$.t("unconfirmed_transaction")) + "' data-container='body' data-initial='true'>" +
+					(transaction.confirmations > 10 ? "10+" : String(transaction.confirmations).escapeHTML()) + "</td></tr>";
 			}
 
 			if (onlyUnconfirmed) {
@@ -372,7 +361,7 @@ var Lm = (function(Lm, $, undefined) {
 					callback(alreadyProcessed);
 				}
 
-				Lm.Incoming.updateDashboardTransactions(Lm.UnconfirmedTransactions, true);
+				Lm.Incoming.UpdateDashboardTransactions(Lm.UnconfirmedTransactions, true);
 
 				Lm.GetAccountInfo();
 			} else if (callback) {
@@ -383,196 +372,159 @@ var Lm = (function(Lm, $, undefined) {
 
 	function TransactionsPage() {
 		if (Lm.TransactionsPageType == "unconfirmed") {
-			Lm.Pages.UnconfirmedTransactions();
+			Lm.DisplayUnconfirmedTransactions();
 			return;
 		}
 
-		Lm.PageLoading();
+		var rows = "";
 
 		var params = {
 			"account": Lm.Account,
-			"timestamp": 0
+			"firstIndex": 0,
+			"lastIndex": 100
 		};
 
 		if (Lm.TransactionsPageType) {
 			params.type = Lm.TransactionsPageType.type;
 			params.subtype = Lm.TransactionsPageType.subtype;
+			var unconfirmedTransactions = Lm.GetUnconfirmedTransactionsFromCache(params.type, params.subtype);
+		} else {
+			var unconfirmedTransactions = Lm.UnconfirmedTransactions;
 		}
 
-		var rows = "";
-
-		if (Lm.UnconfirmedTransactions.length) {
-			for (var j = 0; j < Lm.UnconfirmedTransactions.length; j++) {
-				var unconfirmedTransaction = Lm.UnconfirmedTransactions[j];
-
-				if (Lm.TransactionsPageType) {
-					if (unconfirmedTransaction.type != params.type || unconfirmedTransaction.subtype != params.subtype) {
-						continue;
-					}
-				}
-
-				rows += Lm.GetTransactionRowHtml(unconfirmedTransaction);
+		if (unconfirmedTransactions) {
+			for (var i = 0; i < unconfirmedTransactions.length; i++) {
+				rows += Lm.GetTransactionRowHTML(unconfirmedTransactions[i]);
 			}
 		}
 
-		Lm.SendRequest("getAccountTransactionIds+", params, function(response) {
-			TransactionsPage_Refresh(response, rows);
-		});
-	}
+		Lm.SendRequest("getAccountTransactions+", params, function(response) {
+			if (response.transactions && response.transactions.length) {
+				for (var i = 0; i < response.transactions.length; i++) {
+					var transaction = response.transactions[i];
 
-	function TransactionsPage_Refresh(response, rows) {
-		if (response.transactionIds && response.transactionIds.length) {
-			var transactions = {};
-			var nr_transactions = 0;
-
-			var transactionIds = response.transactionIds.reverse().slice(0, 100);
-
-			for (var i = 0; i < transactionIds.length; i++) {
-				Lm.SendRequest("getTransaction+", {
-					"transaction": transactionIds[i]
-				}, function(transaction, input) {
-					if (Lm.CurrentPage != "transactions") {
-						transactions = {};
-						return;
-					}
-
-					transaction.transaction = input.transaction;
 					transaction.confirmed = true;
 
-					transactions[input.transaction] = transaction;
-					nr_transactions++;
-
-					if (nr_transactions == transactionIds.length) {
-						for (var i = 0; i < nr_transactions; i++) {
-							var transaction = transactions[transactionIds[i]];
-							rows += Lm.GetTransactionRowHtml(transaction);
-						}
-
-						$("#transactions_table tbody").empty().append(rows);
-						Lm.DataLoadFinished($("#transactions_table"));
-
-						Lm.PageLoaded();
-					}
-				});
-
-				if (Lm.CurrentPage != "transactions") {
-					transactions = {};
-					return;
+					rows += Lm.GetTransactionRowHTML(transaction);
 				}
-			}
-		} else {
-			$("#transactions_table tbody").empty().append(rows);
-			Lm.DataLoadFinished($("#transactions_table"));
-			Lm.PageLoaded();
-		}
-	}
 
-	function IncomingTransactions(transactions) {
-		Lm.Pages.Transactions();
-	}
-
-	function UnconfirmedTransactionsPage() {
-		Lm.PageLoading();
-		Lm.SendRequest("getUnconfirmedTransactions", function(response) {
-			if (response.unconfirmedTransactions && response.unconfirmedTransactions.length) {
-				rows = "";
-				for (var i = 0; i < response.unconfirmedTransactions.length; i++) {
-					var unconfirmedTransaction = response.unconfirmedTransactions[i];
-					rows += Lm.GetTransactionRowHtml(unconfirmedTransaction);
-				}
-				$("#transactions_table tbody").empty().append(rows);
-				Lm.DataLoadFinished($("#transactions_table"));
-				Lm.PageLoaded();
+				Lm.DataLoaded(rows);
 			} else {
-				$("#transactions_table tbody").empty();
-				Lm.DataLoadFinished($("#transactions_table"));
-				Lm.PageLoaded();
+				Lm.DataLoaded(rows);
 			}
 		});
 	}
 
-	function IncomingUnconfirmedTransactions() {
-		Lm.Pages.UnconfirmedTransactions();
+	function TransactionsIncoming(transactions) {
+		Lm.LoadPage("transactions");
+	}
+
+	function DisplayUnconfirmedTransactions() {
+		Lm.SendRequest("getUnconfirmedTransactions", function(response) {
+			var rows = "";
+
+			if (response.unconfirmedTransactions && response.unconfirmedTransactions.length) {
+				for (var i = 0; i < response.unconfirmedTransactions.length; i++) {
+					rows += Lm.GetTransactionRowHTML(response.unconfirmedTransactions[i]);
+				}
+			}
+
+			Lm.DataLoaded(rows);
+		});
 	}
 
 	function GetTransactionRowHtml(transaction) {
-		var transactionType = "Unknown";
+		var transactionType = $.t("unknown");
 
 		if (transaction.type == 0) {
-			transactionType = "Ordinary payment";
+			transactionType = $.t("ordinary_payment");
 		} else if (transaction.type == 1) {
 			switch (transaction.subtype) {
 				case 0:
-					transactionType = "Arbitrary message";
+					transactionType = $.t("arbitrary_message");
 					break;
 				case 1:
-					transactionType = "Alias assignment";
+					transactionType = $.t("alias_assignment");
 					break;
 				case 2:
-					transactionType = "Poll creation";
+					transactionType = $.t("poll_creation");
 					break;
 				case 3:
-					transactionType = "Vote casting";
+					transactionType = $.t("vote_casting");
 					break;
 				case 4:
-					transactionType = "Hub Announcement";
+					transactionType = $.t("hub_announcements");
 					break;
 				case 5:
-					transactionType = "Account Info";
+					transactionType = $.t("account_info");
+					break;
+				case 6:
+					if (transaction.attachment.priceMilliLm == "0") {
+						if (transaction.sender == Lm.Account && transaction.recipient == Lm.Account) {
+							transactionType = $.t("alias_sale_cancellation");
+						} else {
+							transactionType = $.t("alias_transfer");
+						}
+					} else {
+						transactionType = $.t("alias_sale");
+					}
+					break;
+				case 7:
+					transactionType = $.t("alias_buy");
 					break;
 			}
 		} else if (transaction.type == 2) {
 			switch (transaction.subtype) {
 				case 0:
-					transactionType = "Asset issuance";
+					transactionType = $.t("asset_issuance");
 					break;
 				case 1:
-					transactionType = "Asset transfer";
+					transactionType = $.t("asset_transfer");
 					break;
 				case 2:
-					transactionType = "Ask order placement";
+					transactionType = $.t("ask_order_placement");
 					break;
 				case 3:
-					transactionType = "Bid order placement";
+					transactionType = $.t("bid_order_placement");
 					break;
 				case 4:
-					transactionType = "Ask order cancellation";
+					transactionType = $.t("ask_order_cancellation");
 					break;
 				case 5:
-					transactionType = "Bid order cancellation";
+					transactionType = $.t("bid_order_cancellation");
 					break;
 			}
 		} else if (transaction.type == 3) {
 			switch (transaction.subtype) {
 				case 0:
-					transactionType = "Digital Goods Listing";
+					transactionType = $.t("marketplace_listing");
 					break;
 				case 1:
-					transactionType = "Digital Goods Delisting";
+					transactionType = $.t("marketplace_removal");
 					break;
 				case 2:
-					transactionType = "Digtal Goods Price Change";
+					transactionType = $.t("marketplace_price_change");
 					break;
 				case 3:
-					transactionType = "Digital Goods Quantity Change";
+					transactionType = $.t("marketplace_quantity_change");
 					break;
 				case 4:
-					transactionType = "Digital Goods Purchase";
+					transactionType = $.t("marketplace_purchase");
 					break;
 				case 5:
-					transactionType = "Digital Goods Delivery";
+					transactionType = $.t("marketplace_delivery");
 					break;
 				case 6:
-					transactionType = "Digital Goods Feedback";
+					transactionType = $.t("marketplace_feedback");
 					break;
 				case 7:
-					transactionType = "Digital Goods Refund";
+					transactionType = $.t("marketplace_refund");
 					break;
 			}
 		} else if (transaction.type == 4) {
 			switch (transaction.subtype) {
 				case 0:
-					transactionType = "Balance Leasing";
+					transactionType = $.t("balance_leasing");
 					break;
 			}
 		}
@@ -585,26 +537,34 @@ var Lm = (function(Lm, $, undefined) {
 			transaction.fee = new BigInteger(transaction.feeMilliLm);
 		}
 
-		return "<tr " + (!transaction.confirmed && (transaction.recipient == Lm.Account || transaction.sender == Lm.Account) ? " class='tentative'" : "") + ">"+
+		var hasMessage = false;
+
+		if (transaction.attachment) {
+			if (transaction.attachment.encryptedMessage || transaction.attachment.message) {
+				hasMessage = true;
+			} else if (transaction.sender == Lm.Account && transaction.attachment.encryptToSelfMessage) {
+				hasMessage = true;
+			}
+		}
+
+		return "<tr " + (!transaction.confirmed && (transaction.recipient == Lm.Account || transaction.sender == Lm.Account) ? " class='tentative'" : "") + ">" +
 			"<td><a href='#' data-transaction='" + String(transaction.transaction).escapeHTML() + "'>" +
-				String(transaction.transaction).escapeHTML() + "</a></td>"+
-			"<td>" + Lm.FormatTimestamp(transaction.timestamp) + "</td>"+
-			"<td>" + transactionType + "</td>"+
+			String(transaction.transaction).escapeHTML() + "</a></td>" +
+			"<td>" + (hasMessage ? "<i class='fa fa-envelope-o'></i>&nbsp;" : "/") + "</td>" +
+			"<td>" + Lm.FormatTimestamp(transaction.timestamp) + "</td>" +
+			"<td>" + transactionType + "</td>" +
 			"<td style='width:5px;padding-right:0;'>" + (transaction.type == 0 ?
-				(receiving ? "<i class='fa fa-plus-circle' style='color:#65C62E'></i>" : "<i class='fa fa-minus-circle' style='color:#E04434'></i>") : "") +
-			"</td>"+
-			"<td " + (transaction.type == 0 && receiving ? " style='color:#006400;'" :
-				(!receiving && transaction.amount > 0 ? " style='color:red'" : "")) + ">" + Lm.FormatAmount(transaction.amount) + "</td>"+
-			"<td " + (!receiving ? " style='color:red'" : "") + ">" + Lm.FormatAmount(transaction.fee) + "</td>"+
-			"<td>" + (transaction[account] != Lm.Genesis ? "<a href='#' data-user='" + Lm.GetAccountFormatted(transaction, account) +
-				"' class='user_info'>" + Lm.GetAccountTitle(transaction, account) + "</a>" : "Genesis") + "</td>"+
-			"<td class='confirmations' data-content='" + (transaction.confirmed ? Lm.FormatAmount(transaction.confirmations) + " confirmations" :
-				"Unconfirmed transaction") + "' data-container='body' data-placement='left'>" +
-				(!transaction.confirmed ? "/" : (transaction.confirmations > 1440 ? "1440+" : Lm.FormatAmount(transaction.confirmations))) +
-			"</td></tr>";
+				(receiving ? "<i class='fa fa-plus-circle' style='color:#65C62E'></i>" : "<i class='fa fa-minus-circle' style='color:#E04434'></i>") : "") + "</td>" +
+			"<td " + (transaction.type == 0 && receiving ? " style='color:#006400;'" : (!receiving && transaction.amount > 0 ? " style='color:red'" : "")) + ">" +
+			Lm.FormatAmount(transaction.amount) + "</td>" +
+			"<td " + (!receiving ? " style='color:red'" : "") + ">" + Lm.FormatAmount(transaction.fee) + "</td>" +
+			"<td>" + Lm.GetAccountLink(transaction, account) + "</td>" +
+			"<td class='confirmations' data-content='" + (transaction.confirmed ? Lm.FormatAmount(transaction.confirmations) + " " +
+				$.t("confirmations") : $.t("unconfirmed_transaction")) + "' data-container='body' data-placement='left'>" +
+			(!transaction.confirmed ? "/" : (transaction.confirmations > 1440 ? "1440+" : Lm.FormatAmount(transaction.confirmations))) + "</td></tr>";
 	}
 
-	function TransactionsPageTypeLi_OnClick(e, th) {
+	function TransactionsPageTypeLi_OnClick(th, e) {
 		e.preventDefault();
 
 		var type = th.data("type");
@@ -625,12 +585,12 @@ var Lm = (function(Lm, $, undefined) {
 
 		$(".popover").remove();
 
-		Lm.Pages.Transactions();
+		Lm.LoadPage("transactions");
 	}
 
 
 	$("#transactions_page_type li a").click(function(e) {
-		TransactionsPageTypeLi_OnClick(e, $(this));
+		TransactionsPageTypeLi_OnClick($(this), e);
 	});
 
 
@@ -640,12 +600,11 @@ var Lm = (function(Lm, $, undefined) {
 	Lm.GetUnconfirmedTransactions = GetUnconfirmedTransactions;
 	Lm.HandleIncomingTransactions = HandleIncomingTransactions;
 	Lm.SortArray = SortArray;
+	Lm.Incoming.UpdateDashboardTransactions = UpdateDashboardTransactionsIncoming;
 	Lm.AddUnconfirmedTransaction = AddUnconfirmedTransaction;
-	Lm.Incoming.Transactions = IncomingTransactions;
-	Lm.Incoming.UnconfirmedTransactions = IncomingUnconfirmedTransactions
-	Lm.Incoming.UpdateDashboardTransactions = UpdateDashboardTransactions;
 	Lm.Pages.Transactions = TransactionsPage;
-	Lm.Pages.UnconfirmedTransactions = UnconfirmedTransactionsPage;
+	Lm.Incoming.Transactions = TransactionsIncoming;
+	Lm.DisplayUnconfirmedTransactions = DisplayUnconfirmedTransactions;
 	Lm.GetTransactionRowHtml = GetTransactionRowHtml;
 	return Lm;
 }(Lm || {}, jQuery));

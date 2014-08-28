@@ -509,20 +509,26 @@ var Lm = (function(Lm, $, undefined) {
 			};
 		}
 
-		if (data.data) {
-			try {
-				var encrypted = Lm.EncryptNote(data.data, {
-					"account": data.buyer
-				}, data.secretPhrase);
+		if (!data.data) {
+			return {
+				"error": $.t("error_not_specified", {
+					"name": $.t("data").toLowerCase()
+				}).capitalize()
+			};
+		}
 
-				data.goodsData = encrypted.message;
-				data.goodsNonce = encrypted.nonce;
-				data.goodsIsText = "true";
-			} catch (err) {
-				return {
-					"error": err.message
-				};
-			}
+		try {
+			var encrypted = Lm.EncryptNote(data.data, {
+				"account": data.buyer
+			}, data.secretPhrase);
+
+			data.goodsData = encrypted.message;
+			data.goodsNonce = encrypted.nonce;
+			data.goodsIsText = "true";
+		} catch (err) {
+			return {
+				"error": err.message
+			};
 		}
 
 		delete data.buyer;
@@ -650,6 +656,9 @@ var Lm = (function(Lm, $, undefined) {
 						output += "<tr><th style='width:85px;'><strong>" + $.t("product") + "</strong>:</th><td>" + String(good.name).escapeHTML() + "</td></tr>";
 						output += "<tr><th><strong>" + $.t("price") + "</strong>:</th><td>" + Lm.FormatAmount(response.priceMilliLm) + " Lm</td></tr>";
 						output += "<tr><th><strong>" + $.t("quantity") + "</strong>:</th><td>" + Lm.Format(response.quantity) + "</td></tr>";
+						if (good.delisted) {
+							output += "<tr><th><strong>" + $.t("status") + "</strong>:</th><td>" + $.t("no_longer_for_sale") + "</td></tr>";
+						}
 
 						if (type == "dgs_refund_modal" || type == "dgs_delivery_modal" || type == "dgs_feedback_modal") {
 							if (response.seller == Lm.Account) {
@@ -835,7 +844,11 @@ var Lm = (function(Lm, $, undefined) {
 				output += "<tr><th><strong>" + $.t("seller") + "</strong>:</th>" +
 					"<td><a href='#' data-user='" + Lm.GetAccountFormatted(response, "seller") + "' class='user_info'>" +
 					Lm.GetAccountTitle(response, "seller") + "</a></td></tr>";
-				output += "<tr><th><strong>" + $.t("quantity") + "</strong>:</th><td>" + Lm.Format(response.quantity) + "</td></tr>";
+				if (response.delisted) {
+					output += "<tr><th><strong>" + $.t("status") + "</strong>:</th><td>" + $.t("no_longer_for_sale") + "</td></tr>";
+				} else {
+					output += "<tr><th><strong>" + $.t("quantity") + "</strong>:</th><td>" + Lm.Format(response.quantity) + "</td></tr>";
+				}
 
 				if (type == "dgs_purchase_modal" || type == "dgs_product_modal") {
 					output += "<tr><td colspan='2'><div style='max-height:150px;overflow:auto;'>" + String(response.description).escapeHTML().nl2br() + "</div></td></tr>";

@@ -21,6 +21,17 @@ var base_10_length = 20;
 
 function Encode(plain) {
 	var plain_string = Convert.ToUnsignedLong(plain);
+	return EncodeStr(plain_string);
+}
+
+// plain - BigInt
+function EncodeBigInt(plain) {
+	var plain_string = Convert.ToUnsignedBigInt(plain);
+	return EncodeStr(plain_string);
+}
+
+function EncodeStr(plain) {
+	var plain_string = Convert.ToUnsignedLong(plain);
 	var length = plain_string.length;
 	plain_string_10 = new Array(); //[ReedSolomon.base_10_length];
 	for (var i = 0; i < base_10_length; i++) {
@@ -82,6 +93,7 @@ function Encode(plain) {
 	return cypher_string_builder;
 }
 
+// return BigInt
 function Decode(cypher_string) {
 	var codeword = new Array(); //int[initial_codeword.length];
 	for (var i = 0; i < initial_codeword.length; i++) {
@@ -227,6 +239,7 @@ function Main(args) {
 
 
 exports.Encode = Encode;
+exports.EncodeBigInt = EncodeBigInt;
 exports.Decode = Decode;
 exports.Gmult = Gmult;
 exports.IsCodewordValid = IsCodewordValid;

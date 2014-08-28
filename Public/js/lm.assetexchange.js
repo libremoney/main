@@ -88,7 +88,9 @@ var Lm = (function(Lm, $, undefined) {
 						}
 						Lm.LoadAssetExchangeSidebar(callback);
 					});
-				}
+				} else {
+					Lm.LoadAssetExchangeSidebar(callback);
+ 				}
 			} else {
 				Lm.LoadAssetExchangeSidebar(callback);
 			}
@@ -244,8 +246,9 @@ var Lm = (function(Lm, $, undefined) {
 				newAssetIds.push({
 					"asset": String(asset.asset)
 				});
-			} else {
+			} else if (Lm.AssetIds.indexOf(asset.asset) == -1) {
 				Lm.AssetIds.push(asset.asset);
+				newAsset.name = newAsset.name.toLowerCase();
 				Lm.Assets.push(newAsset);
 			}
 		});
@@ -303,7 +306,7 @@ var Lm = (function(Lm, $, undefined) {
 	//called on opening the asset exchange page and automatic refresh
 	function LoadAssetExchangeSidebar(callback) {
 		if (!Lm.Assets.length) {
-			Lm.PageLoaded();
+			Lm.PageLoaded(callback);
 			$("#asset_exchange_sidebar_content").empty();
 			$("#no_asset_selected, #loading_asset_data, #no_asset_search_results, #asset_details").hide();
 			$("#no_assets_available").show();
@@ -1729,11 +1732,6 @@ var Lm = (function(Lm, $, undefined) {
 		delete data.decimals;
 
 		if (!data.add_message) {
-			delete data.add_message;
-			delete data.message;
-			delete data.encrypt_message;
-		} else if (!Lm.DgsBlockPassed) {
-			data.comment = data.message;
 			delete data.add_message;
 			delete data.message;
 			delete data.encrypt_message;

@@ -1,5 +1,5 @@
 /*!
- * LibreMoney Generator 0.0
+ * LibreMoney Generator 0.1
  * Copyright(c) 2014 LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -16,15 +16,18 @@ import nxt.util.ThreadPool;
 var BlockchainProcessor = require(__dirname + '/../BlockchainProcessor');
 
 
+var lastTimestamp;
+
+
 function Generator(secretPhrase, publicKey, account) {
 	this.secretPhrase = secretPhrase;
 	this.publicKey = publicKey;
 	// need to store publicKey in addition to accountId, because the account may not have had its publicKey set yet
 	this.accountId = account.getId();
-	Forge(); // initialize deadline
+	this.Forge(Convert.getEpochTime()); // initialize deadline
 }
 
-function Forge() {
+function Forge(timestamp) {
 	if (BlockchainProcessor.IsScanning()) {
 		return;
 	}
@@ -41,32 +44,25 @@ function Forge() {
 
 	Block lastBlock = Nxt.getBlockchain().getLastBlock();
 
-	if (lastBlock.getHeight() < Constants.ASSET_EXCHANGE_BLOCK) {
+	if (lastBlock.getHeight() < Constants.DIGITAL_GOODS_STORE_BLOCK) {
 		return;
 	}
 
 	if (! lastBlock.equals(lastBlocks.get(accountId))) {
-
 		BigInteger hit = getHit(publicKey, lastBlock);
-
 		lastBlocks.put(accountId, lastBlock);
 		hits.put(accountId, hit);
-
 		deadline = Math.max(getHitTime(account.getEffectiveBalanceNXT(), hit, lastBlock) - Convert.getEpochTime(), 0);
-
 		listeners.Notify(Event.GENERATION_DEADLINE, this);
-
 	}
 
-	int elapsedTime = Convert.getEpochTime() - lastBlock.getTimestamp();
-	if (elapsedTime > 0) {
-		BigInteger target = BigInteger.valueOf(lastBlock.getBaseTarget())
-				.multiply(BigInteger.valueOf(effectiveBalance))
-				.multiply(BigInteger.valueOf(elapsedTime));
-		if (hits.get(accountId).compareTo(target) < 0) {
-			BlockchainProcessorImpl.getInstance().generateBlock(secretPhrase);
-		}
-	}
+	if (verifyHit(hits.get(accountId), effectiveBalance, lastBlock, timestamp)) {
+		while (! BlockchainProcessorImpl.getInstance().generateBlock(secretPhrase, timestamp)) {
+			if (Convert.getEpochTime() - timestamp > 10) {
+				break;
+			}
+		 }
+	 }
 	*/
 }
 
@@ -84,6 +80,7 @@ function GetPublicKey() {
 
 
 Generator.prototype.Clear = Clear;
+Generator.prototype.Forge = Forge;
 Generator.prototype.GetAccountId = GetAccountId;
 Generator.prototype.GetDeadline = GetDeadline;
 Generator.prototype.GetPublicKey = GetPublicKey;

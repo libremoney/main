@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -27,7 +27,14 @@ function InitTransactionModel(mongoose, modelName) {
 		block_timestamp: { type: Number, required: true }, //INT
 		full_hash: [Number], //full_hash: { type: [Number], required: true }, //BINARY(32)
 		referenced_transaction_full_hash: [Number], //BINARY(32)
-		attachment_bytes: Buffer //VARBINARY
+		attachment_bytes: Buffer, //VARBINARY
+		version: Number,
+		has_message: { type: Number, required: true }, //BOOLEAN NOT NULL DEFAULT FALSE
+		has_encrypted_message: { type: Number, required: true }, //BOOLEAN NOT NULL DEFAULT FALSE
+		has_public_key_announcement: { type: Number, required: true }, //BOOLEAN NOT NULL DEFAULT FALSE
+		ec_block_height: Number, //INT DEFAULT NULL
+		ec_block_id: Number, //BIGINT DEFAULT NULL
+		has_encrypttoself_message: { type: Number, required: true } //BOOLEAN NOT NULL DEFAULT FALSE
 		//FOREIGN KEY (block_id) REFERENCES block (id) ON DELETE CASCADE
 
 		//CREATE UNIQUE INDEX IF NOT EXISTS transaction_id_idx ON transaction (id);

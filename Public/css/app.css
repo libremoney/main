@@ -3231,10 +3231,6 @@ input.masked {
   font-weight:bold;
 }
 
-.dgs_block {
-  display:none;
-}
-
 .recipient_public_key {
   display:none;
 }

@@ -1,5 +1,5 @@
 /**!
- * LibreMoney BlockDb 0.0
+ * LibreMoney BlockDb 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */

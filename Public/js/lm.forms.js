@@ -69,9 +69,7 @@ var Lm = (function(Lm, $, undefined) {
 		};
 
 		if (data.add_message && data.message) {
-			if (!Lm.DgsBlockPassed) {
-				data.message = converters.stringToHexString(data.message);
-			} else if (data.encrypt_message) {
+			if (data.encrypt_message) {
 				try {
 					var options = {};
 
@@ -104,24 +102,20 @@ var Lm = (function(Lm, $, undefined) {
 		}
 
 		if (data.add_note_to_self && data.note_to_self) {
-			if (!Lm.DgsBlockPassed) {
+			try {
+				var options = {};
+
+				var encrypted = Lm.EncryptNote(data.note_to_self, {
+					"publicKey": converters.hexStringToByteArray(Lm.GeneratePublicKey(data.secretPhrase))
+				}, data.secretPhrase);
+
+				data.encryptToSelfMessageData = encrypted.message;
+				data.encryptToSelfMessageNonce = encrypted.nonce;
+				data.messageToEncryptToSelfIsText = "true";
+
 				delete data.note_to_self;
-			} else {
-				try {
-					var options = {};
-
-					var encrypted = Lm.EncryptNote(data.note_to_self, {
-						"publicKey": converters.hexStringToByteArray(Lm.GeneratePublicKey(data.secretPhrase))
-					}, data.secretPhrase);
-
-					data.encryptToSelfMessageData = encrypted.message;
-					data.encryptToSelfMessageNonce = encrypted.nonce;
-					data.messageToEncryptToSelfIsText = "true";
-
-					delete data.note_to_self;
-				} catch (err) {
-					throw err;
-				}
+			} catch (err) {
+				throw err;
 			}
 		} else {
 			delete data.note_to_self;

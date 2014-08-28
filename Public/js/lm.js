@@ -179,19 +179,29 @@ var Lm = (function(Lm, $, undefined) {
 					if (asset.difference.charAt(0) != "-") {
 						var quantity = Lm.FormatQuantity(asset.difference, asset.decimals)
 
-						//TODO
-
-						$.growl("You received <a href='#' data-goto-asset='" + String(asset.asset).escapeHTML() + "'>" + quantity + " " + String(asset.name).escapeHTML() + (quantity == "1" ? " asset" : " assets") + "</a>.", {
-							"type": "success"
-						});
+						if (quantity != "0") {
+							$.growl($.t("you_received_assets", {
+								"asset": String(asset.asset).escapeHTML(),
+								"name": String(asset.name).escapeHTML(),
+								"count": quantity
+							}), {
+								"type": "success"
+							});
+						}
 					} else {
 						asset.difference = asset.difference.substring(1);
 
 						var quantity = Lm.FormatQuantity(asset.difference, asset.decimals)
 
-						$.growl("You sold or transferred <a href='#' data-goto-asset='" + String(asset.asset).escapeHTML() + "'>" + quantity + " " + String(asset.name).escapeHTML() + (quantity == "1" ? " asset" : " assets") + "</a>.", {
-							"type": "success"
-						});
+						if (quantity != "0") {
+							$.growl($.t("you_sold_assets", {
+								"asset": String(asset.asset).escapeHTML(),
+								"name": String(asset.name).escapeHTML(),
+								"count": quantity
+							}), {
+								"type": "success"
+							});
+						}
 					}
 				});
 			}
@@ -362,8 +372,7 @@ var Lm = (function(Lm, $, undefined) {
 				if (Lm.AccountInfo.errorCode == 5) {
 					if (Lm.DownloadingBlockchain) {
 						if (Lm.NewlyCreatedAccount) {
-							var translationKey = (Lm.DgsBlockPassed ? "status_new_account" : "status_new_account_old");
-							$("#dashboard_message").addClass("alert-success").removeClass("alert-danger").html($.t(translationKey, {
+							$("#dashboard_message").addClass("alert-success").removeClass("alert-danger").html($.t("status_new_account", {
 								"account_id": String(Lm.AccountRS).escapeHTML(),
 								"public_key": String(Lm.PublicKey).escapeHTML()
 							}) + "<br /><br />" + $.t("status_blockchain_downloading")).show();
@@ -373,8 +382,7 @@ var Lm = (function(Lm, $, undefined) {
 					} else if (Lm.State && Lm.State.isScanning) {
 						$("#dashboard_message").addClass("alert-danger").removeClass("alert-success").html($.t("status_blockchain_rescanning")).show();
 					} else {
-						var translationKey = (Lm.DgsBlockPassed ? "status_new_account" : "status_new_account_old");
-						$("#dashboard_message").addClass("alert-success").removeClass("alert-danger").html($.t(translationKey, {
+						$("#dashboard_message").addClass("alert-success").removeClass("alert-danger").html($.t("status_new_account", {
 							"account_id": String(Lm.AccountRS).escapeHTML(),
 							"public_key": String(Lm.PublicKey).escapeHTML()
 						})).show();
@@ -481,7 +489,7 @@ var Lm = (function(Lm, $, undefined) {
 				}
 
 				if (response.name) {
-					$("#account_name").html(response.name.escapeHTML());
+					$("#account_name").html(response.name.escapeHTML()).removeAttr("data-i18n");
 				}
 			}
 
@@ -806,7 +814,7 @@ var Lm = (function(Lm, $, undefined) {
 			var rows = "";
 
 			for (var i = 0; i < Lm.AccountInfo.lessors.length; i++) {
-				var lessor = Lm.AccountInfo.lessors[i];
+				var lessor = Lm.ConvertNumericToRSAccountFormat(Lm.AccountInfo.lessors[i]);
 
 				rows += "<tr><td><a href='#' data-user='" + String(lessor).escapeHTML() + "'>" + Lm.GetAccountTitle(lessor) + "</a></td></tr>";
 			}

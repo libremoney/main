@@ -1,5 +1,5 @@
 /*!
- * LibreMoney Generators 0.0
+ * LibreMoney Generators 0.1
  * Copyright(c) 2014 LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -45,8 +45,12 @@ function GenerateBlockThread(){
 	/*
 	try {
 		try {
-			for (Generator generator : generators.values()) {
-				generator.forge();
+			int timestamp = Convert.getEpochTime();
+			if (timestamp != lastTimestamp) {
+				lastTimestamp = timestamp;
+				for (Generator generator : generators.values()) {
+					generator.forge(timestamp);
+				}
 			}
 		} catch (Exception e) {
 			Logger.logDebugMessage("Error in block generation thread", e);
@@ -126,6 +130,25 @@ function StopForging(SecretPhrase) {
 		listeners.Notify(Event.STOP_FORGING, generator);
 	}
 	return generator;
+	*/
+}
+
+function VerifyHit(hit, effectiveBalance, previousBlock, timestamp) {
+	throw new Error('Not implementted');
+	/*
+	int elapsedTime = timestamp - previousBlock.getTimestamp();
+	if (elapsedTime <= 0) {
+		return false;
+	}
+	BigInteger effectiveBaseTarget = BigInteger.valueOf(previousBlock.getBaseTarget()).multiply(BigInteger.valueOf(effectiveBalance));
+	BigInteger prevTarget = effectiveBaseTarget.multiply(BigInteger.valueOf(elapsedTime - 1));
+	BigInteger target = prevTarget.add(effectiveBaseTarget);
+
+	return hit.compareTo(target) < 0
+			&& (previousBlock.getHeight() < Constants.TRANSPARENT_FORGING_BLOCK_8
+			|| hit.compareTo(prevTarget) >= 0
+			|| (Constants.isTestnet ? elapsedTime > 300 : elapsedTime > 3600)
+			|| Constants.isOffline);
 	*/
 }
 

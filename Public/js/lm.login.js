@@ -83,7 +83,8 @@ var Lm = (function(Lm, $, undefined) {
 
 	function Login_GetAccountId_On(response, password, callback) {
 		if (!response.errorCode) {
-			Lm.Account = String(response.accountId).escapeHTML();
+			Lm.Account = String(response.account).escapeHTML();
+			Lm.AccountRS = String(response.accountRS).escapeHTML();
 			Lm.PublicKey = Lm.GetPublicKey(converters.stringToHexString(password));
 		}
 
@@ -93,13 +94,7 @@ var Lm = (function(Lm, $, undefined) {
 				"offset": 10
 			});
 			return;
-		}
-
-		var lmAddress = new LmAddress();
-
-		if (lmAddress.set(Lm.Account)) {
-			Lm.AccountRS = lmAddress.toString();
-		} else {
+		} else if (!Lm.AccountRS) {
 			$.growl($.t("error_generate_account_id"), {
 				"type": "danger",
 				"offset": 10

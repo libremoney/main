@@ -1,5 +1,5 @@
 /*!
- * LibreMoney Core Library 0.0
+ * LibreMoney Core Library 0.1
  * Copyright(c) 2014 LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -33,7 +33,7 @@ var ThreadPool = require(__dirname + '/ThreadPool');
 var defaultProperties;
 var listeners = new Listeners();
 var properties;
-var version = "0.0.7";
+var version = "0.1.1";
 
 
 var Event = {
@@ -69,17 +69,28 @@ function Init(callback) {
 		callback(null);
 	
 	/*
-	Peers.init();
-	Generator.init();
-	API.init();
-	Users.init();
-	DebugTrace.init();
+	try {
+		long startTime = System.currentTimeMillis();
+		Logger.init();
+		Db.init();
+		BlockchainProcessorImpl.getInstance();
+		TransactionProcessorImpl.getInstance();
+		Peers.init();
+		Generator.init();
+		API.init();
+		Users.init();
+		DebugTrace.init();
+		ThreadPool.start();
 
-	long currentTime = System.currentTimeMillis();
-	Logger.logDebugMessage("Initialization took " + (currentTime - startTime) / 1000 + " seconds");
-	Logger.logMessage("Nxt server " + VERSION + " started successfully.");
-	if (Constants.isTestnet) {
-		Logger.logMessage("RUNNING ON TESTNET - DO NOT USE REAL ACCOUNTS!");
+		long currentTime = System.currentTimeMillis();
+		Logger.logMessage("Initialization took " + (currentTime - startTime) / 1000 + " seconds");
+		Logger.logMessage("Nxt server " + VERSION + " started successfully.");
+		if (Constants.isTestnet) {
+			Logger.logMessage("RUNNING ON TESTNET - DO NOT USE REAL ACCOUNTS!");
+		}
+	} catch (Exception e) {
+		Logger.logErrorMessage(e.getMessage(), e);
+		System.exit(1);
 	}
 	*/
 
@@ -139,6 +150,7 @@ function RemoveListener(eventType, listener) {
 }
 
 function Shutdown() {
+	Logger.info("Shutting down...");
 	ThreadPool.Shutdown();
 	Logger.info("LibreMoney server " + version + " stopped.");
 	listeners.Notify(Event.Shutdown, null);

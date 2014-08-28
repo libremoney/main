@@ -1,38 +1,43 @@
+/*!
+ * LibreMoney Alias 0.1
+ * Copyright(c) 2014 LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-function Alias(Account, Id, AliasName, AliasUri, Timestamp) {
-	this.Account = Account;
-	this.Id = Id;
-	this.AliasName = AliasName;
-	this.AliasUri = AliasUri;
-	this.Timestamp = Timestamp;
-
-	this.GetId = GetId;
-	this.GetAliasName = GetAliasName;
-	this.GetAliasUri = GetAliasUri;
-	this.GetTimestamp = GetTimestamp;
-	this.GetAccount = GetAccount;
+function Alias(account, id, aliasName, aliasUri, timestamp) {
+	this.accountId = account.GetId();
+	this.id = id;
+	this.aliasName = aliasName;
+	this.aliasUri = aliasUri;
+	this.timestamp = timestamp;
 }
 
-
-function GetId() {
-	return this.Id;
+function GetAccountId() {
+	return this.accountId;
 }
 
 function GetAliasName() {
-	return this.AliasName;
+	return this.aliasName;
 }
 
 function GetAliasUri() {
-	return this.AliasUri;
+	return this.aliasUri;
+}
+
+function GetId() {
+	return this.id;
 }
 
 function GetTimestamp() {
-	return this.Timestamp;
+	return this.timestamp;
 }
 
-function GetAccount() {
-	return this.Account;
-}
+
+Alias.prototype.GetAccountId = GetAccountId;
+Alias.prototype.GetAliasName = GetAliasName;
+Alias.prototype.GetAliasUri = GetAliasUri;
+Alias.prototype.GetId = GetId;
+Alias.prototype.GetTimestamp = GetTimestamp;
 
 
 module.exports = Alias;

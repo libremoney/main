@@ -1,6 +1,10 @@
+/**
+ * @depends {lm.js}
+ * @depends {lm.modals.js}
+ */
 var Lm = (function(Lm, $, undefined) {
 
-	function BlocksTable_OnClick(event, th) {
+	function BlocksTable_OnClick(th, event) {
 		event.preventDefault();
 
 		if (Lm.FetchingModalData) {
@@ -22,7 +26,7 @@ var Lm = (function(Lm, $, undefined) {
 		} else {
 			Lm.ShowBlockModal(block);
 		}
-	});
+	}
 
 	function ShowBlockModal(block) {
 		$("#block_info_modal_block").html(String(block.block).escapeHTML());
@@ -60,15 +64,15 @@ var Lm = (function(Lm, $, undefined) {
 						for (var i = 0; i < nrTransactions; i++) {
 							var transaction = transactions[block.transactions[i]];
 
-							if (transaction.AmountMilliLm) {
-								transaction.Amount = new BigInteger(transaction.AmountMilliLm);
-								transaction.Fee = new BigInteger(transaction.FeeMilliLm);
+							if (transaction.amountMilliLm) {
+								transaction.amount = new BigInteger(transaction.amountMilliLm);
+								transaction.fee = new BigInteger(transaction.feeMilliLm);
 							}
 
-							rows += "<tr><td>" + Lm.FormatTime(transaction.Timestamp) + "</td>"+
-								"<td>" + Lm.FormatAmount(transaction.Amount) + "</td>"+
-								"<td>" + Lm.FormatAmount(transaction.Fee) + "</td>"+
-								"<td>" + Lm.GetAccountTitle(transaction, "recipient") + "</td>"+
+							rows += "<tr><td>" + Lm.FormatTime(transaction.timestamp) + "</td>" +
+								"<td>" + Lm.FormatAmount(transaction.amount) + "</td>" +
+								"<td>" + Lm.FormatAmount(transaction.fee) + "</td>" +
+								"<td>" + Lm.GetAccountTitle(transaction, "recipient") + "</td>" +
 								"<td>" + Lm.GetAccountTitle(transaction, "sender") + "</td></tr>";
 						}
 
@@ -90,7 +94,7 @@ var Lm = (function(Lm, $, undefined) {
 
 
 	$("#blocks_table, #dashboard_blocks_table").on("click", "a[data-block]", function(event) {
-		BlocksTable_OnClick(event, this);
+		BlocksTable_OnClick(this, event);
 	});
 
 

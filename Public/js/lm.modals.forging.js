@@ -1,20 +1,21 @@
+/**
+ * @depends {lm.js}
+ * @depends {lm.modals.js}
+ */
 var Lm = (function(Lm, $, undefined) {
-	
-	ErrorMessages_StartForging = {
-		"5": "You cannot forge. Either your balance is 0 or your account is too new (you must wait a day or so)."
-	};
+	//todo: use a startForgingError function instaed!
 
 	function StartForgingCompleteForm(response, data) {
 		if ("deadline" in response) {
 			$("#forging_indicator").addClass("forging");
-			$("#forging_indicator span").html("Forging");
+			$("#forging_indicator span").html($.t("forging")).attr("data-i18n", "forging");
 			Lm.IsForging = true;
-			$.growl("Forging started successfully.", {
+			$.growl($.t("success_start_forging"), {
 				type: "success"
 			});
 		} else {
 			Lm.IsForging = false;
-			$.growl("Couldn't start forging, unknown error.", {
+			$.growl($.t("error_start_forging"), {
 				type: 'danger'
 			});
 		}
@@ -27,43 +28,43 @@ var Lm = (function(Lm, $, undefined) {
 		}
 
 		$("#forging_indicator").removeClass("forging");
-		$("#forging_indicator span").html("Not forging");
+		$("#forging_indicator span").html($.t("not_forging")).attr("data-i18n", "not_forging");
 
 		Lm.IsForging = false;
 
 		if (response.foundAndStopped) {
-			$.growl("Forging stopped successfully.", {
+			$.growl($.t("success_stop_forging"), {
 				type: 'success'
 			});
 		} else {
-			$.growl("You weren't forging to begin with.", {
+			$.growl($.t("error_stop_forging"), {
 				type: 'danger'
 			});
 		}
 	}
 
-	function ForgingIndicator_OnClick(e, th) {
+	function ForgingIndicator_OnClick(th, e) {
 		e.preventDefault();
 
 		if (Lm.DownloadingBlockchain) {
-			$.growl("The blockchain is busy downloading, you cannot forge during this time. Please try again when the blockchain is fully synced.", {
+			$.growl($.t("error_forging_blockchain_downloading"), {
 				"type": "danger"
 			});
 		} else if (Lm.State.isScanning) {
-			$.growl("The blockchain is currently being rescanned, you cannot forge during this time. Please try again in a minute.", {
+			$.growl($.t("error_forging_blockchain_rescanning"), {
 				"type": "danger"
 			});
 		} else if (!Lm.AccountInfo.publicKey) {
-			$.growl("You cannot forge because your account has no public key. Please make an outgoing transaction first.", {
+			$.growl($.t("error_forging_no_public_key"), {
 				"type": "danger"
 			});
-		} else if (Lm.AccountInfo.EffectiveBalanceLm == 0) {
+		} else if (Lm.AccountInfo.effectiveBalanceLm == 0) {
 			if (Lm.LastBlockHeight >= Lm.AccountInfo.currentLeasingHeightFrom && Lm.LastBlockHeight <= Lm.AccountInfo.currentLeasingHeightTo) {
-				$.growl("Your effective balance is leased out, you cannot forge at the moment.", {
+				$.growl($.t("error_forging_lease"), {
 					"type": "danger"
 				});
 			} else {
-				$.growl("Your effective balance is zero, you cannot forge.", {
+				$.growl($.t("error_forging_effective_balance"), {
 					"type": "danger"
 				});
 			}
@@ -72,15 +73,13 @@ var Lm = (function(Lm, $, undefined) {
 		} else {
 			$("#start_forging_modal").modal("show");
 		}
-	});
+	}
 
 
 	$("#forging_indicator").click(function(e) {
-		ForgingIndicator_OnClick(e, $(this));
+		ForgingIndicator_OnClick($(this), e);
 	});
 
-
-	Lm.Forms.ErrorMessages.StartForging = ErrorMessages_StartForging;
 	Lm.Forms.StartForgingComplete = StartForgingCompleteForm;
 	Lm.Forms.StopForgingComplete = StopForgingCompleteForm;
 	return Lm;

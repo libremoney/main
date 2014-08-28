@@ -255,30 +255,18 @@ function GetSharedSecret(myPrivateKey, theirPublicKey) {
 	*/
 }
 
+// id - BigInt
 function RsEncode(id) {
-	return ReedSolomon.Encode(id);
+	return ReedSolomon.EncodeBigInt(id);
 }
 
 function RsDecode(rsString) {
 	rsString = rsString.toUpperCase();
-
 	id = ReedSolomon.Decode(rsString);
 	if (rsString != ReedSolomon.Encode(id)) {
 		throw new Error("ERROR: Reed-Solomon decoding of " + rsString + " not reversible, decoded to " + id);
 	}
 	return id;
-	/*
-	try {
-		id = ReedSolomon.Decode(rsString);
-		if (rsString != ReedSolomon.Encode(id)) {
-			throw new Error("ERROR: Reed-Solomon decoding of " + rsString + " not reversible, decoded to " + id);
-		}
-		return id;
-	} catch (e) {
-		Logger.LogDebugMessage("Reed-Solomon decoding failed for " + rsString + ": " + e.toString());
-		throw new Error(e.toString());
-	}
-	*/
 }
 
 

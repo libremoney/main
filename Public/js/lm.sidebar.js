@@ -1,6 +1,9 @@
+/**
+ * @depends {lm.js}
+ */
 var Lm = (function(Lm, $, undefined) {
 
-	function SidebarContext_OnContextmenu(e, th) {
+	function SidebarContext_OnContextmenu(th, e) {
 		e.preventDefault();
 
 		if (!Lm.DatabaseSupport) {
@@ -9,7 +12,7 @@ var Lm = (function(Lm, $, undefined) {
 
 		Lm.CloseContextMenu();
 
-		if (th).hasClass("no-context")) {
+		if (th.hasClass("no-context")) {
 			return;
 		}
 
@@ -68,7 +71,7 @@ var Lm = (function(Lm, $, undefined) {
 
 
 	$(".sidebar_context").on("contextmenu", "a", function(e) {
-		SidebarContext_OnContextmenu(e, $(this));
+		SidebarContext_OnContextmenu($(this), e);
 	});
 
 

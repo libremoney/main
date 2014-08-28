@@ -736,6 +736,20 @@ var Lm = (function(Lm, $, undefined) {
 		return data;
 	}
 
+	function ConvertNumericToRSAccountFormat(account) {
+		if (/^LMA\-/i.test(account)) {
+			return String(account).escapeHTML();
+		} else {
+			var address = new LmAddress();
+
+			if (address.set(account)) {
+				return address.toString().escapeHTML();
+			} else {
+				return "";
+			}
+		}
+	}
+
 	function GetAccountLink(object, acc) {
 		if (typeof object[acc + "RS"] == "undefined") {
 			return "/";
@@ -1460,7 +1474,7 @@ var Lm = (function(Lm, $, undefined) {
 		if ($.i18n.exists(nameKey)) {
 			return $.t(nameKey).escapeHTML();
 		} else {
-			return String(name).escapeHTML();
+			return nameKey.replace(/_/g, " ").escapeHTML();
 		}
 	}
 
@@ -1494,6 +1508,7 @@ var Lm = (function(Lm, $, undefined) {
 	Lm.FormatVolume = FormatVolume;
 	Lm.FormatWeight = FormatWeight;
 	Lm.GetAccountFormatted = GetAccountFormatted;
+	Lm.ConvertNumericToRSAccountFormat = ConvertNumericToRSAccountFormat;
 	Lm.GetAccountLink = GetAccountLink;
 	Lm.GetAccountTitle = GetAccountTitle;
 	Lm.GetClipboardText = GetClipboardText;

@@ -73,7 +73,7 @@ function GetAccount(value) {
 */
 
 function GetAccountById(id) {
-	return accounts[id];
+	return id == null ? null : accounts[id];
 }
 
 function GetAccountByPublicKey(publicKey) {

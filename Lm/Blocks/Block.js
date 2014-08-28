@@ -1,5 +1,5 @@
 /**!
- * LibreMoney Block 0.0
+ * LibreMoney Block 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -350,11 +350,6 @@ function VerifyGenerationSignature() {
 			return false;
 		}
 
-		int elapsedTime = timestamp - previousBlock.timestamp;
-		BigInteger target = BigInteger.valueOf(Nxt.getBlockchain().getLastBlock().getBaseTarget())
-				.multiply(BigInteger.valueOf(effectiveBalance))
-				.multiply(BigInteger.valueOf(elapsedTime));
-
 		MessageDigest digest = Crypto.sha256();
 		byte[] generationSignatureHash;
 		if (version == 1) {
@@ -369,7 +364,7 @@ function VerifyGenerationSignature() {
 
 		BigInteger hit = new BigInteger(1, new byte[] {generationSignatureHash[7], generationSignatureHash[6], generationSignatureHash[5], generationSignatureHash[4], generationSignatureHash[3], generationSignatureHash[2], generationSignatureHash[1], generationSignatureHash[0]});
 
-		return hit.compareTo(target) < 0;
+		return Generator.verifyHit(hit, effectiveBalance, previousBlock, timestamp);
 
 	} catch (RuntimeException e) {
 

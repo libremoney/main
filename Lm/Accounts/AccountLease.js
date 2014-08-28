@@ -1,3 +1,8 @@
+/**!
+ * LibreMoney 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
 private AccountLease(LessorId, LesseeId, FromHeight, ToHeight) {
 	this.LessorId = LessorId;

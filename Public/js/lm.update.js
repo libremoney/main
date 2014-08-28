@@ -1,3 +1,6 @@
+/**
+ * @depends {lm.js}
+ */
 var Lm = (function(Lm, $, undefined) {
 	Lm.NormalVersion = {};
 	Lm.BetaVersion = {};
@@ -6,13 +9,13 @@ var Lm = (function(Lm, $, undefined) {
 
 	function CheckAliasVersions() {
 		if (Lm.DownloadingBlockchain) {
-			$("#nrs_update_explanation span").hide();
-			$("#nrs_update_explanation_blockchain_sync").show();
+			$("#lm_update_explanation span").hide();
+			$("#lm_update_explanation_blockchain_sync").show();
 			return;
 		}
 		if (Lm.IsTestNet) {
-			$("#nrs_update_explanation span").hide();
-			$("#nrs_update_explanation_testnet").show();
+			$("#lm_update_explanation span").hide();
+			$("#lm_update_explanation_testnet").show();
 			return;
 		}
 
@@ -43,6 +46,43 @@ var Lm = (function(Lm, $, undefined) {
 				}
 			}
 		});
+
+		if (Lm.InApp) {
+			if (Lm.AppPlatform && Lm.AppVersion) {
+				Lm.SendRequest("getAlias", {
+					"aliasName": "lmwallet" + Lm.AppPlatform
+				}, function(response) {
+					var versionInfo = $.parseJSON(response.aliasURI);
+
+					if (versionInfo && versionInfo.version != Lm.AppVersion) {
+						var newerVersionAvailable = Lm.VersionCompare(Lm.AppVersion, versionInfo.version);
+
+						if (newerVersionAvailable == -1) {
+							parent.postMessage({
+								"type": "appUpdate",
+								"version": versionInfo.version,
+								"lm": versionInfo.lm,
+								"hash": versionInfo.hash,
+								"url": versionInfo.url
+							}, "*");
+						}
+					}
+				});
+			} else {
+				//user uses an old version which does not supply the platform / version
+				var noticeDate = new Date(2014, 8, 20);
+
+				if (new Date() > noticeDate) {
+					var isMac = navigator.platform.match(/Mac/i);
+
+					var downloadUrl = "https://libremoney.org/lm-wallet-" + (isMac ? "mac" : "win");
+
+					$("#secondary_dashboard_message").removeClass("alert-success").addClass("alert-danger").html($.t("old_lm_wallet_update", {
+						"link": downloadUrl
+					})).show();
+				}
+			}
+		}
 	}
 
 	function CheckForNewVersion() {
@@ -55,9 +95,12 @@ var Lm = (function(Lm, $, undefined) {
 			installVersusBeta = Lm.VersionCompare(Lm.State.version, Lm.BetaVersion.versionNr);
 		}
 
-		$("#lm_update_explanation span").hide();
-		$(".nrs_new_version_nr").html(Lm.NormalVersion.versionNr).show();
-		$(".nrs_beta_version_nr").html(Lm.BetaVersion.versionNr).show();
+		$("#lm_update_explanation > span").hide();
+
+		$("#lm_update_explanation_wait").attr("style", "display: none !important");
+
+		$(".lm_new_version_nr").html(Lm.NormalVersion.versionNr).show();
+		$(".lm_beta_version_nr").html(Lm.BetaVersion.versionNr).show();
 
 		if (installVersusNormal == -1 && installVersusBeta == -1) {
 			Lm.IsOutdated = true;
@@ -190,9 +233,9 @@ var Lm = (function(Lm, $, undefined) {
 				$("#lm_update_drop_zone").hide();
 
 				if (e.data.sha256 == Lm.DownloadedVersion.hash) {
-					$("#lm_update_result").html("The downloaded version has been verified, the hash is correct. You may proceed with the installation.").attr("class", " ");
+					$("#lm_update_result").html($.t("success_hash_verification")).attr("class", " ");
 				} else {
-					$("#lm_update_result").html("The downloaded version hash does not compare to the specified hash in the blockchain. DO NOT PROCEED.").attr("class", "incorrect");
+					$("#lm_update_result").html($.t("error_hash_verification")).attr("class", "incorrect");
 				}
 
 				$("#lm_update_hash_version").html(Lm.DownloadedVersion.versionNr);
@@ -228,9 +271,9 @@ var Lm = (function(Lm, $, undefined) {
 					"hash": Lm.DownloadedVersion.hash
 				}
 			}, "*");
-			$("#nrs_modal").modal("hide");
+			$("#lm_modal").modal("hide");
 		} else {
-			$("#lm_update_iframe").attr("src", "https://bitbucket.org/JeanLucPicard/nxt/downloads/nxt-client-" + Lm.DownloadedVersion.versionNr + ".zip");
+			$("#lm_update_iframe").attr("src", "https://libremoney.org/lm-client-" + Lm.DownloadedVersion.versionNr + ".zip");
 			$("#lm_update_explanation").hide();
 			$("#lm_update_drop_zone").show();
 

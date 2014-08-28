@@ -285,6 +285,16 @@ function ToHexString(bytes) {
 	return String.valueOf(chars);
 }
 
+// objectId - BigInt
+function ToUnsignedBigInt(objectId) {
+	//--- 1 --- (long)
+	if (objectId.isPositive()) {
+		return objectId;
+	}
+	var id = BigInteger(objectId).add(two64);
+	return id;
+}
+
 function ToUnsignedLong(objectId) {
 	//--- 1 --- (long)
 	if (objectId >= 0) {
@@ -338,6 +348,7 @@ exports.SafeNegate = SafeNegate;
 exports.SafeSubtract = SafeSubtract;
 exports.StringToArray = StringToArray;
 exports.ToHexString = ToHexString;
+exports.ToUnsignedBigInt = ToUnsignedBigInt;
 exports.ToUnsignedLong = ToUnsignedLong;
 exports.Truncate = Truncate;
 exports.ZeroToNull = ZeroToNull;

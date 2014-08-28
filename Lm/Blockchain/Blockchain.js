@@ -1,5 +1,5 @@
 /**!
- * LibreMoney Blockchain 0.0
+ * LibreMoney Blockchain 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -166,51 +166,70 @@ function GetTransactionCount(callback) {
 	});
 }
 
-function GetTransactions1(account, type, subtype, timestamp, orderAscending) {
+function GetTransactions1(account, type, subtype, timestamp, from, to) {
 	throw 'Not implemented';
-	//Logger.info('GetTransactions1: account='+account+' type='+type+' subtype='+subtype+' timestamp='+timestamp+' orderAscending='+orderAscending);
-	if (typeof orderAscending == 'undefined') orderAscending = true;
-	var con = Db.GetConnection();
+	/*
+	Connection con = null;
 	try {
-		console.log('GetTransactions1: 1');
-		/*
-		var buf = '';
-		buf += "SELECT * FROM transaction WHERE (recipient_id = ? OR sender_id = ?) ";
+		StringBuilder buf = new StringBuilder();
+		buf.append("SELECT * FROM transaction WHERE recipient_id = ? AND sender_id <> ? ");
 		if (timestamp > 0) {
-			buf += "AND timestamp >= ? ";
+			buf.append("AND timestamp >= ? ");
 		}
 		if (type >= 0) {
-			buf += "AND type = ? ";
+			buf.append("AND type = ? ");
 			if (subtype >= 0) {
-				buf += "AND subtype = ? ";
+				buf.append("AND subtype = ? ");
 			}
 		}
-		if (orderAscending == true) {
-			buf += "ORDER BY timestamp ASC";
-		} else if (orderAscending == false) {
-			buf += "ORDER BY timestamp DESC";
-		}
-		con = Db.GetConnection();
-		var pstmt;
-		var i = 0;
-		pstmt = con.PrepareStatement(buf);
-		pstmt.SetLong(++i, account.GetId());
+		buf.append("UNION ALL SELECT * FROM transaction WHERE sender_id = ? ");
 		if (timestamp > 0) {
-			pstmt.SetInt(++i, timestamp);
+			buf.append("AND timestamp >= ? ");
 		}
 		if (type >= 0) {
-			pstmt.SetByte(++i, type);
+			buf.append("AND type = ? ");
 			if (subtype >= 0) {
-				pstmt.SetByte(++i, subtype);
+				buf.append("AND subtype = ? ");
 			}
 		}
-		pstmt.SetLong(++i, account.GetId());
-		return GetTransactions(con, pstmt);
-		*/
-	} catch (e) {
-		con.close();
-		throw new Error(e);
+		buf.append("ORDER BY timestamp DESC");
+		if (to >= from && to < Integer.MAX_VALUE) {
+			buf.append(" LIMIT " + (to - from + 1));
+		}
+		if (from > 0) {
+			buf.append(" OFFSET " + from);
+		}
+		con = Db.getConnection();
+		PreparedStatement pstmt;
+		int i = 0;
+		pstmt = con.prepareStatement(buf.toString());
+		pstmt.setLong(++i, account.getId());
+		pstmt.setLong(++i, account.getId());
+		if (timestamp > 0) {
+			pstmt.setInt(++i, timestamp);
+		}
+		if (type >= 0) {
+			pstmt.setByte(++i, type);
+			if (subtype >= 0) {
+				pstmt.setByte(++i, subtype);
+			}
+		}
+		pstmt.setLong(++i, account.getId());
+		if (timestamp > 0) {
+			pstmt.setInt(++i, timestamp);
+		}
+		if (type >= 0) {
+			pstmt.setByte(++i, type);
+			if (subtype >= 0) {
+				pstmt.setByte(++i, subtype);
+			}
+		}
+		return getTransactions(con, pstmt);
+	} catch (SQLException e) {
+		DbUtils.close(con);
+		throw new RuntimeException(e.toString(), e);
 	}
+	*/
 }
 
 function GetTransactions2(con, pstmt) {
@@ -220,7 +239,8 @@ function GetTransactions2(con, pstmt) {
 }
 
 function GetTransactions3(account, type, subtype, timestamp, orderAscending, work) {
-	if (typeof orderAscending == 'undefined') orderAscending = true;
+	if (typeof orderAscending == 'undefined')
+		return getTransactions(account, type, subtype, timestamp, 0, -1);
 
 	trModel = Db.GetModel('transaction');
 
