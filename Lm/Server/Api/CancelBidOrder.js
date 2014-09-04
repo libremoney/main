@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney CancelBidOrder api 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -14,7 +14,7 @@ import nxt.Order;
 var JsonResponses = require(__dirname + '/../JsonResponses');
 
 
-//super("order");
+//super(new APITag[] {APITag.AE, APITag.CREATE_TRANSACTION}, "order");
 function CancelBidOrder(req, res) {
 	//var obj = CreateTransaction();
 	res.send('This is not implemented');

@@ -1,5 +1,5 @@
 /**!
- * LibreMoney JsonResponses 0.0
+ * LibreMoney ParseTransaction api 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */

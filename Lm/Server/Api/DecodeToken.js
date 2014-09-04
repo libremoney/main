@@ -1,19 +1,15 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney DecodeToken api 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
-
-/*
-import nxt.Token;
-*/
 
 var JsonData = require(__dirname + '/../JsonData');
 var JsonResponses = require(__dirname + '/../JsonResponses');
 var Tokens = require(__dirname + '/../../Tokens');
 
 
-//super("website", "token");
+//super(new APITag[] {APITag.TOKENS}, "website", "token");
 function DecodeToken(req, res) {
 	var website = req.query.website;
 	var tokenString = req.query.token;

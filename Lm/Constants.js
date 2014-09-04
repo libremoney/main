@@ -39,7 +39,7 @@ exports.MaxPollOptionLength = 100;
 exports.MaxPollOptionCount = 100;
 
 exports.MaxDgsQuantity = 1000000000;
-exports.MaxDgsNameLength = 100;
+exports.MaxDgsListingNameLength = 100;
 exports.MaxDgsListingDescriptionLength = 1000;
 exports.MaxDgsListingTagsLength = 100;
 exports.MaxDgsLength = 10240;
@@ -88,6 +88,8 @@ exports.SUBTYPE_MESSAGING_POLL_CREATION = 2;
 exports.SUBTYPE_MESSAGING_VOTE_CASTING = 3;
 exports.SUBTYPE_MESSAGING_HUB_ANNOUNCEMENT = 4;
 exports.SUBTYPE_MESSAGING_ACCOUNT_INFO = 5;
+exports.SUBTYPE_MESSAGING_ALIAS_SELL = 6;
+exports.SUBTYPE_MESSAGING_ALIAS_BUY = 7;
 
 exports.SUBTYPE_COLORED_COINS_ASSET_ISSUANCE = 0;
 exports.SUBTYPE_COLORED_COINS_ASSET_TRANSFER = 1;

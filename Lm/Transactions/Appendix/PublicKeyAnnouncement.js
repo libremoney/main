@@ -88,3 +88,5 @@ function PublicKeyAnnouncement() {
 
 	return obj;
 }
+
+module.exports = PublicKeyAnnouncement;

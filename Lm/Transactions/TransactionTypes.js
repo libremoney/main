@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -52,7 +52,10 @@ function Find(type, subtype) {
 					return Messaging.HUB_ANNOUNCEMENT;
 				case SUBTYPE_MESSAGING_ACCOUNT_INFO:
 					return Messaging.ACCOUNT_INFO;
-				*
+				case SUBTYPE_MESSAGING_ALIAS_SELL:
+					return Messaging.ALIAS_SELL;
+				case SUBTYPE_MESSAGING_ALIAS_BUY:
+					return Messaging.ALIAS_BUY;
 				default:
 					return null;
 			}
@@ -129,6 +132,18 @@ function Find(type, subtype) {
 		default:
 			return null;
 	}
+	*/
+}
+
+function IsDuplicate(uniqueType, key, duplicates) {
+	throw new Error('Not implementted');
+	/*
+	Set<String> typeDuplicates = duplicates.get(uniqueType);
+	if (typeDuplicates == null) {
+		typeDuplicates = new HashSet<>();
+		duplicates.put(uniqueType, typeDuplicates);
+	}
+	return ! typeDuplicates.add(key);
 	*/
 }
 

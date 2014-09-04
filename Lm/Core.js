@@ -33,7 +33,7 @@ var ThreadPool = require(__dirname + '/ThreadPool');
 var defaultProperties;
 var listeners = new Listeners();
 var properties;
-var version = "0.1.1";
+var version = "0.1.2";
 
 
 var Event = {

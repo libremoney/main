@@ -1,8 +1,10 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney SignTransaction 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
+
+// deprecated
 
 var Crypto = require(__dirname + '/../../Crypto/Crypto');
 var Convert = require(__dirname + '/../../Util/Convert');

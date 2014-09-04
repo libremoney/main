@@ -1,5 +1,5 @@
 /**!
- * LibreMoney TransactionProcessor 0.0
+ * LibreMoney TransactionProcessor 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -61,7 +61,7 @@ function ApplyUnconfirmed(unapplied) {
 }
 
 function Broadcast(transaction) {
-	if (!transaction.Verify()) {
+	if (!transaction.VerifySignature()) {
 		throw new Error("ValidationException: Transaction signature verification failed");
 	}
 	var validTransactions = ProcessTransactions(Collections.SingletonList(transaction), true);
@@ -100,61 +100,12 @@ function Init(callback) {
 }
 
 // value = bytes or transactionData
-function ParseTransaction(value) {
-	/*
-	ByteBuffer buffer = ByteBuffer.wrap(bytes);
-	buffer.order(ByteOrder.LITTLE_ENDIAN);
+function ParseTransaction1(value) {
+	return Transactions.ParseTransaction(value);
+}
 
-	byte type = buffer.get();
-	byte subtype = buffer.get();
-	int timestamp = buffer.getInt();
-	short deadline = buffer.getShort();
-	byte[] senderPublicKey = new byte[32];
-	buffer.get(senderPublicKey);
-	Long recipientId = buffer.getLong();
-	long amountNQT = buffer.getLong();
-	long feeNQT = buffer.getLong();
-	String referencedTransactionFullHash = null;
-	byte[] referencedTransactionFullHashBytes = new byte[32];
-	buffer.get(referencedTransactionFullHashBytes);
-	if (Convert.emptyToNull(referencedTransactionFullHashBytes) != null) {
-		referencedTransactionFullHash = Convert.toHexString(referencedTransactionFullHashBytes);
-	}
-	byte[] signature = new byte[64];
-	buffer.get(signature);
-	signature = Convert.emptyToNull(signature);
-
-	TransactionType transactionType = TransactionType.findTransactionType(type, subtype);
-	TransactionImpl transaction;
-	transaction = new TransactionImpl(transactionType, timestamp, deadline, senderPublicKey, recipientId,
-			amountNQT, feeNQT, referencedTransactionFullHash, signature);
-	transactionType.loadAttachment(transaction, buffer);
-
-	return transaction;
-	*/
-
-	/*
-	byte type = ((Long)transactionData.get("type")).byteValue();
-	byte subtype = ((Long)transactionData.get("subtype")).byteValue();
-	int timestamp = ((Long)transactionData.get("timestamp")).intValue();
-	short deadline = ((Long)transactionData.get("deadline")).shortValue();
-	byte[] senderPublicKey = Convert.parseHexString((String) transactionData.get("senderPublicKey"));
-	Long recipientId = Convert.parseUnsignedLong((String) transactionData.get("recipient"));
-	if (recipientId == null) recipientId = 0L; // ugly
-	long amountNQT = (Long) transactionData.get("amountNQT");
-	long feeNQT = (Long) transactionData.get("feeNQT");
-	String referencedTransactionFullHash = (String) transactionData.get("referencedTransactionFullHash");
-	byte[] signature = Convert.parseHexString((String) transactionData.get("signature"));
-
-	TransactionType transactionType = TransactionType.findTransactionType(type, subtype);
-	TransactionImpl transaction = new TransactionImpl(transactionType, timestamp, deadline, senderPublicKey, recipientId,
-			amountNQT, feeNQT, referencedTransactionFullHash, signature);
-
-	JSONObject attachmentData = (JSONObject)transactionData.get("attachment");
-	transactionType.loadAttachment(transaction, attachmentData);
-	return transaction;
-	*/
-	throw new Error('Not implemented');
+function ParseTransaction2(transactionData) {
+	return Transactions.ParseTransaction(transactionData);
 }
 
 function ProcessPeerTransactions1(request) {
@@ -172,12 +123,13 @@ function ProcessPeerTransactions2(transactionsData, sendToPeers) {
 	for (Object transactionData : transactionsData) {
 		try {
 			TransactionImpl transaction = parseTransaction((JSONObject)transactionData);
-			transaction.validateAttachment();
+			try {
+				transaction.validate();
+			} catch (NxtException.NotCurrentlyValidException ignore) {}
 			transactions.add(transaction);
-		} catch (NxtException.ValidationException e) {
-			//if (! (e instanceof TransactionType.NotYetEnabledException)) {
-			//    Logger.logDebugMessage("Dropping invalid transaction: " + e.getMessage());
-			//}
+		} catch (NxtException.NotValidException e) {
+			Logger.logDebugMessage("Invalid transaction from peer: " + ((JSONObject) transactionData).toJSONString());
+			throw e;
 		}
 	}
 	processTransactions(transactions, sendToPeers);
@@ -199,31 +151,45 @@ function ProcessTransactions(transactions, sendToPeers) {
 				continue;
 			}
 
+
+
 			var id = transaction.GetId();
 			if (Transactions.HasTransaction(id) || unconfirmedTransactions.ContainsKey(id) || ! transaction.Verify()) {
 				continue;
 			}
 
-			if (transaction.ApplyUnconfirmed()) {
+		/*
+		//synchronized (BlockchainImpl.getInstance()) {
+			if (Blockchain.GetHeight() < Constants.NQT_BLOCK) {
+				break; // not ready to process transactions
+			}
+			var id = transaction.getId();
+			if (TransactionDb.HasTransaction(id) || unconfirmedTransactions.containsKey(id)) {
+				continue;
+			}
+			if (! transaction.verifySignature()) {
+				if (Account.getAccount(transaction.getSenderId()) != null) {
+					Logger.logDebugMessage("Transaction " + transaction.getJSONObject().toJSONString() + " failed to verify");
+				}
+				continue;
+			}
+			if (transaction.applyUnconfirmed()) {
 				if (sendToPeers) {
-					if (nonBroadcastedTransactions.indexOf(id) >= 0) { // containsKey
-						Logger.debug("Received back transaction " + transaction.GetStringId()
+					if (nonBroadcastedTransactions.containsKey(id)) {
+						Logger.logDebugMessage("Received back transaction " + transaction.getStringId()
 								+ " that we generated, will not forward to peers");
-						var i = nonBroadcastedTransactions.indexOf(id);
-						if (i >= 0)
-							nonBroadcastedTransactions[i] = null;
+						nonBroadcastedTransactions.remove(id);
 					} else {
-						sendToPeersTransactions.push(transaction);
+						sendToPeersTransactions.add(transaction);
 					}
 				}
-				unconfirmedTransactions[id] = transaction;
-				addedUnconfirmedTransactions.push(transaction);
+				unconfirmedTransactions.put(id, transaction);
+				addedUnconfirmedTransactions.add(transaction);
 			} else {
-				addedDoubleSpendingTransactions.push(transaction);
+				addedDoubleSpendingTransactions.add(transaction);
 			}
-		//} catch (RuntimeException e) {
-		//	Logger.logMessage("Error processing transaction", e);
 		//}
+		*/
 	}
 
 	if (sendToPeersTransactions.length > 0) {
@@ -246,14 +212,17 @@ function RemoveListener(eventType, listener) {
 function RemoveUnconfirmedTransactions(transactions) {
 	throw new Error('Not implemented');
 	/*
-	List<Transaction> removedList = new ArrayList<>();
-	for (TransactionImpl transaction : transactions) {
-		if (unconfirmedTransactions.remove(transaction.getId()) != null) {
-			transaction.undoUnconfirmed();
-			removedList.add(transaction);
+	List<Transaction> removedList;
+	synchronized (BlockchainImpl.getInstance()) {
+		removedList = new ArrayList<>();
+		for (TransactionImpl transaction : transactions) {
+			if (unconfirmedTransactions.remove(transaction.getId()) != null) {
+				transaction.undoUnconfirmed();
+				removedList.add(transaction);
+			}
 		}
 	}
-	transactionListeners.Notify(Event.REMOVED_UNCONFIRMED_TRANSACTIONS, removedList);
+	transactionListeners.notify(removedList, Event.REMOVED_UNCONFIRMED_TRANSACTIONS);
 	*/
 }
 
@@ -349,7 +318,8 @@ exports.Event = Event;
 exports.GetAllUnconfirmedTransactions = GetAllUnconfirmedTransactions;
 exports.GetUnconfirmedTransaction = GetUnconfirmedTransaction;
 exports.Init = Init;
-exports.ParseTransaction = ParseTransaction;
+exports.ParseTransaction1 = ParseTransaction1;
+exports.ParseTransaction2 = ParseTransaction2;
 exports.ProcessPeerTransactions1 = ProcessPeerTransactions1;
 exports.ProcessPeerTransactions2 = ProcessPeerTransactions2;
 exports.ProcessTransactions = ProcessTransactions;

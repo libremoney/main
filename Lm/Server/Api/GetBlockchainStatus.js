@@ -1,17 +1,17 @@
-/*
-import nxt.Block;
-import nxt.BlockchainProcessor;
-import nxt.Nxt;
-import nxt.peer.Peer;
-import nxt.util.Convert;
-*/
+/**!
+ * LibreMoney GetBlockchainStatus api 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-function Main(req, res) {
-	//static final GetBlockchainStatus instance = new GetBlockchainStatus();
+var Blockchain = require(__dirname + '/../../Blockchain');
+var BlockchainProcessor = require(__dirname + '/../../BlockchainProcessor');
+var Convert = require(__dirname + '/../../Util/Convert');
 
-	//var lastBlock = Lm.GetBlockchain().GetLastBlock();
-	//var blockchainProcessor = Lm.GetBlockchainProcessor();
-	//var lastBlockchainFeeder = blockchainProcessor.GetLastBlockchainFeeder();
+
+function GetBlockchainStatus(req, res) {
+	var lastBlock = Blockchain.GetLastBlock();
+	var lastBlockchainFeeder = BlockchainProcessor.GetLastBlockchainFeeder();
 	response = {
 		version: "0",
 		time: "0", //Convert.getEpochTime()
@@ -19,8 +19,8 @@ function Main(req, res) {
 		cumulativeDifficulty: "", //lastBlock.GetCumulativeDifficulty().ToString()
 		numberOfBlocks: 1, //lastBlock.GetHeight() + 1
 		lastBlockchainFeeder: "", //lastBlockchainFeeder == null ? null : lastBlockchainFeeder.getAnnouncedAddress()
-		lastBlockchainFeederHeight: "", //blockchainProcessor.getLastBlockchainFeederHeight()
-		IsScanning: "" //blockchainProcessor.IsScanning()
+		lastBlockchainFeederHeight: "", //BlockchainProcessor.GetLastBlockchainFeederHeight()
+		IsScanning: "" //BlockchainProcessor.IsScanning()
 	};
 
 	//console.log(response);
@@ -29,4 +29,4 @@ function Main(req, res) {
 	//res.send('This is not implemented');
 }
 
-module.exports = Main;
+module.exports = GetBlockchainStatus;

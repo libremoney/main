@@ -319,6 +319,11 @@ function ZeroToNull(l) {
 	return l == 0 ? null : l;
 }
 
+// ---- String ----
+
+String.prototype.equalsIgnoreCase = function(str) {
+	return (this.toLowerCase() == str.toLowerCase());
+}
 
 String.prototype.startsWith = function(str) {
 	return ( str === this.substr( 0, str.length ) );

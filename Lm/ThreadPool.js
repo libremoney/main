@@ -84,21 +84,17 @@ function RunBeforeStart(runnable, runLast) {
 		lastBeforeStartJobs.push(runnable);
 	} else {
 		beforeStartJobs.push(runnable);
+	}
 }
 
 function ScheduleThread(runnable, delay, name) {
-	ScheduleThread2(runnable, delay, TimeUnit.SECONDS);
-}
-
-function ScheduleThread2(runnable, delay, timeUnit) {
 	if (scheduledThreadPool) {
 		throw new Error("Executor service already started, no new jobs accepted");
 	}
 	backgroundJobs.push({
 		runnable: runnable,
 		delay: delay,
-		name: name,
-		timeUnit: timeUnit.toMillis(delay)
+		name: name
 	});
 }
 
@@ -162,7 +158,6 @@ function ShutdownExecutor(executor) {
 exports.RunAll = RunAll;
 exports.RunBeforeStart = RunBeforeStart;
 exports.ScheduleThread = ScheduleThread;
-exports.ScheduleThread2 = ScheduleThread2;
 exports.Shutdown = Shutdown;
 exports.ShutdownExecutor = ShutdownExecutor;
 exports.Start = Start;

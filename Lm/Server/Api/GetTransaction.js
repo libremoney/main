@@ -1,12 +1,8 @@
 /**!
- * LibreMoney GetTransaction api 0.0
+ * LibreMoney GetTransaction api 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
-
-/*
-import nxt.Transaction;
-*/
 
 var Blockchain = require(__dirname + '/../../Blockchain');
 var Convert = require(__dirname + '/../../Util/Convert');
@@ -77,9 +73,6 @@ function GetTransaction(req, res) {
 	}
 	*/
 	return true;
-}
-
-function Work(transaction) {
 }
 
 

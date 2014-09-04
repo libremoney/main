@@ -1,3 +1,9 @@
+/**!
+ * LibreMoney GetConstants api 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 import nxt.Constants;
 import nxt.Genesis;
@@ -6,12 +12,10 @@ import nxt.util.Convert;
 import nxt.util.JSON;
 */
 
-function Main(req, res) {
+function GetConstants(req, res) {
+	//private static final JSONStreamAware CONSTANTS;
 	res.send('This is not implemented');
 	/*
-	static final GetConstants instance = new GetConstants();
-
-	private static final JSONStreamAware CONSTANTS;
 
 	static {
 
@@ -161,12 +165,10 @@ function Main(req, res) {
 
 	}
 
-	private GetConstants() {}
-
 	JSONStreamAware processRequest(HttpServletRequest req) {
 		return CONSTANTS;
 	}
 	*/
 }
 
-module.exports = Main;
+module.exports = GetConstants;

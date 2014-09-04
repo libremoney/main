@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney GenerateToken api 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -12,7 +12,7 @@ var JsonResponses = require(__dirname + '/../JsonResponses');
 var Tokens = require(__dirname + '/../../Tokens');
 
 
-//super("website", "secretPhrase");
+//super(new APITag[] {APITag.TOKENS}, "website", "secretPhrase");
 // POST
 function GenerateToken(req, res) {
 	var secretPhrase = req.query.secretPhrase;

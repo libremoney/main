@@ -1,17 +1,20 @@
+/**!
+ * LibreMoney GetTime api 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 import nxt.util.Convert;
 */
 
-function Main(req, res) {
-	//static final GetTime instance = new GetTime();
+function GetTime(req, res) {
 	res.send('This is not implemented');
 	/*
-	JSONStreamAware processRequest(HttpServletRequest req) {
-		JSONObject response = new JSONObject();
-		response.put("time", Convert.getEpochTime());
-		return response;
-	}
+	JSONObject response = new JSONObject();
+	response.put("time", Convert.getEpochTime());
+	return response;
 	*/
 }
 
-module.exports = Main;
+module.exports = GetTime;

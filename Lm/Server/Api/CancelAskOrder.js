@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney CancelAskOrder api 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -9,7 +9,7 @@ var CreateTransaction = require(__dirname + '/../CreateTransaction');
 var JsonResponses = require(__dirname + '/../JsonResponses');
 
 
-//super("order");
+//super(new APITag[] {APITag.AE, APITag.CREATE_TRANSACTION}, "order");
 function CancelAskOrder(req, res) {
 	var orderId = ParameterParser.GetOrderId(req);
 	var account = ParameterParser.GetSenderAccount(req);

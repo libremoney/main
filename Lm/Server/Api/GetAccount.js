@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney GetAccount api 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -9,13 +9,12 @@ var JsonResponses = require(__dirname + '/../JsonResponses');
 var ParameterParser = require(__dirname + '/../ParameterParser');
 
 
-//super("account");
+//super(new APITag[] {APITag.ACCOUNTS}, "account");
 function GetAccount(req, res) {
 	var account = ParameterParser.GetAccount(req);
 
 	var response = JsonData.AccountBalance(account);
-	response.account = Convert.ToUnsignedLong(account.getId());
-	response.accountRS = Convert.RsAccount(account.getId());
+	JsonData.PutAccount(response, "account", account.GetId());
 
 	if (account.GetPublicKey() != null) {
 		response.publicKey = Convert.ToHexString(account.GetPublicKey());
@@ -27,21 +26,25 @@ function GetAccount(req, res) {
 		response.description = account.getDescription();
 	}
 	if (account.GetCurrentLesseeId() != null) {
-		response.currentLessee = Convert.ToUnsignedLong(account.GetCurrentLesseeId());
+		JsonData.PutAccount(response, "currentLessee", account.GetCurrentLesseeId());
 		response.currentLeasingHeightFrom = account.GetCurrentLeasingHeightFrom();
 		response.currentLeasingHeightTo = account.GetCurrentLeasingHeightTo();
 		if (account.GetNextLesseeId() != null) {
-			response.nextLessee = Convert.ToUnsignedLong(account.GetNextLesseeId());
+			JsonData.PutAccount(response, "nextLessee", account.GetNextLesseeId());
 			response.nextLeasingHeightFrom = account.GetNextLeasingHeightFrom();
 			response.nextLeasingHeightTo = account.GetNextLeasingHeightTo();
 		}
 	}
-	if (!account.GetLessorIds().IsEmpty()) {
-		var lessorIds = new Array();
-		for (var lessorId in account.GetLessorIds()) {
+	var lessors = account.GetLessorIds();
+	if (!lessors.IsEmpty()) {
+		var lessorIds = [];
+		var lessorIdsRS = [];
+		for (var lessorId in lessors) {
 			lessorIds.push(Convert.ToUnsignedLong(lessorId));
+			lessorIdsRS.push(Convert.RsAccount(lessorId));
 		}
 		response.lessors = lessorIds;
+		response.put("lessorsRS", lessorIdsRS);
 	}
 
 	/*

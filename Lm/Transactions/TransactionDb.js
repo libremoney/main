@@ -1,9 +1,10 @@
 /*!
- * LibreMoney 0.0
+ * LibreMoney 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
+var ByteBuffer = require(__dirname + '/../Util/ByteBuffer');
 var Convert = require(__dirname + '/../Util/Convert');
 var Db = require(__dirname + '/../Db');
 var Logger = require(__dirname + '/../Logger').GetLogger(module);
@@ -71,10 +72,11 @@ function LoadTransaction(tr) {
 	var timestamp = tr.timestamp; // Int
 	var deadline = tr.deadline; // Short
 	var senderPublicKey = tr.sender_public_key; // Bytes
-	var recipientId = tr.recipient_id; // Long
 	var amountMilliLm = tr.amount; // Long
 	var feeMilliLm = tr.fee; // Long
 	var referencedTransactionFullHash = tr.referenced_transaction_full_hash; // Bytes
+	var ecBlockHeight = tr.ec_block_height; // Int
+	var ecBlockId = tr.ec_block_id; // Long
 	var signature = tr.signature; // Bytes
 	var blockId = tr.block_id; // Long
 	var height = tr.height; // Int
@@ -83,16 +85,24 @@ function LoadTransaction(tr) {
 	var attachmentBytes = tr.attachment_bytes; // Bytes
 	var blockTimestamp = tr.block_timestamp; // Int
 	var fullHash = tr.full_hash; // Bytes
+	var version = tr.version; // Byte
 
-	var transactionType = Transactions.Types.Find(type, subtype);
-	var transaction = new Transaction({
-		type: transactionType,
-		timestamp: timestamp,
-		deadline: deadline,
+	var buffer = null;
+	if (attachmentBytes) {
+		buffer = ByteBuffer.wrap(attachmentBytes);
+		buffer.littleEndian();
+	}
+
+	var transactionType = Transactions.FindTransactionType(type, subtype);
+
+	var builder = {
+		version: version,
 		senderPublicKey: senderPublicKey,
-		recipientId: recipientId,
 		amountMilliLm: amountMilliLm,
 		feeMilliLm: feeMilliLm,
+		timestamp: timestamp,
+		deadline: deadline,
+		attachment: transactionType.ParseAttachment(buffer, version),
 		referencedTransactionFullHash: referencedTransactionFullHash,
 		signature: signature,
 		blockId: blockId,
@@ -100,15 +110,33 @@ function LoadTransaction(tr) {
 		id: id,
 		senderId: senderId,
 		blockTimestamp: blockTimestamp,
-		fullHash: fullHash
-		});
-	/* TODO
-	if (attachmentBytes) {
-		ByteBuffer buffer = ByteBuffer.wrap(attachmentBytes);
-		buffer.order(ByteOrder.LITTLE_ENDIAN);
-		transactionType.loadAttachment(transaction, buffer); // this does not do validate
+		fullHash: fullHash,
+	};
+	builder.type = builder.attachment.GetTransactionType();
+	if (transactionType.hasRecipient()) {
+		var recipientId = tr.recipient_id;
+		if (!tr.wasNull()) {
+			builder.recipientId(recipientId);
+		}
 	}
-	*/
+	if (tr.has_message) {
+		builder.message = new Appendix.Message(buffer, version);
+	}
+	if (tr.has_encrypted_message) {
+		builder.encryptedMessage = new Appendix.EncryptedMessage(buffer, version);
+	}
+	if (tr.has_public_key_announcement) {
+		builder.publicKeyAnnouncement = new Appendix.PublicKeyAnnouncement(buffer, version);
+	}
+	if (tr.has_encrypttoself_message) {
+		builder.encryptToSelfMessage = new Appendix.EncryptToSelfMessage(buffer, version);
+	}
+	if (ecBlockHeight != 0) {
+		builder.ecBlockHeight = ecBlockHeight;
+		builder.ecBlockId = ecBlockId;
+	}
+
+	var transaction = new Transaction(builder);
 	return transaction;
 }
 
@@ -143,7 +171,11 @@ function SaveTransaction(transaction, callback) {
 	console.log('SaveTransaction: tr.id='+tr.id+' saving...');
 	tr.deadline = transaction.GetDeadline();
 	tr.sender_public_key = transaction.GetSenderPublicKey();
-	tr.recipient_id = transaction.GetRecipientId();
+	if (transaction.GetType().HasRecipient() && transaction.GetRecipientId() != null) {
+		tr.recipient_id = transaction.GetRecipientId();
+	} else {
+		tr.recipient_id = 0;
+	}
 	tr.amount = transaction.GetAmountMilliLm();
 	tr.fee = transaction.GetFeeMilliLm();
 	if (transaction.GetReferencedTransactionFullHash() != null) {
@@ -158,13 +190,35 @@ function SaveTransaction(transaction, callback) {
 	tr.type = transaction.GetType().GetType()
 	tr.subtype = transaction.GetType().GetSubtype();
 	tr.sender_id = transaction.GetSenderId();
-	if (transaction.GetAttachment() != null) {
-		tr.attachment_bytes = transaction.GetAttachment().GetBytes();
+
+	var bytesLength = 0;
+	for (var appendage in transaction.GetAppendages()) {
+		bytesLength += appendage.GetSize();
+	}
+	if (bytesLength == 0) {
+		tr.attachment_bytes = []; //Types.VARBINARY;
 	} else {
-		tr.attachment_bytes = 0; //Types.VARBINARY;
+		var buffer = new ByteBuffer(); //.allocate(bytesLength);
+		buffer.littleEndian;
+		for (var appendage in transaction.GetAppendages()) {
+			appendage.byteArray(buffer);
+		}
+		tr.attachment_bytes = buffer.array();
 	}
 	tr.block_timestamp = transaction.GetBlockTimestamp();
 	tr.full_hash = Convert.ParseHexString(transaction.GetFullHash());
+	tr.version = transaction.GetVersion();
+	tr.has_message = (transaction.GetMessage() != null);
+	tr.has_encrypted_message = (transaction.GetEncryptedMessage() != null);
+	tr.has_public_key_announcement = (transaction.GetPublicKeyAnnouncement() != null);
+	tr.has_encrypttoself_message = (transaction.GetEncryptToSelfMessage() != null);
+	tr.ec_block_height = transaction.GetECBlockHeight();
+	if (transaction.GetECBlockId() != null) {
+		tr.ec_block_id = transaction.GetECBlockId();
+	} else {
+		tr.ec_block_id = 0; //Types.BIGINT;
+	}
+
 
 	//console.log('SaveTransaction: transaction.id='+tr.id);
 	/*
@@ -185,6 +239,9 @@ function SaveTransaction(transaction, callback) {
 	console.log('tr.attachment_bytes='+tr.attachment_bytes);
 	console.log('tr.block_timestamp='+tr.block_timestamp);
 	console.log('tr.full_hash='+tr.full_hash);
+	+ version, has_message, has_encrypted_message, has_public_key_announcement, "
+	+ "has_encrypttoself_message, ec_block_height, ec_block_id) "
+	+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
 	*/
 
 	tr.save(function(err) {

@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney CreatePoll api 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -15,8 +15,9 @@ var Logger = require(__dirname + '/../../Logger').GetLogger(module);
 var ParameterParser = require(__dirname + '/../ParameterParser');
 
 
-// super("name", "description", "minNumberOfOptions", "maxNumberOfOptions", "optionsAreBinary", "option1", "option2", "option3");
-// hardcoded to 3 options for testing
+//super(new APITag[] {APITag.VS, APITag.CREATE_TRANSACTION},
+//"name", "description", "minNumberOfOptions", "maxNumberOfOptions", "optionsAreBinary",
+//"option1", "option2", "option3"); // hardcoded to 3 options for testing
 function CreatePoll(req, res) {
 	//var obj = CreateTransaction();
 

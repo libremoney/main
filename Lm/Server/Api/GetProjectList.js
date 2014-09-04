@@ -1,6 +1,11 @@
+/**!
+ * LibreMoney GetProjectList api 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-function Main(req, res) {
+function GetProjectList(req, res) {
 	res.send({});
 }
 
-module.exports = Main;
+module.exports = GetProjectList;

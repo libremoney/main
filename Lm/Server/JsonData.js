@@ -19,6 +19,10 @@ import nxt.peer.Hallmark;
 import nxt.peer.Peer;
 */
 
+//Appendix
+//DigitalGoodsStore
+//TransactionType
+//Crypto.EncryptedData
 var Accounts = require(__dirname + '/../Accounts');
 var Blockchain = require(__dirname + '/../Blockchain');
 var Convert = require(__dirname + '/../Util/Convert');
@@ -26,12 +30,18 @@ var Convert = require(__dirname + '/../Util/Convert');
 
 function Alias(alias) {
 	var json = {};
-	json.account = Convert.ToUnsignedLong(alias.GetAccount().GetId());
-	json.accountRS = Convert.RsAccount(alias.GetAccount().GetId());
+	PutAccount(json, "account", alias.GetAccountId());
 	json.aliasName = alias.GetAliasName();
 	json.aliasURI = alias.GetAliasURI();
 	json.timestamp = alias.GetTimestamp();
 	json.alias = Convert.ToUnsignedLong(alias.GetId());
+	var offer = Aliases.GetOffer(alias.GetAliasName());
+	if (offer != null) {
+		json.priceMilliLm = offer.GetPriceMilliLm();
+		if (offer.GetBuyerId() != null) {
+			json.buyer = Convert.ToUnsignedLong(offer.GetBuyerId());
+		}
+	}
 	return json;
 }
 
@@ -55,8 +65,7 @@ function AccountBalance(account) {
 
 function Asset(asset) {
 	var json = {};
-	json.account = Convert.ToUnsignedLong(asset.GetAccountId());
-	json.accountRS = Convert.RsAccount(asset.GetAccountId());
+	PutAccount(json, "account", asset.GetAccountId());
 	json.name = asset.GetName();
 	json.description = asset.GetDescription();
 	json.decimals = asset.GetDecimals();
@@ -73,23 +82,6 @@ function AskOrder(order) {
 	return json;
 }
 
-// ugly, hopefully temporary
-function Attachment(Attachment) {
-	/*
-	var json = {};
-	var quantityQNT = (Long) json.remove("quantityQNT");
-	if (quantityQNT != null) {
-		json.put("quantityQNT", String.valueOf(quantityQNT));
-	}
-	Long priceNQT = (Long) json.remove("priceNQT");
-	if (priceNQT != null) {
-		json.put("priceNQT", String.valueOf(priceNQT));
-	}
-	return json;
-	*/
-	throw new Error('Not implementted');
-}
-
 // Order = Order.Bid
 function BidOrder(order) {
 	var json = Order(order);
@@ -100,8 +92,8 @@ function BidOrder(order) {
 function Block(block) {
 	var json = {};
 	json.height = block.GetHeight();
-	json.generator = Convert.ToUnsignedLong(block.GetGeneratorId());
-	json.generatorRS = Convert.RsAccount(block.GetGeneratorId());
+	PutAccount(json, "generator", block.GetGeneratorId());
+	json.generatorPublicKey = Convert.ToHexString(block.GetGeneratorPublicKey());
 	json.timestamp = block.GetTimestamp();
 	json.numberOfTransactions = block.GetTransactionIds().length;
 	json.totalAmountMilliLm = String.valueOf(block.GetTotalAmountMilliLm());
@@ -130,16 +122,69 @@ function Block(block) {
 	return json;
 }
 
+function EncryptedData(encryptedData) {
+	var json = {};
+	json.data = Convert.ToHexString(encryptedData.GetData());
+	json.nonce = Convert.ToHexString(encryptedData.GetNonce());
+	return json;
+}
+
+function Goods(goods) {
+	var json = {};
+	json.goods = Convert.ToUnsignedLong(goods.GetId());
+	json.name = goods.GetName();
+	json.description = goods.GetDescription();
+	json.quantity = goods.GetQuantity();
+	json.priceMilliLm = goods.GetPriceMilliLm();
+	PutAccount(json, "seller", goods.GetSellerId();
+	json.tags = goods.GetTags();
+	json.delisted = goods.IsDelisted();
+	return json;
+}
+
 function Hallmark(hallmark) {
 	var json = {};
-	var accountId = Accounts.GetId(hallmark.GetPublicKey());
-	json.account = Convert.ToUnsignedLong(accountId);
-	json.accountRS = Convert.RsAccount(accountId);
+	PutAccount(json, "account", Accounts.GetId(hallmark.GetPublicKey()));
 	json.host = hallmark.GetHost();
 	json.weight = hallmark.GetWeight();
 	var dateString = Hallmark.FormatDate(hallmark.GetDate());
 	json.date = dateString;
 	json.valid = hallmark.IsValid();
+	return json;
+}
+
+// ugly, hopefully temporary
+function ModifyAttachmentJson(json) {
+	throw new Error('Not implementted');
+	/*
+	Long quantityQNT = (Long) json.remove("quantityQNT");
+	if (quantityQNT != null) {
+		json.put("quantityQNT", String.valueOf(quantityQNT));
+	}
+	Long priceNQT = (Long) json.remove("priceNQT");
+	if (priceNQT != null) {
+		json.put("priceNQT", String.valueOf(priceNQT));
+	}
+	Long discountNQT = (Long) json.remove("discountNQT");
+	if (discountNQT != null) {
+		json.put("discountNQT", String.valueOf(discountNQT));
+	}
+	Long refundNQT = (Long) json.remove("refundNQT");
+	if (refundNQT != null) {
+		json.put("refundNQT", String.valueOf(refundNQT));
+	}
+	*/
+}
+
+function Order(order) {
+	var json = {};
+	json.order = Convert.ToUnsignedLong(order.GetId());
+	json.asset = Convert.ToUnsignedLong(order.GetAssetId());
+	json.account = Convert.ToUnsignedLong(order.GetAccount().GetId());
+	json.accountRS = Convert.RsAccount(order.GetAccount().GetId());
+	json.quantityQNT = String.valueOf(order.GetQuantityQNT());
+	json.priceMilliLm = String.valueOf(order.GetPriceMilliLm());
+	json.height = order.GetHeight();
 	return json;
 }
 
@@ -158,6 +203,7 @@ function Peer(peer) {
 	json.version = peer.GetVersion();
 	json.platform = peer.GetPlatform();
 	json.blacklisted = peer.IsBlacklisted();
+	json.lastUpdated = peer.GetLastUpdated();
 	return json;
 }
 
@@ -184,23 +230,63 @@ function Poll(poll) {
 	return json;
 }
 
-function Order(order) {
-	var json = {};
-	json.order = Convert.ToUnsignedLong(order.GetId());
-	json.asset = Convert.ToUnsignedLong(order.GetAssetId());
-	json.account = Convert.ToUnsignedLong(order.GetAccount().GetId());
-	json.accountRS = Convert.RsAccount(order.GetAccount().GetId());
-	json.quantityQNT = String.valueOf(order.GetQuantityQNT());
-	json.priceMilliLm = String.valueOf(order.GetPriceMilliLm());
-	json.height = order.GetHeight();
+function Purchase(purchase) {
+	throw new Error('Not implementted');
+	json = {};
+	/*
+	JSONObject json = new JSONObject();
+	json.put("purchase", Convert.toUnsignedLong(purchase.getId()));
+	json.put("goods", Convert.toUnsignedLong(purchase.getGoodsId()));
+	json.put("name", purchase.getName());
+	putAccount(json, "seller", purchase.getSellerId());
+	json.put("priceNQT", String.valueOf(purchase.getPriceNQT()));
+	json.put("quantity", purchase.getQuantity());
+	putAccount(json, "buyer", purchase.getBuyerId());
+	json.put("timestamp", purchase.getTimestamp());
+	json.put("deliveryDeadlineTimestamp", purchase.getDeliveryDeadlineTimestamp());
+	if (purchase.getNote() != null) {
+		json.put("note", encryptedData(purchase.getNote()));
+	}
+	json.put("pending", purchase.isPending());
+	if (purchase.getEncryptedGoods() != null) {
+		json.put("goodsData", encryptedData(purchase.getEncryptedGoods()));
+		json.put("goodsIsText", purchase.goodsIsText());
+	}
+	if (purchase.getFeedbackNotes() != null) {
+		JSONArray feedbacks = new JSONArray();
+		for (EncryptedData encryptedData : purchase.getFeedbackNotes()) {
+			feedbacks.add(encryptedData(encryptedData));
+		}
+		json.put("feedbackNotes", feedbacks);
+	}
+	if (purchase.getPublicFeedback() != null) {
+		JSONArray publicFeedbacks = new JSONArray();
+		for (String publicFeedback : purchase.getPublicFeedback()) {
+			publicFeedbacks.add(publicFeedback);
+		}
+		json.put("publicFeedbacks", publicFeedbacks);
+	}
+	if (purchase.getRefundNote() != null) {
+		json.put("refundNote", encryptedData(purchase.getRefundNote()));
+	}
+	if (purchase.getDiscountNQT() > 0) {
+		json.put("discountNQT", String.valueOf(purchase.getDiscountNQT()));
+	}
+	if (purchase.getRefundNQT() > 0) {
+		json.put("refundNQT", String.valueOf(purchase.getRefundNQT()));
+	}
+	*/
 	return json;
+}
+
+function PutAccount(json, name, accountId) {
+	json[name] = Convert.ToUnsignedLong(accountId);
+	json[name + "RS"] = Convert.RsAccount(accountId);
 }
 
 function Token(token) {
 	var json = {};
-	var accountId = Accounts.GetId(token.GetPublicKey());
-	json.account = Convert.ToUnsignedLong(accountId);
-	json.accountRS = Convert.RsAccount(accountId);
+	PutAccount(json, "account", Accounts.GetId(token.GetPublicKey()));
 	json.timestamp = token.GetTimestamp();
 	json.valid = token.IsValid();
 	return json;
@@ -233,8 +319,9 @@ function UnconfirmedTransaction(transaction) {
 	json.timestamp = transaction.GetTimestamp();
 	json.deadline = transaction.GetDeadline();
 	json.senderPublicKey = Convert.ToHexString(transaction.GetSenderPublicKey());
-	json.recipient = Convert.ToUnsignedLong(transaction.GetRecipientId());
-	json.recipientRS = Convert.RsAccount(transaction.GetRecipientId());
+	if (transaction.GetRecipientId() != null) {
+		PutAccount(json, "recipient", transaction.GetRecipientId());
+	}
 	json.amountMilliLm = transaction.GetAmountMilliLm(); //String.valueOf(transaction.GetAmountMilliLm());
 	json.feeMilliLm = transaction.GetFeeMilliLm(); //String.valueOf(transaction.GetFeeMilliLm());
 	if (transaction.GetReferencedTransactionFullHash() != null) {
@@ -247,12 +334,23 @@ function UnconfirmedTransaction(transaction) {
 		json.fullHash = transaction.GetFullHash();
 		json.transaction = transaction.GetStringId();
 	}
-	if (transaction.GetAttachment() != null) {
-		json.attachment = attachment(transaction.GetAttachment());
+
+	var attachmentJson = {};
+	for (var appendage in transaction.GetAppendages()) {
+		attachmentJson.PutAll(appendage.GetJsonObject());
 	}
-	json.sender = Convert.ToUnsignedLong(transaction.GetSenderId());
-	json.senderRS = Convert.RsAccount(transaction.GetSenderId());
+	if (!attachmentJson.IsEmpty()) {
+		modifyAttachmentJson(attachmentJson);
+		json.attachment = attachmentJson;
+	}
+	PutAccount(json, "sender", transaction.GetSenderId());
 	json.height = transaction.GetHeight();
+	json.version = transaction.GetVersion();
+	if (transaction.GetVersion() > 0) {
+		json.ecBlockId = Convert.ToUnsignedLong(transaction.GetECBlockId());
+		json.ecBlockHeight = transaction.GetECBlockHeight();
+	}
+
 	return json;
 }
 
@@ -261,13 +359,17 @@ exports.AccountBalance = AccountBalance;
 exports.Alias = Alias;
 exports.AskOrder = AskOrder;
 exports.Asset = Asset;
-exports.Attachment = Attachment;
 exports.BidOrder = BidOrder;
 exports.Block = Block;
+exports.EncryptedData = EncryptedData;
+exports.Goods = Goods;
 exports.Hallmark = Hallmark;
+exports.ModifyAttachmentJson = ModifyAttachmentJson;
 exports.Order = Order;
 exports.Peer = Peer;
 exports.Poll = Poll;
+exports.Purchase = Purchase;
+exports.PutAccount = PutAccount;
 exports.Token = Token;
 exports.Trade = Trade;
 exports.Transaction = Transaction;

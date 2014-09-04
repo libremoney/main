@@ -10,17 +10,23 @@ var Logger = require(__dirname + '/../../Logger').GetLogger(module);
 var TransactionProcessor = require(__dirname + '/../../TransactionProcessor');
 
 
-//super("transactionBytes");
+//super(new APITag[] {APITag.TRANSACTIONS}, "transactionBytes", "transactionJSON");
 function BroadcastTransaction(req, res) {
-	var transactionBytes = req.query.transactionBytes;
-	if (!transactionBytes) {
-		res.send(JsonResponses.MissingTransactionBytes);
+	var transactionBytes = Convert.EmptyToNull(req.query.transactionBytes);
+	var transactionJson = Convert.EmptyToNull(req.query.transactionJson);
+	if (!transactionBytes && !transactionJson) {
+		res.send(JsonResponses.MissingTransactionBytesOrJson);
 		return;
 	}
 	try {
-		var bytes = Convert.ParseHexString(transactionBytes);
-		var transaction = TransactionProcessor.ParseTransaction(bytes);
-		transaction.ValidateAttachment();
+		var transaction;
+		if (transactionBytes) {
+			var bytes = Convert.ParseHexString(transactionBytes);
+			transaction = TransactionProcessor.ParseTransaction1(bytes);
+		} else {
+			transaction = TransactionProcessor.ParseTransaction2(transactionJson);
+		}
+		transaction.Validate();
 
 		var response = {};
 		try {

@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney DecodeHallmark api 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -8,7 +8,7 @@ var JsonResponses = require(__dirname + '/../JsonResponses');
 var Hallmark = require(__dirname + '/../../Peers/Hallmark');
 
 
-//super("hallmark");
+//super(new APITag[] {APITag.TOKENS}, "hallmark");
 function DecodeHallmark(req, res) {
 	var hallmarkValue = req.query.hallmark;
 	if (!hallmarkValue) {

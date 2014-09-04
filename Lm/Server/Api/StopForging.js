@@ -1,32 +1,27 @@
+/**!
+ * LibreMoney StopForging api 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 import nxt.Generator;
 import static nxt.http.JSONResponses.MISSING_SECRET_PHRASE;
 */
 
-function Main(req, res) {
+//super("secretPhrase");
+function StopForging(req, res) {
 	res.send('This is not implemented');
 	/*
-	static final StopForging instance = new StopForging();
-
-	private StopForging() {
-		super("secretPhrase");
+	String secretPhrase = req.getParameter("secretPhrase");
+	if (secretPhrase == null) {
+		return MISSING_SECRET_PHRASE;
 	}
-
-	JSONStreamAware processRequest(HttpServletRequest req) {
-		String secretPhrase = req.getParameter("secretPhrase");
-		if (secretPhrase == null) {
-			return MISSING_SECRET_PHRASE;
-		}
-		Generator generator = Generator.stopForging(secretPhrase);
-		JSONObject response = new JSONObject();
-		response.put("foundAndStopped", generator != null);
-		return response;
-	}
-
-	boolean requirePost() {
-		return true;
-	}
+	Generator generator = Generator.stopForging(secretPhrase);
+	JSONObject response = new JSONObject();
+	response.put("foundAndStopped", generator != null);
+	return response;
 	*/
 }
 
-module.exports = Main;
+module.exports = StopForging;

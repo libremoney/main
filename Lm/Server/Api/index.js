@@ -1,5 +1,5 @@
 /**!
- * LibreMoney api 0.0
+ * LibreMoney api 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -49,6 +49,7 @@ exports.PostUsers = PostUsers;
 exports.PutUser = PutUser;
 
 exports.BroadcastTransaction = require(__dirname + '/BroadcastTransaction');
+exports.BuyAlias = require(__dirname + '/BuyAlias');
 exports.CalculateFullHash = require(__dirname + '/CalculateFullHash');
 exports.CancelAskOrder = require(__dirname + '/CancelAskOrder');
 exports.CancelBidOrder = require(__dirname + '/CancelBidOrder');
@@ -57,6 +58,16 @@ exports.CreatePoll = require(__dirname + '/CreatePoll');
 //exports.CreateTransaction = require(__dirname + '/CreateTransaction'); // !!!!
 exports.DecodeHallmark = require(__dirname + '/DecodeHallmark');
 exports.DecodeToken = require(__dirname + '/DecodeToken');
+exports.DecryptFrom = require(__dirname + '/DecryptFrom');
+exports.DgsDelisting = require(__dirname + '/DgsDelisting');
+exports.DgsDelivery = require(__dirname + '/DgsDelivery');
+exports.DgsFeedback = require(__dirname + '/DgsFeedback');
+exports.DgsListing = require(__dirname + '/DgsListing');
+exports.DgsPriceChange = require(__dirname + '/DgsPriceChange');
+exports.DgsPurchase = require(__dirname + '/DgsPurchase');
+exports.DgsQuantityChange = require(__dirname + '/DgsQuantityChange');
+exports.DgsRefund = require(__dirname + '/DgsRefund');
+exports.EncryptTo = require(__dirname + '/EncryptTo');
 exports.GenerateToken = require(__dirname + '/GenerateToken');
 exports.GetAccount = require(__dirname + '/GetAccount');
 exports.GetAccountBlockIds = require(__dirname + '/GetAccountBlockIds');
@@ -65,6 +76,7 @@ exports.GetAccountCurrentBidOrderIds = require(__dirname + '/GetAccountCurrentBi
 exports.GetAccountId = require(__dirname + '/GetAccountId');
 exports.GetAccountPublicKey = require(__dirname + '/GetAccountPublicKey');
 exports.GetAccountTransactionIds = require(__dirname + '/GetAccountTransactionIds');
+exports.GetAccountTransactions = require(__dirname + '/GetAccountTransactions');
 exports.GetAlias = require(__dirname + '/GetAlias');
 exports.GetAliases = require(__dirname + '/GetAliases');
 exports.GetAllAssets = require(__dirname + '/GetAllAssets');
@@ -83,6 +95,7 @@ exports.GetBidOrderIds = require(__dirname + '/GetBidOrderIds');
 exports.GetBidOrders = require(__dirname + '/GetBidOrders');
 exports.GetBlock = require(__dirname + '/GetBlock');
 exports.GetBlockchainStatus = require(__dirname + '/GetBlockchainStatus');
+exports.GetBlockId = require(__dirname + '/GetBlockId');
 exports.GetConstants = require(__dirname + '/GetConstants');
 exports.GetForging = require(__dirname + '/GetForging');
 exports.GetGuaranteedBalance = require(__dirname + '/GetGuaranteedBalance');
@@ -108,6 +121,7 @@ exports.MarkHost = require(__dirname + '/MarkHost');
 exports.ParseTransaction = require(__dirname + '/ParseTransaction');
 exports.PlaceAskOrder = require(__dirname + '/PlaceAskOrder');
 exports.PlaceBidOrder = require(__dirname + '/PlaceBidOrder');
+exports.SellAlias = require(__dirname + '/SellAlias');
 exports.SendMessage = require(__dirname + '/SendMessage');
 exports.SendMoney = require(__dirname + '/SendMoney');
 exports.SetAccountInfo = require(__dirname + '/SetAccountInfo');

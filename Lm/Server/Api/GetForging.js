@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney GetForging 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -15,41 +15,30 @@ import static nxt.http.JSONResponses.UNKNOWN_ACCOUNT;
 */
 
 
+//super("secretPhrase");
 function GetForging(req, res) {
 	res.send('This is not implemented');
 	/*
-	private GetForging() {
-		super("secretPhrase");
+	String secretPhrase = req.getParameter("secretPhrase");
+	if (secretPhrase == null) {
+		return MISSING_SECRET_PHRASE;
+	}
+	Account account = Account.getAccount(Crypto.getPublicKey(secretPhrase));
+	if (account == null) {
+		return UNKNOWN_ACCOUNT;
 	}
 
-	JSONStreamAware processRequest(HttpServletRequest req) {
-
-		String secretPhrase = req.getParameter("secretPhrase");
-		if (secretPhrase == null) {
-			return MISSING_SECRET_PHRASE;
-		}
-		Account account = Account.getAccount(Crypto.getPublicKey(secretPhrase));
-		if (account == null) {
-			return UNKNOWN_ACCOUNT;
-		}
-
-		Generator generator = Generator.getGenerator(secretPhrase);
-		if (generator == null) {
-			return JsonResponses.NOT_FORGING;
-		}
-
-		JSONObject response = new JSONObject();
-		long deadline = generator.getDeadline();
-		response.put("deadline", deadline);
-		int elapsedTime = Convert.getEpochTime() - Nxt.getBlockchain().getLastBlock().getTimestamp();
-		response.put("remaining", Math.max(deadline - elapsedTime, 0));
-		return response;
-
+	Generator generator = Generator.getGenerator(secretPhrase);
+	if (generator == null) {
+		return JsonResponses.NOT_FORGING;
 	}
 
-	boolean requirePost() {
-		return true;
-	}
+	JSONObject response = new JSONObject();
+	long deadline = generator.getDeadline();
+	response.put("deadline", deadline);
+	int elapsedTime = Convert.getEpochTime() - Nxt.getBlockchain().getLastBlock().getTimestamp();
+	response.put("remaining", Math.max(deadline - elapsedTime, 0));
+	return response;
 	*/
 }
 

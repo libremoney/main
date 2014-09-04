@@ -1,3 +1,9 @@
+/**!
+ * LibreMoney SendMessage api 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 import nxt.Account;
 import nxt.Attachment;
@@ -8,40 +14,34 @@ import static nxt.http.JSONResponses.INCORRECT_ARBITRARY_MESSAGE;
 import static nxt.http.JSONResponses.MISSING_MESSAGE;
 */
 
-function Main(req, res) {
+//super("recipient", "message");
+function SendMessage(req, res) {
 	var obj = CreateTransaction();
 	//static final SendMessage instance = new SendMessage();
 	res.send('This is not implemented');
 	/*
-	private SendMessage() {
-		super("recipient", "message");
+	Long recipient = ParameterParser.getRecipientId(req);
+
+	String messageValue = req.getParameter("message");
+	if (messageValue == null) {
+		return MISSING_MESSAGE;
 	}
 
-	JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
-
-		Long recipient = ParameterParser.getRecipientId(req);
-
-		String messageValue = req.getParameter("message");
-		if (messageValue == null) {
-			return MISSING_MESSAGE;
-		}
-
-		byte[] message;
-		try {
-			message = Convert.parseHexString(messageValue);
-		} catch (RuntimeException e) {
-			return INCORRECT_ARBITRARY_MESSAGE;
-		}
-		if (message.length > Constants.MaxArbitraryMessageLength) {
-			return INCORRECT_ARBITRARY_MESSAGE;
-		}
-
-		Account account = ParameterParser.getSenderAccount(req);
-
-		Attachment attachment = new Attachment.MessagingArbitraryMessage(message);
-		return createTransaction(req, account, recipient, 0, attachment);
+	byte[] message;
+	try {
+		message = Convert.parseHexString(messageValue);
+	} catch (RuntimeException e) {
+		return INCORRECT_ARBITRARY_MESSAGE;
 	}
+	if (message.length > Constants.MaxArbitraryMessageLength) {
+		return INCORRECT_ARBITRARY_MESSAGE;
+	}
+
+	Account account = ParameterParser.getSenderAccount(req);
+
+	Attachment attachment = new Attachment.MessagingArbitraryMessage(message);
+	return createTransaction(req, account, recipient, 0, attachment);
 	*/
 }
 
-module.exports = Main;
+module.exports = SendMessage;

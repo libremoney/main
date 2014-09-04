@@ -1,3 +1,10 @@
+/**!
+ * LibreMoney 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
+
 /*
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.InvalidCipherTextException;
@@ -46,29 +53,18 @@ function Sha256() {
 function GetPublicKey(secretPhrase) {
 	throw new Error('Not implementted');
 	/*
-	try {
-		byte[] publicKey = new byte[32];
-		Curve25519.keygen(publicKey, null, Crypto.sha256().digest(secretPhrase.getBytes("UTF-8")));
-		return publicKey;
-	} catch (UnsupportedEncodingException e) {
-		Logger.logMessage("Error getting public key", e);
-		throw new RuntimeException(e.getMessage(), e);
-	}
+	byte[] publicKey = new byte[32];
+	Curve25519.keygen(publicKey, null, Crypto.sha256().digest(Convert.toBytes(secretPhrase)));
+	return publicKey;
 	*/
 }
 
 function GetPrivateKey(secretPhrase) {
 	throw new Error('Not implementted');
 	/*
-	try {
-		byte[] s = Crypto.sha256().digest(secretPhrase.getBytes("UTF-8"));
-		Curve25519.clamp(s);
-		return s;
-	}
-	catch (UnsupportedEncodingException e) {
-		Logger.logMessage("Error getting private key", e);
-		throw new RuntimeException(e.getMessage(), e);
-	}
+	byte[] s = Crypto.sha256().digest(Convert.toBytes(secretPhrase));
+	Curve25519.clamp(s);
+	return s;
 	*/
 }
 
@@ -82,35 +78,30 @@ function Curve(Z, k, P) {
 function Sign(message, secretPhrase) {
 	throw new Error('Not implementted');
 	/*
-	try {
-		byte[] P = new byte[32];
-		byte[] s = new byte[32];
-		MessageDigest digest = Crypto.sha256();
-		Curve25519.keygen(P, s, digest.digest(secretPhrase.getBytes("UTF-8")));
+	byte[] P = new byte[32];
+	byte[] s = new byte[32];
+	MessageDigest digest = Crypto.sha256();
+	Curve25519.keygen(P, s, digest.digest(Convert.toBytes(secretPhrase)));
 
-		byte[] m = digest.digest(message);
+	byte[] m = digest.digest(message);
 
-		digest.update(m);
-		byte[] x = digest.digest(s);
+	digest.update(m);
+	byte[] x = digest.digest(s);
 
-		byte[] Y = new byte[32];
-		Curve25519.keygen(Y, null, x);
+	byte[] Y = new byte[32];
+	Curve25519.keygen(Y, null, x);
 
-		digest.update(m);
-		byte[] h = digest.digest(Y);
+	digest.update(m);
+	byte[] h = digest.digest(Y);
 
-		byte[] v = new byte[32];
-		Curve25519.sign(v, h, x, s);
+	byte[] v = new byte[32];
+	Curve25519.sign(v, h, x, s);
 
-		byte[] signature = new byte[64];
-		System.arraycopy(v, 0, signature, 0, 32);
-		System.arraycopy(h, 0, signature, 32, 32);
+	byte[] signature = new byte[64];
+	System.arraycopy(v, 0, signature, 0, 32);
+	System.arraycopy(h, 0, signature, 32, 32);
 
-		return signature;
-	} catch (UnsupportedEncodingException e) {
-		Logger.logMessage("Error in signing message", e);
-		throw new RuntimeException(e.getMessage(), e);
-	}
+	return signature;
 	*/
 }
 
@@ -144,7 +135,7 @@ function Verify(signature, message, publicKey, enforceCanonical) {
 }
 
 function AesEncrypt(plaintext, myPrivateKey, theirPublicKey) {
-	throw new Error('Not implementted');
+	return AesEncrypt2(plaintext, myPrivateKey, theirPublicKey, []);
 	/*
 	try {
 		byte[] dhSharedSecret = new byte[32];
@@ -169,7 +160,44 @@ function AesEncrypt(plaintext, myPrivateKey, theirPublicKey) {
 	*/
 }
 
+}
+
+function AesEncrypt2(plaintext, myPrivateKey, theirPublicKey, nonce) {
+	throw new Error('Not implementted');
+	/*
+	try {
+		byte[] dhSharedSecret = new byte[32];
+		Curve25519.curve(dhSharedSecret, myPrivateKey, theirPublicKey);
+		for (int i = 0; i < 32; i++) {
+			dhSharedSecret[i] ^= nonce[i];
+		}
+		byte[] key = sha256().digest(dhSharedSecret);
+		byte[] iv = new byte[16];
+		secureRandom.get().nextBytes(iv);
+		PaddedBufferedBlockCipher aes = new PaddedBufferedBlockCipher(new CBCBlockCipher(
+				new AESEngine()));
+		CipherParameters ivAndKey = new ParametersWithIV(new KeyParameter(key), iv);
+		aes.init(true, ivAndKey);
+		byte[] output = new byte[aes.getOutputSize(plaintext.length)];
+		int ciphertextLength = aes.processBytes(plaintext, 0, plaintext.length, output, 0);
+		ciphertextLength += aes.doFinal(output, ciphertextLength);
+		byte[] result = new byte[iv.length + ciphertextLength];
+		System.arraycopy(iv, 0, result, 0, iv.length);
+		System.arraycopy(output, 0, result, iv.length, ciphertextLength);
+		return result;
+	} catch (InvalidCipherTextException e) {
+		throw new RuntimeException(e.getMessage(), e);
+	}
+	*/
+}
+
 function AesDecrypt(ivCiphertext, myPrivateKey, theirPublicKey) {
+	return AesDecrypt2(ivCiphertext, myPrivateKey, theirPublicKey, []);
+}
+
+}
+
+function AesDecrypt2(ivCiphertext, myPrivateKey, theirPublicKey, nonce) {
 	throw new Error('Not implementted');
 	/*
 	try {
@@ -180,6 +208,9 @@ function AesDecrypt(ivCiphertext, myPrivateKey, theirPublicKey) {
 		byte[] ciphertext = Arrays.copyOfRange(ivCiphertext, 16, ivCiphertext.length);
 		byte[] dhSharedSecret = new byte[32];
 		Curve25519.curve(dhSharedSecret, myPrivateKey, theirPublicKey);
+		for (int i = 0; i < 32; i++) {
+			dhSharedSecret[i] ^= nonce[i];
+		}
 		byte[] key = sha256().digest(dhSharedSecret);
 		PaddedBufferedBlockCipher aes = new PaddedBufferedBlockCipher(new CBCBlockCipher(
 				new AESEngine()));
@@ -224,6 +255,7 @@ function XorProcess(data, position, length, myPrivateKey, theirPublicKey, nonce)
 	*/
 }
 
+// deprecated
 function XorEncrypt(data, position, length, myPrivateKey, theirPublicKey) {
 	throw new Error('Not implementted');
 	/*
@@ -234,6 +266,7 @@ function XorEncrypt(data, position, length, myPrivateKey, theirPublicKey) {
 	*/
 }
 
+// deprecated
 function XorDecrypt(data, position, length, myPrivateKey, theirPublicKey, nonce) {
 	throw new Error('Not implementted');
 	/*
@@ -270,17 +303,19 @@ function RsDecode(rsString) {
 }
 
 
-exports.GetMessageDigest = GetMessageDigest;
-exports.Sha256 = Sha256;
-exports.GetPublicKey = GetPublicKey;
-exports.GetPrivateKey = GetPrivateKey;
+exports.AesDecrypt = AesDecrypt;
+exports.AesDecrypt2 = AesDecrypt2;
+exports.AesEncrypt = AesEncrypt;
+exports.AesEncrypt2 = AesEncrypt2;
 exports.Curve = Curve;
+exports.GetMessageDigest = GetMessageDigest;
+exports.GetPrivateKey = GetPrivateKey;
+exports.GetPublicKey = GetPublicKey;
+exports.RsDecode = RsDecode;
+exports.RsEncode = RsEncode;
+exports.Sha256 = Sha256;
 exports.Sign = Sign;
 exports.Verify = Verify;
-exports.AesEncrypt = AesEncrypt;
-exports.AesDecrypt = AesDecrypt;
-exports.XorProcess = XorProcess;
-exports.XorEncrypt = XorEncrypt;
 exports.XorDecrypt = XorDecrypt;
-exports.RsEncode = RsEncode;
-exports.RsDecode = RsDecode;
+exports.XorEncrypt = XorEncrypt;
+exports.XorProcess = XorProcess;

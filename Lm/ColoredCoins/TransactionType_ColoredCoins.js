@@ -1,5 +1,5 @@
 /*!
- * LibreMoney 0.0
+ * LibreMoney 0.1
  * Copyright(c) 2014 LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -37,42 +37,6 @@ function CreateAssetIssuance() {
 		return LmTrType.SUBTYPE_COLORED_COINS_ASSET_ISSUANCE;
 	}
 
-	function DoLoadAttachment_Buf(Transaction, Buffer) {
-		/*
-		int nameLength = buffer.get();
-		if (nameLength > 3 * Constants.MaxAssetNameLength) {
-			throw new NxtException.ValidationException("Max asset name length exceeded");
-		}
-		byte[] name = new byte[nameLength];
-		buffer.get(name);
-		int descriptionLength = buffer.getShort();
-		if (descriptionLength > 3 * Constants.MaxAssetDescriptionLength) {
-			throw new NxtException.ValidationException("Max asset description length exceeded");
-		}
-		byte[] description = new byte[descriptionLength];
-		buffer.get(description);
-		long quantityQNT = buffer.getLong();
-		byte decimals = buffer.get();
-		try {
-			transaction.setAttachment(new Attachment.ColoredCoinsAssetIssuance(new String(name, "UTF-8").intern(),
-					new String(description, "UTF-8").intern(), quantityQNT, decimals));
-		} catch (UnsupportedEncodingException e) {
-			throw new NxtException.ValidationException("Error in asset issuance", e);
-		}
-		*/
-	}
-
-	function DoLoadAttachment_Json(Transaction, AttachmentData) {
-		/*
-		String name = (String)attachmentData.get("name");
-		String description = (String)attachmentData.get("description");
-		long quantityQNT = (Long)attachmentData.get("quantityQNT");
-		byte decimals = ((Long)attachmentData.get("decimals")).byteValue();
-		transaction.setAttachment(new Attachment.ColoredCoinsAssetIssuance(name.trim(), description.trim(),
-				quantityQNT, decimals));
-		*/
-	}
-
 	function ApplyAttachmentUnconfirmed(Transaction, SenderAccount) {
 		return true;
 	}
@@ -85,6 +49,18 @@ function CreateAssetIssuance() {
 				attachment.getQuantityQNT(), attachment.getDecimals());
 		senderAccount.addToAssetAndUnconfirmedAssetBalanceQNT(assetId, attachment.getQuantityQNT());
 		*/
+	}
+
+	function HasRecipient() {
+		return false;
+	}
+
+	function ParseAttachment_Buf(buffer, transactionVersion) {
+		//return new Attachment.ColoredCoinsAssetIssuance(buffer, transactionVersion);
+	}
+
+	function ParseAttachment_Json(attachmentData) {
+		//return new Attachment.ColoredCoinsAssetIssuance(attachmentData);
 	}
 
 	function UndoAttachment(Transaction, SenderAccount, RecipientAccount) {
@@ -101,8 +77,7 @@ function CreateAssetIssuance() {
 	function ValidateAttachment(Transaction) {
 		/*
 		Attachment.ColoredCoinsAssetIssuance attachment = (Attachment.ColoredCoinsAssetIssuance)transaction.getAttachment();
-		if (! Genesis.CREATOR_ID.equals(transaction.getRecipientId()) || transaction.getAmountNQT() != 0
-				|| transaction.getFeeNQT() < Constants.AssetIssuanceFeeMilliLm
+		if (transaction.getFeeNQT() < Constants.ASSET_ISSUANCE_FEE_NQT
 				|| attachment.getName().length() < Constants.MinAssetNameLength
 				|| attachment.getName().length() > Constants.MaxAssetNameLength
 				|| attachment.getDescription().length() > Constants.MaxAssetDescriptionLength
@@ -121,12 +96,13 @@ function CreateAssetIssuance() {
 		*/
 	}
 
+	obj.ApplyAttachment = ApplyAttachment;
+	obj.ApplyAttachmentUnconfirmed = ApplyAttachmentUnconfirmed;
 	obj.GetName = GetName;
 	obj.GetSubtype = GetSubtype;
-	obj.DoLoadAttachment_Buf = DoLoadAttachment_Buf;
-	obj.DoLoadAttachment_Json = DoLoadAttachment_Json;
-	obj.ApplyAttachmentUnconfirmed = ApplyAttachmentUnconfirmed;
-	obj.ApplyAttachment = ApplyAttachment;
+	obj.HasRecipient = HasRecipient;
+	obj.ParseAttachment_Buf = ParseAttachment_Buf;
+	obj.ParseAttachment_Json = ParseAttachment_Json;
 	obj.UndoAttachment = UndoAttachment;
 	obj.UndoAttachmentUnconfirmed = UndoAttachmentUnconfirmed;
 	obj.ValidateAttachment = ValidateAttachment;
@@ -142,34 +118,6 @@ function CreateAssetTransfer() {
 
 	function GetSubtype() {
 		return LmTrType.SUBTYPE_COLORED_COINS_ASSET_TRANSFER;
-	}
-
-	function DoLoadAttachment_Buf(Transaction, Buffer) {
-		/*
-		Long assetId = Convert.zeroToNull(buffer.getLong());
-		long quantityQNT = buffer.getLong();
-		int commentLength = buffer.getShort();
-		if (commentLength > 3 * Constants.MaxAssetTransferCommentLength) {
-			throw new NxtException.ValidationException("Max asset comment length exceeded");
-		}
-		byte[] comment = new byte[commentLength];
-		buffer.get(comment);
-		try {
-			transaction.setAttachment(new Attachment.ColoredCoinsAssetTransfer(assetId, quantityQNT,
-					new String(comment, "UTF-8").intern()));
-		} catch (UnsupportedEncodingException e) {
-			throw new NxtException.ValidationException("Error in asset transfer", e);
-		}
-		*/
-	}
-
-	function DoLoadAttachment_Json(Transaction, AttachmentData) {
-		/*
-		Long assetId = Convert.parseUnsignedLong((String) attachmentData.get("asset"));
-		long quantityQNT = (Long)attachmentData.get("quantityQNT");
-		String comment = (String)attachmentData.get("comment");
-		transaction.setAttachment(new Attachment.ColoredCoinsAssetTransfer(assetId, quantityQNT, comment));
-		*/
 	}
 
 	function ApplyAttachmentUnconfirmed(Transaction, SenderAccount) {
@@ -192,6 +140,18 @@ function CreateAssetTransfer() {
 		*/
 	}
 
+	function HasRecipient() {
+		return true;
+	}
+
+	function ParseAttachment_Buf(buffer, transactionVersion) {
+		//return new Attachment.ColoredCoinsAssetTransfer(buffer, transactionVersion);
+	}
+
+	function ParseAttachment_Json(attachmentData) {
+		//return new Attachment.ColoredCoinsAssetTransfer(attachmentData);
+	}
+
 	function UndoAttachment(Transaction, SenderAccount, RecipientAccount) {
 		/*
 		Attachment.ColoredCoinsAssetTransfer attachment = (Attachment.ColoredCoinsAssetTransfer)transaction.getAttachment();
@@ -211,23 +171,32 @@ function CreateAssetTransfer() {
 		/*
 		Attachment.ColoredCoinsAssetTransfer attachment = (Attachment.ColoredCoinsAssetTransfer)transaction.getAttachment();
 		if (transaction.getAmountNQT() != 0
-				|| attachment.getComment().length() > Constants.MaxAssetTransferCommentLength
+				|| attachment.getComment() != null && attachment.getComment().length() > Constants.MAX_ASSET_TRANSFER_COMMENT_LENGTH
 				|| attachment.getAssetId() == null) {
-			throw new NxtException.ValidationException("Invalid asset transfer amount or comment: " + attachment.getJSONObject());
+			throw new NxtException.NotValidException("Invalid asset transfer amount or comment: " + attachment.getJSONObject());
+		}
+		if (transaction.getVersion() > 0 && attachment.getComment() != null) {
+			throw new NxtException.NotValidException("Asset transfer comments no longer allowed, use message " +
+					"or encrypted message appendix instead");
 		}
 		Asset asset = Asset.getAsset(attachment.getAssetId());
-		if (asset == null || attachment.getQuantityQNT() <= 0 || attachment.getQuantityQNT() > asset.getQuantityQNT()) {
-			throw new NxtException.ValidationException("Invalid asset transfer asset or quantity: " + attachment.getJSONObject());
+		if (attachment.getQuantityQNT() <= 0 || (asset != null && attachment.getQuantityQNT() > asset.getQuantityQNT())) {
+			throw new NxtException.NotValidException("Invalid asset transfer asset or quantity: " + attachment.getJSONObject());
+		}
+		if (asset == null) {
+			throw new NxtException.NotCurrentlyValidException("Asset " + Convert.toUnsignedLong(attachment.getAssetId()) +
+					" does not exist yet");
 		}
 		*/
 	}
 
+	obj.ApplyAttachment = ApplyAttachment;
+	obj.ApplyAttachmentUnconfirmed = ApplyAttachmentUnconfirmed;
 	obj.GetName = GetName;
 	obj.GetSubtype = GetSubtype;
-	obj.DoLoadAttachment_Buf = DoLoadAttachment_Buf;
-	obj.DoLoadAttachment_Json = DoLoadAttachment_Json;
-	obj.ApplyAttachmentUnconfirmed = ApplyAttachmentUnconfirmed;
-	obj.ApplyAttachment = ApplyAttachment;
+	obj.HasRecipient = HasRecipient;
+	obj.ParseAttachment_Buf = ParseAttachment_Buf;
+	obj.ParseAttachment_Json = ParseAttachment_Json;
 	obj.UndoAttachment = UndoAttachment;
 	obj.UndoAttachmentUnconfirmed = UndoAttachmentUnconfirmed;
 	obj.ValidateAttachment = ValidateAttachment;
@@ -237,44 +206,29 @@ function CreateAssetTransfer() {
 function CreateColoredCoinsOrderPlacement() {
 	var obj = CreateColoredCoins();
 
-	function MakeAttachment(Asset, QuantityMilliLm, PriceMilliLm) {}
-
-	function DoLoadAttachment_Buf(Transaction, Buffer) {
-		/*
-		Long assetId = Convert.zeroToNull(buffer.getLong());
-		long quantityQNT = buffer.getLong();
-		long priceNQT = buffer.getLong();
-		transaction.setAttachment(makeAttachment(assetId, quantityQNT, priceNQT));
-		*/
+	function HasRecipient() {
+		return false;
 	}
 
-	function DoLoadAttachment_Json(Transaction, AttachmentData) {
-		/*
-		Long assetId = Convert.parseUnsignedLong((String) attachmentData.get("asset"));
-		long quantityQNT = (Long)attachmentData.get("quantityQNT");
-		long priceNQT = (Long)attachmentData.get("priceNQT");
-		transaction.setAttachment(makeAttachment(assetId, quantityQNT, priceNQT));
-		*/
-	}
-
-	function ValidateAttachment(Transaction) {
+	function ValidateAttachment(transaction) {
 		/*
 		Attachment.ColoredCoinsOrderPlacement attachment = (Attachment.ColoredCoinsOrderPlacement)transaction.getAttachment();
-		if (! Genesis.CREATOR_ID.equals(transaction.getRecipientId()) || transaction.getAmountNQT() != 0
-				|| attachment.getPriceNQT() <= 0 || attachment.getPriceNQT() > Constants.MaxBalanceMilliLm
+		if (attachment.getPriceNQT() <= 0 || attachment.getPriceNQT() > Constants.MAX_BALANCE_NQT
 				|| attachment.getAssetId() == null) {
-			throw new NxtException.ValidationException("Invalid asset order placement: " + attachment.getJSONObject());
+			throw new NxtException.NotValidException("Invalid asset order placement: " + attachment.getJSONObject());
 		}
 		Asset asset = Asset.getAsset(attachment.getAssetId());
-		if (asset == null || attachment.getQuantityQNT() <= 0 || attachment.getQuantityQNT() > asset.getQuantityQNT()) {
-			throw new NxtException.ValidationException("Invalid asset order placement asset or quantity: " + attachment.getJSONObject());
+		if (attachment.getQuantityQNT() <= 0 || (asset != null && attachment.getQuantityQNT() > asset.getQuantityQNT())) {
+			throw new NxtException.NotValidException("Invalid asset order placement asset or quantity: " + attachment.getJSONObject());
+		}
+		if (asset == null) {
+			throw new NxtException.NotCurrentlyValidException("Asset " + Convert.toUnsignedLong(attachment.getAssetId()) +
+					" does not exist yet");
 		}
 		*/
 	}
 
-	obj.MakeAttachment = MakeAttachment;
-	obj.DoLoadAttachment_Buf = DoLoadAttachment_Buf;
-	obj.DoLoadAttachment_Json = DoLoadAttachment_Json;
+	obj.HasRecipient = HasRecipient;
 	obj.ValidateAttachment = ValidateAttachment;
 	return obj;
 }
@@ -288,12 +242,6 @@ function CreateAskOrderPlacement() {
 
 	function GetSubtype() {
 		return LmTrType.SUBTYPE_COLORED_COINS_ASK_ORDER_PLACEMENT;
-	}
-
-	function MakeAttachment(AssetId, QuantityMilliLm, PriceMilliLm) {
-		/*
-		return new Attachment.ColoredCoinsAskOrderPlacement(AssetId, QuantityMilliLm, PriceMilliLm);
-		*/
 	}
 
 	function ApplyAttachmentUnconfirmed(Transaction, SenderAccount) {
@@ -318,6 +266,14 @@ function CreateAskOrderPlacement() {
 		*/
 	}
 
+	function ParseAttachment_Buf(buffer, transactionVersion) {
+		//return new Attachment.ColoredCoinsAskOrderPlacement(buffer, transactionVersion);
+	}
+
+	function ParseAttachment_Json(attachmentData) {
+		//return new Attachment.ColoredCoinsAskOrderPlacement(attachmentData);
+	}
+
 	function UndoAttachment(Transaction, SenderAccount, RecipientAccount) {
 		/*
 		Attachment.ColoredCoinsAskOrderPlacement attachment = (Attachment.ColoredCoinsAskOrderPlacement)transaction.getAttachment();
@@ -337,11 +293,12 @@ function CreateAskOrderPlacement() {
 		*/
 	}
 
+	obj.ApplyAttachment = ApplyAttachment;
+	obj.ApplyAttachmentUnconfirmed = ApplyAttachmentUnconfirmed;
 	obj.GetName = GetName;
 	obj.GetSubtype = GetSubtype;
-	obj.MakeAttachment = MakeAttachment;
-	obj.ApplyAttachmentUnconfirmed = ApplyAttachmentUnconfirmed;
-	obj.ApplyAttachment = ApplyAttachment;
+	obj.ParseAttachment_Buf = ParseAttachment_Buf;
+	obj.ParseAttachment_Json = ParseAttachment_Json;
 	obj.UndoAttachment = UndoAttachment;
 	obj.UndoAttachmentUnconfirmed = UndoAttachmentUnconfirmed;
 	return obj;
@@ -358,10 +315,12 @@ function CreateBidOrderPlacement() {
 		return LmTrType.SUBTYPE_COLORED_COINS_BID_ORDER_PLACEMENT;
 	}
 
-	function MakeAttachment(AssetId, QuantityMilliLm, PriceMilliLm) {
-		/*
-		return new Attachment.ColoredCoinsBidOrderPlacement(assetId, quantityQNT, priceNQT);
-		*/
+	function ParseAttachment_Buf(buffer, transactionVersion) {
+		//return new Attachment.ColoredCoinsBidOrderPlacement(buffer, transactionVersion);
+	}
+
+	function ParseAttachment_Json(attachmentData) {
+		//return new Attachment.ColoredCoinsBidOrderPlacement(attachmentData);
 	}
 
 	function ApplyAttachmentUnconfirmed(Transaction, SenderAccount) {
@@ -404,11 +363,12 @@ function CreateBidOrderPlacement() {
 		*/
 	}
 
+	obj.ApplyAttachment = ApplyAttachment;
+	obj.ApplyAttachmentUnconfirmed = ApplyAttachmentUnconfirmed;
 	obj.GetName = GetName;
 	obj.GetSubtype = GetSubtype;
-	obj.MakeAttachment = MakeAttachment;
-	obj.ApplyAttachmentUnconfirmed = ApplyAttachmentUnconfirmed;
-	obj.ApplyAttachment = ApplyAttachment;
+	obj.ParseAttachment_Buf = ParseAttachment_Buf;
+	obj.ParseAttachment_Json = ParseAttachment_Json;
 	obj.UndoAttachment = UndoAttachment;
 	obj.UndoAttachmentUnconfirmed = UndoAttachmentUnconfirmed;
 	return obj;
@@ -419,12 +379,9 @@ function CreateColoredCoinsOrderCancellation() {
 
 	function ValidateAttachment(Transaction) {
 		/*
-		if (! Genesis.CREATOR_ID.equals(transaction.getRecipientId()) || transaction.getAmountNQT() != 0) {
-			throw new NxtException.ValidationException("Invalid asset order cancellation amount or recipient");
-		}
-		Attachment.ColoredCoinsOrderCancellation attachment = (Attachment.ColoredCoinsOrderCancellation)transaction.getAttachment();
+		Attachment.ColoredCoinsOrderCancellation attachment = (Attachment.ColoredCoinsOrderCancellation) transaction.getAttachment();
 		if (attachment.getOrderId() == null) {
-			throw new NxtException.ValidationException("Invalid order cancellation attachment: " + attachment.getJSONObject());
+			throw new NxtException.NotValidException("Invalid order cancellation attachment: " + attachment.getJSONObject());
 		}
 		doValidateAttachment(transaction);
 		*/
@@ -436,6 +393,10 @@ function CreateColoredCoinsOrderCancellation() {
 		return true;
 	}
 
+	function HasRecipient() {
+		return false;
+	}
+
 	function UndoAttachment(Transaction, SenderAccount, RecipientAccount) {
 		//throw new UndoNotSupportedException("Reversal of order cancellation not supported");
 		return false;
@@ -443,9 +404,10 @@ function CreateColoredCoinsOrderCancellation() {
 
 	function UndoAttachmentUnconfirmed(Transaction, SenderAccount) {}
 
-	obj.ValidateAttachment = ValidateAttachment;
-	obj.DoValidateAttachment = DoValidateAttachment;
 	obj.ApplyAttachmentUnconfirmed = ApplyAttachmentUnconfirmed;
+	obj.DoValidateAttachment = DoValidateAttachment;
+	obj.HasRecipient = HasRecipient;
+	obj.ValidateAttachment = ValidateAttachment;
 	obj.UndoAttachment = UndoAttachment;
 	obj.UndoAttachmentUnconfirmed = UndoAttachmentUnconfirmed;
 	return obj;
@@ -453,26 +415,6 @@ function CreateColoredCoinsOrderCancellation() {
 
 function CreateAskOrderCancellation() {
 	var obj = CreateColoredCoinsOrderCancellation();
-
-	function GetName() {
-		return 'ColoredCoins.AskOrderCancellation';
-	}
-
-	function GetSubtype() {
-		return LmTrType.SUBTYPE_COLORED_COINS_ASK_ORDER_CANCELLATION;
-	}
-
-	function DoLoadAttachment_Buf(Transaction, Buffer) {
-		/*
-		Transaction.SetAttachment(new LmAttachment.ColoredCoinsAskOrderCancellation(Convert.zeroToNull(buffer.getLong())));
-		*/
-	}
-
-	function DoLoadAttachment_Json(Transaction, AttachmentData) {
-		/*
-		Transaction.SetAttachment(new Attachment.ColoredCoinsAskOrderCancellation(Convert.parseUnsignedLong((String) attachmentData.get("order"))));
-		*/
-	}
 
 	function ApplyAttachment(Transaction, SenderAccount, RecipientAccount) {
 		/*
@@ -493,12 +435,28 @@ function CreateAskOrderCancellation() {
 		*/
 	}
 
-	obj.GetName = GetName;
-	obj.GetSubtype = GetSubtype;
-	obj.DoLoadAttachment_Buf = DoLoadAttachment_Buf;
-	obj.DoLoadAttachment_Json = DoLoadAttachment_Json;
+	function GetName() {
+		return 'ColoredCoins.AskOrderCancellation';
+	}
+
+	function GetSubtype() {
+		return LmTrType.SUBTYPE_COLORED_COINS_ASK_ORDER_CANCELLATION;
+	}
+
+	function ParseAttachment(buffer, transactionVersion) {
+		//return new Attachment.ColoredCoinsAskOrderCancellation(buffer, transactionVersion);
+	}
+
+	function ParseAttachment(attachmentData) {
+		//return new Attachment.ColoredCoinsAskOrderCancellation(attachmentData);
+	}
+
 	obj.ApplyAttachment = ApplyAttachment;
 	obj.DoValidateAttachment = DoValidateAttachment;
+	obj.GetName = GetName;
+	obj.GetSubtype = GetSubtype;
+	obj.ParseAttachment_Buf = ParseAttachment_Buf;
+	obj.ParseAttachment_Json = ParseAttachment_Json;
 	return obj;
 };
 
@@ -513,15 +471,12 @@ function CreateBidOrderCancellation() {
 		return LmTrType.SUBTYPE_COLORED_COINS_BID_ORDER_CANCELLATION;
 	}
 
-	function DoLoadAttachment_Buf(Transaction, Buffer) {
-		Transaction.SetAttachment(new LmAttachment.ColoredCoinsBidOrderCancellation(Convert.zeroToNull(Buffer.getLong())));
+	function ParseAttachment(buffer, transactionVersion) {
+		//return new Attachment.ColoredCoinsBidOrderCancellation(buffer, transactionVersion);
 	}
 
-	function DoLoadAttachment_Json(Transaction, AttachmentData) {
-		/*
-		Transaction.SetAttachment(new LmAttachment.ColoredCoinsBidOrderCancellation(
-				Convert.parseUnsignedLong((String) attachmentData.get("order"))));
-		*/
+	function ParseAttachment(attachmentData) {
+		//return new Attachment.ColoredCoinsBidOrderCancellation(attachmentData);
 	}
 
 	function ApplyAttachment(Transaction, SenderAccount, RecipientAccount) {
@@ -543,12 +498,12 @@ function CreateBidOrderCancellation() {
 		*/
 	}
 
-	obj.GetName = GetName;
-	obj.GetSubtype = GetSubtype;
-	obj.DoLoadAttachment_Buf = DoLoadAttachment_Buf;
-	obj.DoLoadAttachment_Json = DoLoadAttachment_Json;
 	obj.ApplyAttachment = ApplyAttachment;
 	obj.DoValidateAttachment = DoValidateAttachment;
+	obj.GetName = GetName;
+	obj.GetSubtype = GetSubtype;
+	obj.ParseAttachment_Buf = ParseAttachment_Buf;
+	obj.ParseAttachment_Json = ParseAttachment_Json;
 	return obj;
 };
 

@@ -1,5 +1,5 @@
 /**!
- * LibreMoney GetProjectListHtml api 0.0
+ * LibreMoney GetProjectListHtml api 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -7,7 +7,7 @@
 var Projects = require(__dirname + "/../../Projects");
 
 
-function Main(req, res) {
+function GetProjectListHtml(req, res) {
 	var S = '';
 	for (var i = 0; i < Projects.GetLength(); i++) {
 		var Proj = Projects.GetProjectByIndex(i);
@@ -27,4 +27,4 @@ function Main(req, res) {
 }
 
 
-module.exports = Main;
+module.exports = GetProjectListHtml;

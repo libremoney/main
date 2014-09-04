@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney CastVote api 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -11,7 +11,7 @@ var ParameterParser = require(__dirname + '/../ParameterParser');
 var Polls = require(__dirname + '/../../Polls');
 
 
-//super("poll", "vote1", "vote2", "vote3"); // hardcoded to 3 votes for testing
+//super(new APITag[] {APITag.VS, APITag.CREATE_TRANSACTION}, "poll", "vote1", "vote2", "vote3"); // hardcoded to 3 votes for testing
 function CastVote(req, res) {
 	//var obj = CreateTransaction();
 

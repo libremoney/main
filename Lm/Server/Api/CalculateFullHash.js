@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney CalculateFullHash api 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -9,7 +9,7 @@ var Crypto = require(__dirname + '/../../Crypto/Crypto');
 var JsonResponses = require(__dirname + '/../JsonResponses');
 
 
-//super("unsignedTransactionBytes", "signatureHash");
+//super(new APITag[] {APITag.TRANSACTIONS}, "unsignedTransactionBytes", "signatureHash");
 function CalculateFullHash(req, res) {
 	var unsignedBytesString = Convert.EmptyToNull(req.query.unsignedTransactionBytes);
 	var signatureHashString = Convert.EmptyToNull(req.query.signatureHash);

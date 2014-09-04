@@ -4,7 +4,7 @@
  * CC0 license
  */
 
-var Appendix = require(__dirname + '/Appendix');
+var Appendix = require(__dirname + '/../Appendix');
 
 
 function Attachment() {

@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -36,9 +36,9 @@ function CreateOrdinary() {
 		return true;
 	}
 
-	function DoLoadAttachment_Buf(Transaction, Buffer) {}
-
-	function DoLoadAttachment_Json(Transaction, AttachmentData) {}
+	function HasRecipient() {
+		return true;
+	}
 
 	function GetName() {
 		return 'Payment.Ordinary';
@@ -46,6 +46,14 @@ function CreateOrdinary() {
 
 	function GetSubtype() {
 		return Constants.SUBTYPE_PAYMENT_ORDINARY_PAYMENT;
+	}
+
+	function ParseAttachment_Buf(buffer, transactionVersion) {
+		return Attachment.ORDINARY_PAYMENT;
+	}
+
+	function ParseAttachment_Json(attachmentData) {
+		return Attachment.ORDINARY_PAYMENT;
 	}
 
 	function UndoAttachment(Transaction, SenderAccount, RecipientAccount) {
@@ -63,10 +71,11 @@ function CreateOrdinary() {
 
 	obj.ApplyAttachment = ApplyAttachment;
 	obj.ApplyAttachmentUnconfirmed = ApplyAttachmentUnconfirmed;
-	obj.DoLoadAttachment_Buf = DoLoadAttachment_Buf;
-	obj.DoLoadAttachment_Json = DoLoadAttachment_Json;
+	obj.HasRecipient = HasRecipient;
 	obj.GetName = GetName;
 	obj.GetSubtype = GetSubtype;
+	obj.ParseAttachment_Buf = ParseAttachment_Buf;
+	obj.ParseAttachment_Json = ParseAttachment_Json;
 	obj.UndoAttachment = UndoAttachment;
 	obj.UndoAttachmentUnconfirmed = UndoAttachmentUnconfirmed;
 	obj.ValidateAttachment = ValidateAttachment;

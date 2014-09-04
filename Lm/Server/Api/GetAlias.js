@@ -1,3 +1,9 @@
+/**!
+ * LibreMoney GetAlias api 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 import nxt.Alias;
 import nxt.util.Convert;
@@ -7,40 +13,32 @@ import static nxt.http.JSONResponses.MISSING_ALIAS_OR_ALIAS_NAME;
 import static nxt.http.JSONResponses.UNKNOWN_ALIAS;
 */
 
-function Main(req, res) {
+//super("alias", "aliasName");
+function GetAlias(req, res) {
 	res.send('This is not implemented');
 	/*
-	static final GetAlias instance = new GetAlias();
+	Long aliasId;
+	try {
+		aliasId = Convert.parseUnsignedLong(Convert.emptyToNull(req.getParameter("alias")));
+	} catch (RuntimeException e) {
+		return INCORRECT_ALIAS;
+	}
+	String aliasName = Convert.emptyToNull(req.getParameter("aliasName"));
 
-	private GetAlias() {
-		super("alias", "aliasName");
+	Alias alias;
+	if (aliasId != null) {
+		alias = Alias.getAlias(aliasId);
+	} else if (aliasName != null) {
+		alias = Alias.getAlias(aliasName);
+	} else {
+		return MISSING_ALIAS_OR_ALIAS_NAME;
+	}
+	if (alias == null) {
+		return UNKNOWN_ALIAS;
 	}
 
-	JSONStreamAware processRequest(HttpServletRequest req) {
-
-		Long aliasId;
-		try {
-			aliasId = Convert.parseUnsignedLong(Convert.emptyToNull(req.getParameter("alias")));
-		} catch (RuntimeException e) {
-			return INCORRECT_ALIAS;
-		}
-		String aliasName = Convert.emptyToNull(req.getParameter("aliasName"));
-
-		Alias alias;
-		if (aliasId != null) {
-			alias = Alias.getAlias(aliasId);
-		} else if (aliasName != null) {
-			alias = Alias.getAlias(aliasName);
-		} else {
-			return MISSING_ALIAS_OR_ALIAS_NAME;
-		}
-		if (alias == null) {
-			return UNKNOWN_ALIAS;
-		}
-
-		return JSONData.alias(alias);
-	}
+	return JSONData.alias(alias);
 	*/
 }
 
-module.exports = Main;
+module.exports = GetAlias;

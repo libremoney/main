@@ -1,40 +1,33 @@
+/**!
+ * LibreMoney StartForging api 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 import nxt.Generator;
 import static nxt.http.JSONResponses.MISSING_SECRET_PHRASE;
 import static nxt.http.JSONResponses.UNKNOWN_ACCOUNT;
 */
 
-function Main(req, res) {
+//super("secretPhrase");
+function StartForging(req, res) {
 	res.send('This is not implemented');
 	/*
-	static final StartForging instance = new StartForging();
-
-	private StartForging() {
-		super("secretPhrase");
+	String secretPhrase = req.getParameter("secretPhrase");
+	if (secretPhrase == null) {
+		return MISSING_SECRET_PHRASE;
 	}
 
-	JSONStreamAware processRequest(HttpServletRequest req) {
-
-		String secretPhrase = req.getParameter("secretPhrase");
-		if (secretPhrase == null) {
-			return MISSING_SECRET_PHRASE;
-		}
-
-		Generator generator = Generator.startForging(secretPhrase);
-		if (generator == null) {
-			return UNKNOWN_ACCOUNT;
-		}
-
-		JSONObject response = new JSONObject();
-		response.put("deadline", generator.getDeadline());
-		return response;
-
+	Generator generator = Generator.startForging(secretPhrase);
+	if (generator == null) {
+		return UNKNOWN_ACCOUNT;
 	}
 
-	boolean requirePost() {
-		return true;
-	}
+	JSONObject response = new JSONObject();
+	response.put("deadline", generator.getDeadline());
+	return response;
 	*/
 }
 
-module.exports = Main;
+module.exports = StartForging;

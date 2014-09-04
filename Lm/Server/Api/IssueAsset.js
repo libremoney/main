@@ -1,3 +1,9 @@
+/**!
+ * LibreMoney IssueAsset api 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 import nxt.Account;
 import nxt.Attachment;
@@ -11,64 +17,51 @@ import static nxt.http.JSONResponses.INCORRECT_DECIMALS;
 import static nxt.http.JSONResponses.MISSING_NAME;
 */
 
-function Main(req, res) {
+//super("name", "description", "quantityQNT", "decimals");
+function IssueAsset(req, res) {
 	var obj = CreateTransaction();
 	res.send('This is not implemented');
 	/*
-	static final IssueAsset instance = new IssueAsset();
+	String name = req.getParameter("name");
+	String description = req.getParameter("description");
+	String decimalsValue = Convert.emptyToNull(req.getParameter("decimals"));
 
-	private IssueAsset() {
-		super("name", "description", "quantityQNT", "decimals");
+	if (name == null) {
+		return MISSING_NAME;
 	}
 
-	JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
-
-		String name = req.getParameter("name");
-		String description = req.getParameter("description");
-		String decimalsValue = Convert.emptyToNull(req.getParameter("decimals"));
-
-		if (name == null) {
-			return MISSING_NAME;
+	name = name.trim();
+	if (name.length() < Constants.MinAssetNameLength || name.length() > Constants.MaxAssetNameLength) {
+		return INCORRECT_ASSET_NAME_LENGTH;
+	}
+	String normalizedName = name.toLowerCase();
+	for (int i = 0; i < normalizedName.length(); i++) {
+		if (Constants.Alphabet.indexOf(normalizedName.charAt(i)) < 0) {
+			return INCORRECT_ASSET_NAME;
 		}
+	}
 
-		name = name.trim();
-		if (name.length() < Constants.MinAssetNameLength || name.length() > Constants.MaxAssetNameLength) {
-			return INCORRECT_ASSET_NAME_LENGTH;
-		}
-		String normalizedName = name.toLowerCase();
-		for (int i = 0; i < normalizedName.length(); i++) {
-			if (Constants.Alphabet.indexOf(normalizedName.charAt(i)) < 0) {
-				return INCORRECT_ASSET_NAME;
-			}
-		}
+	if (description != null && description.length() > Constants.MaxAssetDescriptionLength) {
+		return INCORRECT_ASSET_DESCRIPTION;
+	}
 
-		if (description != null && description.length() > Constants.MaxAssetDescriptionLength) {
-			return INCORRECT_ASSET_DESCRIPTION;
-		}
-
-		byte decimals = 0;
-		if (decimalsValue != null) {
-			try {
-				decimals = Byte.parseByte(decimalsValue);
-				if (decimals < 0 || decimals > 8) {
-					return INCORRECT_DECIMALS;
-				}
-			} catch (NumberFormatException e) {
+	byte decimals = 0;
+	if (decimalsValue != null) {
+		try {
+			decimals = Byte.parseByte(decimalsValue);
+			if (decimals < 0 || decimals > 8) {
 				return INCORRECT_DECIMALS;
 			}
+		} catch (NumberFormatException e) {
+			return INCORRECT_DECIMALS;
 		}
-
-		long quantityQNT = ParameterParser.getQuantityQNT(req);
-		Account account = ParameterParser.getSenderAccount(req);
-		Attachment attachment = new Attachment.ColoredCoinsAssetIssuance(name, description, quantityQNT, decimals);
-		return createTransaction(req, account, attachment);
-
 	}
 
-	final long minimumFeeNQT() {
-		return Constants.AssetIssuanceFeeMilliLm;
-	}
+	long quantityQNT = ParameterParser.getQuantityQNT(req);
+	Account account = ParameterParser.getSenderAccount(req);
+	Attachment attachment = new Attachment.ColoredCoinsAssetIssuance(name, description, quantityQNT, decimals);
+	return createTransaction(req, account, attachment);
 	*/
 }
 
-module.exports = Main;
+module.exports = IssueAsset;
