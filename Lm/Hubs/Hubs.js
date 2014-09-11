@@ -1,5 +1,5 @@
 /**!
- * LibreMoney hubs 0.0
+ * LibreMoney Hubs 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -49,6 +49,9 @@ function GetHubHits(block) {
 	*/
 }
 
+function Init() {
+}
+
 function RemoveHub(accountId) {
 	throw 'Not';
 	/*
@@ -60,4 +63,5 @@ function RemoveHub(accountId) {
 exports.Hubs = Hubs;
 exports.AddOrUpdateHub = AddOrUpdateHub;
 exports.GetHubHits = GetHubHits;
+exports.Init = Init;
 exports.RemoveHub = RemoveHub;

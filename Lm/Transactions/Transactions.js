@@ -11,39 +11,11 @@ var Transaction = require(__dirname + "/Transaction");
 var TransactionDb = require(__dirname + "/TransactionDb");
 var TransactionType = require(__dirname + "/TransactionType");
 var TransactionTypes = require(__dirname + "/TransactionTypes");
-var PaymentTrType = require(__dirname + '/PaymentTrType');
 var AccountControlTrType = require(__dirname + '/AccountControlTrType');
-var MessagingTrType = require(__dirname + '/MessagingTrType');
 
 
 var transactions = []; // deprecated
 
-/*
-// deprecated
-function AddNewTransaction(type, timestamp, deadline, senderPublicKey, recipientId,
-		amountMilliLm, feeMilliLm, referencedTransactionFullHash, signature,
-		blockId, height, id, senderId, blockTimestamp, fullHash) {
-	var tr = new Transaction({
-		type: type,
-		timestamp: timestamp,
-		deadline: deadline,
-		senderPublicKey: senderPublicKey,
-		recipientId: recipientId,
-		amountMilliLm: amountMilliLm,
-		feeMilliLm: feeMilliLm,
-		referencedTransactionFullHash: referencedTransactionFullHash,
-		signature: signature,
-		blockId: blockId,
-		height: height,
-		id: id,
-		senderId: senderId,
-		blockTimestamp: blockTimestamp,
-		fullHash: fullHash
-	});
-	transactions.push(tr);
-	return tr;
-}
-*/
 
 function CreateAttachment() {
 	return new Attachment();
@@ -82,43 +54,27 @@ function Init() {
 		Clear();
 	});
 	*/
-	PaymentTrType.Init();
 	AccountControlTrType.Init();
-	MessagingTrType.Init();
 }
 
-/*
-deadline,
-senderPublicKey,
-recipientId,
-amountMilliLm,
-feeMilliLm,
-referencedTransactionFullHash,
-attachment,
-signature
-*/
-function NewOrdinaryPaymentTransaction(data) {
-	var transaction = CreateTransaction({
-		type: TransactionTypes.Payment.Ordinary,
-		timestamp: 0, //Convert.GetEpochTime(),
-		deadline: data.deadline,
-		senderPublicKey: data.senderPublicKey,
-		recipientId: data.recipientId,
-		amountMilliLm: data.amountMilliLm,
-		feeMilliLm: data.feeMilliLm,
-		referencedTransactionFullHash: data.referencedTransactionFullHash,
-		signature: data.signature
-		/*blockId,
-		height,
-		id,
-		senderId,
-		blockTimestamp,
-		fullHash*/
+function NewEncryptToSelfMessage1(buffer, transactionVersion) {
+	return new EncryptToSelfMessage({
+		buffer: buffer,
+		transactionVersion: transactionVersion
 	});
-	if (data.attachment)
-		transaction.SetAttachment(data.attachment);
-	transaction.ValidateAttachment();
-	return transaction;
+}
+
+function NewEncryptToSelfMessage2(attachmentData) {
+	return new EncryptToSelfMessage({
+		attachmentData: attachmentData
+	});
+}
+
+function NewEncryptToSelfMessage3(encryptedData, isText) {
+	return new EncryptToSelfMessage({
+		encryptedData: encryptedData,
+		isText: isText
+	});
 }
 
 function NewTransactionBuilder(senderPublicKey, amountMilliLm, feeMilliLm, deadline, attachment) {
@@ -134,6 +90,13 @@ function NewTransactionBuilder(senderPublicKey, amountMilliLm, feeMilliLm, deadl
 	}
 	return builder;
 	*/
+}
+
+function ParseEncryptToSelfMessage(attachmentData) {
+	if (attachmentData.encryptToSelfMessage == null ) {
+		return null;
+	}
+	return NewEncryptToSelfMessage2(attachmentData);
 }
 
 function ParseTransaction1(bytes) {
@@ -257,13 +220,15 @@ function ParseTransaction2(transactionData) {
 }
 
 
-exports.AddNewTransaction = AddNewTransaction;
 exports.CreateAttachment = CreateAttachment;
 exports.CreateTransaction = CreateTransaction;
 exports.CreateTransactionType = CreateTransactionType;
 exports.Init = Init;
-exports.NewOrdinaryPaymentTransaction = NewOrdinaryPaymentTransaction;
+exports.NewEncryptToSelfMessage1 = NewEncryptToSelfMessage1;
+exports.NewEncryptToSelfMessage2 = NewEncryptToSelfMessage2;
+exports.NewEncryptToSelfMessage3 = NewEncryptToSelfMessage3;
 exports.NewTransactionBuilder = NewTransactionBuilder;
+exports.ParseEncryptToSelfMessage = ParseEncryptToSelfMessage;
 exports.ParseTransaction1 = ParseTransaction1;
 exports.ParseTransaction2 = ParseTransaction2;
 exports.Types = TransactionTypes;

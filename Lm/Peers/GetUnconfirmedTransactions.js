@@ -1,3 +1,9 @@
+/**!
+ * LibreMoney 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 import nxt.Nxt;
 import nxt.Transaction;
@@ -8,12 +14,8 @@ import org.json.simple.JSONStreamAware;
 
 // GetUnconfirmedTransactions = PeerServlet.PeerRequestHandler
 
-/*
-static final GetUnconfirmedTransactions instance = new GetUnconfirmedTransactions();
-*/
-
-/*
-JSONStreamAware processRequest(JSONObject request, Peer peer) {
+function GetUnconfirmedTransactions(request, peer) {
+	/*
 	JSONObject response = new JSONObject();
 
 	JSONArray transactionsData = new JSONArray();
@@ -23,7 +25,9 @@ JSONStreamAware processRequest(JSONObject request, Peer peer) {
 
 	}
 	response.put("unconfirmedTransactions", transactionsData);
+	*/
 
 	return response;
 }
-*/
+
+module.exports = GetUnconfirmedTransactions;

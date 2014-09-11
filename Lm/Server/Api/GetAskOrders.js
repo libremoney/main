@@ -9,7 +9,7 @@ import nxt.NxtException;
 import nxt.Order;
 */
 
-//super("asset", "limit");
+//super(new APITag[] {APITag.AE}, "asset", "limit");
 function GetAskOrders(req, res) {
 	res.send('This is not implemented');
 	/*

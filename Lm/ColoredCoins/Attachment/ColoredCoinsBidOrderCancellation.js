@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -11,14 +11,14 @@ var Constants = require(__dirname + '/../Constants');
 //static final long serialVersionUID = 0;
 
 function ColoredCoinsBidOrderCancellation(orderId) {
-	obj = new ColoredCoinsOrderCancellation(orderId);
+	this.prototype = new ColoredCoinsOrderCancellation(orderId);
 
 	function GetTransactionType() {
 		return Constants.SUBTYPE_COLORED_COINS_BID_ORDER_CANCELLATION; //TransactionType.ColoredCoins.BID_ORDER_CANCELLATION;
 	}
 
-	obj.GetTransactionType = GetTransactionType;
-	return obj;
+	this.GetTransactionType = GetTransactionType;
+	return this;
 }
 
 

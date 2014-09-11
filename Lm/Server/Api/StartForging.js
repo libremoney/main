@@ -10,7 +10,7 @@ import static nxt.http.JSONResponses.MISSING_SECRET_PHRASE;
 import static nxt.http.JSONResponses.UNKNOWN_ACCOUNT;
 */
 
-//super("secretPhrase");
+//super(new APITag[] {APITag.FORGING}, "secretPhrase");
 function StartForging(req, res) {
 	res.send('This is not implemented');
 	/*

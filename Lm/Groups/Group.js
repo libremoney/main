@@ -1,19 +1,19 @@
 /**!
- * LibreMoney 0.0.1
- * Author: Prof1983 <prof1983@yandex.ru>
- * License: CC0
+ * LibreMoney 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
  */
 
-function LmCommunity(Name, Description, Lead) {
-	this.Id = 1;
-	this.Name = Name;
-	this.Description = Description;
-	this.Lead = Lead;
-	this.Users = new Array();
-	this.Projects = new Array();
-	this.Weight = 1.0;
-	this.Users.push(Lead);
+function Group(name, description, leader) {
+	this.id = 1;
+	this.name = name;
+	this.description = description;
+	this.leader = leader;
+	this.users = [];
+	this.projects = [];
+	this.weight = 1.0;
+	this.users.push(leader);
 	return this;
 }
 
-module.exports = LmCommunity;
+module.exports = Group;

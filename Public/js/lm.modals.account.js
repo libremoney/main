@@ -29,13 +29,15 @@ var Lm = (function(Lm, $, undefined) {
 
 		$("#user_info_modal_account").html(Lm.GetAccountFormatted(Lm.UserInfoModal.User));
 
-		$("#user_info_modal_actions button").data("account", Lm.UserInfoModal.User);
-
 		if (Lm.UserInfoModal.User in Lm.Contacts) {
+			var accountButton = Lm.Contacts[Lm.UserInfoModal.user].name.escapeHTML();
 			$("#user_info_modal_add_as_contact").hide();
 		} else {
+			var accountButton = Lm.UserInfoModal.user;
 			$("#user_info_modal_add_as_contact").show();
 		}
+
+		$("#user_info_modal_actions button").data("account", accountButton);
 
 		if (Lm.FetchingModalData) {
 			Lm.SendRequest("getAccount", {

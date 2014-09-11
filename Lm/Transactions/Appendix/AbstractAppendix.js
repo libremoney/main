@@ -5,110 +5,89 @@
  */
 
 var Appendix = require(__dirname + '/Appendix');
+var Convert = require(__dirname + '/../../Util/Convert');
 
 
-/*
-static abstract class AbstractAppendix implements Appendix {
-	private final byte version;
-}
-*/
-
-function AbstractAppendix(version) {
-	obj = new Appendix();
-	obj.version = version;
-
-	/*
-	abstract String getAppendixName();
-	*/
-
-	/*
-	public final int getSize() {
-		return getMySize() + (version > 0 ? 1 : 0);
-	}
-	*/
-
-	/*
-	abstract int getMySize();
-	*/
-
-	/*
-	public final void putBytes(ByteBuffer buffer) {
-		if (version > 0) {
-			buffer.put(version);
+function AbstractAppendix(data) {
+	if (typeof data.attachmentData != 'undefined') {
+		this.prototype = new Appendix();
+		this.version = Convert.NullToZero(attachmentData["version." + GetAppendixName()]);
+	} else if (typeof data.buffer != 'undefined' && data.transactionVersion != 'undefined') {
+		this.prototype = new Appendix();
+		if (data.transactionVersion == 0) {
+			this.version = 0;
+		} else {
+			this.version = data.buffer[0];
 		}
-		putMyBytes(buffer);
+	} else if (typeof data.version != 'undefined') {
+		this.prototype = new Appendix();
+		this.version = data.version;
+	} else
+		this.version = 1;
+
+
+	function Apply(transaction, senderAccount, recipientAccount) {
 	}
-	*/
 
-	/*
-	abstract void putMyBytes(ByteBuffer buffer);
-	*/
+	function GetAppendixName() {
+		return '';
+	}
 
-	/*
-	public final JSONObject getJSONObject() {
-		JSONObject json = new JSONObject();
-		if (version > 0) {
-			json.put("version." + getAppendixName(), version);
-		}
-		putMyJSON(json);
+	function GetJsonObject() {
+		var json = {};
+		json["version." + this.GetAppendixName()] = version;
+		this.putMyJson(json);
 		return json;
 	}
-	*/
 
-	/*
-	abstract void putMyJSON(JSONObject json);
-	*/
-
-	/*
-	public final byte getVersion() {
-		return version;
+	function GetMySize() {
+		return 0;
 	}
-	*/
 
-	/*
-	boolean verifyVersion(byte transactionVersion) {
-		return transactionVersion == 0 ? version == 0 : version > 0;
+	function GetSize() {
+		return this.GetMySize() + 1;
 	}
-	*/
 
-	/*
-	abstract void validate(Transaction transaction) throws NxtException.ValidationException;
-
-	abstract void apply(Transaction transaction, Account senderAccount, Account recipientAccount);
-
-	abstract void undo(Transaction transaction, Account senderAccount, Account recipientAccount) throws TransactionType.UndoNotSupportedException;
-	*/
-
-	return obj;
-}
-
-/*
-function AbstractAppendix(attachmentData) {
-	version = (byte)Convert.nullToZero(((Long) attachmentData.get("version." + getAppendixName())));
-}
-*/
-
-/*
-AbstractAppendix(ByteBuffer buffer, byte transactionVersion) {
-	if (transactionVersion == 0) {
-		version = 0;
-	} else {
-		version = buffer.get();
+	function GetVersion() {
+		return this.version;
 	}
-}
-*/
 
-/*
-AbstractAppendix(int version) {
-	this.version = (byte) version;
-}
-*/
+	function PutMyBytes(buffer) {
+	}
 
-/*
-AbstractAppendix() {
-	this.version = 1;
+	function PutMyJson(json) {
+	}
+
+	function PutBytes(buffer) {
+		buffer.push(version);
+		this.PutMyBytes(buffer);
+	}
+
+	function Undo(transaction, senderAccount, recipientAccount) {
+	}
+
+	function Validate(transaction) {
+	}
+
+	function VerifyVersion(transactionVersion) {
+		return transactionVersion == 0 ? this.version == 0 : this.version > 0;
+	}
+
+
+	this.Apply = Apply;
+	this.GetAppendixName = GetAppendixName;
+	this.GetJsonObject = GetJsonObject;
+	this.GetMySize = GetMySize;
+	this.GetSize = GetSize;
+	this.GetVersion = GetVersion;
+	this.PutMyBytes = PutMyBytes;
+	this.PutMyJson = PutMyJson;
+	this.PutBytes = PutBytes;
+	this.Undo = Undo;
+	this.Validate = Validate;
+	this.VerifyVersion = VerifyVersion;
+	return this;
 }
-*/
 
 
 module.exports = AbstractAppendix;

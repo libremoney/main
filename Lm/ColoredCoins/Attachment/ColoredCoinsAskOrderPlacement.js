@@ -1,19 +1,26 @@
+/**!
+ * LibreMoney 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-/*
+var ColoredCoinsTrType = require(__dirname + '/../ColoredCoinsTrType');
 
-    public final static class Attachment_ColoredCoinsAskOrderPlacement extends ColoredCoinsOrderPlacement {
 
-        static final long serialVersionUID = 0;
+function ColoredCoinsAskOrderPlacement(assetId, quantityQNT, priceMilliLm) {
+	this.prototype = ColoredCoinsOrderPlacement(assetId, quantityQNT, priceMilliLm);
 
-        public ColoredCoinsAskOrderPlacement(Long assetId, long quantityQNT, long priceNQT) {
-            super(assetId, quantityQNT, priceNQT);
-        }
+	/*
+	static final long serialVersionUID = 0;
+	*/
 
-        @Override
-        public TransactionType getTransactionType() {
-            return TransactionType.ColoredCoins.ASK_ORDER_PLACEMENT;
-        }
+	function GetTransactionType() {
+		return ColoredCoinsTrType.GetAskOrderPlacement();
+	}
 
-    }
+	this.GetTransactionType = GetTransactionType;
+	return this;
+}
 
-*/
+
+module.exports = ColoredCoinsAskOrderPlacement();

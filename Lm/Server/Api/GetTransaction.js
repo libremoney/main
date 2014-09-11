@@ -12,7 +12,7 @@ var Logger = require(__dirname + '/../../Logger').GetLogger(module);
 var TransactionProcessor = require(__dirname + '/../../TransactionProcessor');
 
 
-//super("transaction", "fullHash");
+//super(new APITag[] {APITag.TRANSACTIONS}, "transaction", "fullHash");
 function GetTransaction(req, res) {
 	var transactionIdString = Convert.EmptyToNull(req.query.transaction);
 	var transactionFullHash = Convert.EmptyToNull(req.query.fullHash);

@@ -1,5 +1,5 @@
 /**!
- * LibreMoney TransferAsset 0.1
+ * LibreMoney TransferAsset api 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -15,9 +15,8 @@ import static nxt.http.JSONResponses.INCORRECT_ASSET_TRANSFER_COMMENT;
 */
 
 
-//super("recipient", "asset", "quantityQNT", "comment");
+//super(new APITag[] {APITag.AE, APITag.CREATE_TRANSACTION}, "recipient", "asset", "quantityQNT", "comment");
 function TransferAsset(req, res) {
-	var obj = CreateTransaction();
 	res.send('This is not implemented');
 	/*
 	Long recipient = ParameterParser.getRecipientId(req);

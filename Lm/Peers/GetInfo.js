@@ -1,3 +1,9 @@
+/**!
+ * LibreMoney 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
@@ -5,12 +11,8 @@ import org.json.simple.JSONStreamAware;
 
 // GetInfo = PeerServlet.PeerRequestHandler
 
-/*
-static final GetInfo instance = new GetInfo();
-*/
-
-/*
-JSONStreamAware processRequest(JSONObject request, Peer peer) {
+function GetInfo(request, peer) {
+	/*
 	PeerImpl peerImpl = (PeerImpl)peer;
 	String announcedAddress = (String)request.get("announcedAddress");
 	if (announcedAddress != null && (announcedAddress = announcedAddress.trim()).length() > 0) {
@@ -39,10 +41,13 @@ JSONStreamAware processRequest(JSONObject request, Peer peer) {
 	peerImpl.setPlatform(platform.trim());
 
 	peerImpl.setShareAddress(Boolean.TRUE.equals(request.get("shareAddress")));
+	peerImpl.setLastUpdated(Convert.getEpochTime());
 
 	//peerImpl.setState(Peer.State.CONNECTED);
 	Peers.NotifyListeners(Peers.Event.ADDED_ACTIVE_PEER, peerImpl);
 
 	return Peers.myPeerInfoResponse;
+	*/
 }
-*/
+
+module.exports = GetInfo;

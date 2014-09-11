@@ -14,7 +14,7 @@ var JsonResponses = require(__dirname + '/../JsonResponses');
 var ParameterParser = require(__dirname + '/../ParameterParser');
 
 
-//super("account", "asset");
+//super(new APITag[] {APITag.ACCOUNTS, APITag.AE}, "account", "asset");
 function GetAccountCurrentBidOrderIds(req, res) {
 	var accountId = ParameterParser.GetAccount(req).GetId();
 	var assetId;
@@ -24,6 +24,7 @@ function GetAccountCurrentBidOrderIds(req, res) {
 		// ignored
 	}
 	/*
+	TODO
 	JSONArray orderIds = new JSONArray();
 	for (Order.Bid bidOrder : Order.Bid.getAllBidOrders()) {
 		if ((assetId == null || bidOrder.getAssetId().equals(assetId)) && bidOrder.getAccount().getId().equals(accountId)) {

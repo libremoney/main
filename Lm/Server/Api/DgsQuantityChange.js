@@ -19,7 +19,6 @@ import static nxt.http.JSONResponses.UNKNOWN_GOODS;
 
 //super(new APITag[] {APITag.DGS, APITag.CREATE_TRANSACTION}, "goods", "deltaQuantity");
 function DgsQuantityChange(req, res) {
-	// CreateTransaction
 	res.send('This is not implemented');
 	/*
 	Account account = ParameterParser.getSenderAccount(req);

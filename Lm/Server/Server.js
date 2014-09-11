@@ -98,6 +98,8 @@ function Init(app, port, callback) {
 
 	Init404(app);
 
+	Core.DoInitServer(app);
+
 	if (callback)
 		callback();
 }
@@ -136,20 +138,13 @@ function InitApi(app) {
 	app.get('/', MainPage);
 	app.get('/api', Api.GetMain);
 
-	// Accounts
-
-	app.get("/api/getAccount", Api.GetAccount);
-	app.get("/api/getAccountId", Api.GetAccountId);
-	app.get("/api/getAccountPublicKey", Api.GetAccountPublicKey);
-	app.get("/api/getBalance", Api.GetBalance);
-	app.get("/api/getGuaranteedBalance", Api.GetGuaranteedBalance);
-	app.get("/api/leaseBalance", Api.LeaseBalance);
-
 	// Aliases
 
 	app.get("/api/getAlias", Api.GetAlias);
 	app.get("/api/getAliases", Api.GetAliases);
 	app.get("/api/getAllAssets", Api.GetAllAssets);
+	app.get("/api/sellAlias", Api.SellAlias);
+	app.get("/api/buyAlias", Api.BuyAlias);
 
 	// Assets
 
@@ -166,6 +161,8 @@ function InitApi(app) {
 	app.get("/api/getBlock", Api.GetBlock);
 	app.get("/api/getBlockchainStatus", Api.GetBlockchainStatus);
 	app.get("/api/getNextBlockGenerators", Api.GetNextBlockGenerators); // isTestnet
+	app.get("/api/getBlockId", Api.GetBlockId);
+	app.get("/api/readMessage", Api.ReadMessage);
 
 	// ColoredCoins
 
@@ -196,6 +193,7 @@ function InitApi(app) {
 	app.get("/api/signTransaction", Api.SignTransaction); // deprecated
 	app.get("/api/decryptFrom", Api.DecryptFrom);
 	app.get("/api/encryptTo", Api.EncryptTo);
+	app.get("/api/rsConvert", Api.RsConvert);
 
 	// DigitalGoods
 
@@ -207,18 +205,16 @@ function InitApi(app) {
 	app.get("/api/dgsPurchase", Api.DgsPurchase);
 	app.get("/api/dgsQuantityChange", Api.DgsQuantityChange);
 	app.get("/api/dgsRefund", Api.DgsRefund);
+	app.get("/api/getDgsGoods", Api.GetDgsGoods);
+	app.get("/api/getDgsGood", Api.GetDgsGood);
+	app.get("/api/getDgsPurchases", Api.GetDgsPurchases);
+	app.get("/api/getDgsPurchase", Api.GetDgsPurchase);
+	app.get("/api/getDgsPendingPurchases", Api.GetDgsPendingPurchases);
 
 	// User
 
 	app.get('/api/user/:id', Api.GetUser);
 	app.get('/api/users', Api.GetUsers);
-
-	// Poll
-
-	app.get("/api/castVote", Api.CastVote);
-	app.get("/api/createPoll", Api.CreatePoll);
-	app.get("/api/getPoll", Api.GetPoll);
-	app.get("/api/getPollIds", Api.GetPollIds);
 
 	// Peers
 
@@ -241,10 +237,10 @@ function InitApi(app) {
 	app.get("/api/getUnconfirmedTransactions", Api.GetUnconfirmedTransactions);
 	app.get("/api/parseTransaction", Api.ParseTransaction);
 	app.get("/api/sendMessage", Api.SendMessage);
-	app.get("/api/sendMoney", Api.SendMoney);
 	app.get("/api/setAccountInfo", Api.SetAccountInfo);
 	app.get("/api/setAlias", Api.SetAlias);
 	app.get("/api/transferAsset", Api.TransferAsset);
+	app.get("/api/getAccountTransactions", Api.GetAccountTransactions);
 
 	// Projects
 
@@ -261,19 +257,6 @@ function InitApi(app) {
 	app.get("/api/getForging", Api.GetForging); // post
 	app.get("/api/startForging", Api.StartForging); // post
 	app.get("/api/stopForging", Api.StopForging); // post
-
-
-	app.get("/api/getAccountTransactions", Api.GetAccountTransactions);
-	app.get("/api/sellAlias", Api.SellAlias);
-	app.get("/api/buyAlias", Api.BuyAlias);
-	app.get("/api/getBlockId", Api.GetBlockId);
-	app.get("/api/getDgsGoods", Api.GetDgsGoods);
-	app.get("/api/getDgsGood", Api.GetDgsGood);
-	app.get("/api/getDgsPurchases", Api.GetDgsPurchases);
-	app.get("/api/getDgsPurchase", Api.GetDgsPurchase);
-	app.get("/api/getDgsPendingPurchases", Api.GetDgsPendingPurchases);
-	app.get("/api/rsConvert", Api.RSConvert);
-	app.get("/api/readMessage", Api.ReadMessage);
 }
 
 function InitApi2(app) {

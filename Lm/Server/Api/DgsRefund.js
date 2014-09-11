@@ -20,7 +20,6 @@ import static nxt.http.JSONResponses.INCORRECT_PURCHASE;
 
 //super(new APITag[] {APITag.DGS, APITag.CREATE_TRANSACTION}, "purchase", "refundNQT");
 function DgsRefund(req, res) {
-	// CreateTransaction
 	res.send('This is not implemented');
 	/*
 	Account sellerAccount = ParameterParser.getSenderAccount(req);

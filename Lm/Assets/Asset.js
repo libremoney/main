@@ -1,38 +1,50 @@
+/**!
+ * LibreMoney Asset 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-function Asset(AssetId, AccountId, Name, Description, QuantityMilliLm, Decimals) {
-	this.AssetId = AssetId;
-	this.AccountId = AccountId;
-	this.Name = Name;
-	this.Description = Description;
-	this.QuantityMilliLm = QuantityMilliLm;
-	this.Decimals = Decimals;
+function Asset(assetId, accountId, name, description, quantityMilliLm, decimals) {
+	this.assetId = assetId;
+	this.accountId = accountId;
+	this.name = name;
+	this.description = description;
+	this.quantityMilliLm = quantityMilliLm;
+	this.decimals = decimals;
 	return this;
 }
 
-/*
-public Long getId() {
-	return assetId;
+function GetAccountId() {
+	return this.accountId;
 }
 
-public Long getAccountId() {
-	return accountId;
+function GetDecimals() {
+	return this.decimals;
 }
 
-public String getName() {
-	return name;
+function GetDescription() {
+	return this.description;
 }
 
-public String getDescription() {
-	return description;
+function GetId() {
+	return this.assetId;
 }
 
-public long getQuantityQNT() {
-	return quantityQNT;
+function GetName() {
+	return this.name;
 }
 
-public byte getDecimals() {
-	return decimals;
+function GetQuantityQNT() {
+	return this.quantityQNT;
 }
-*/
+
+
+Asset.prototype.GetAccountId = GetAccountId;
+Asset.prototype.GetDecimals = GetDecimals;
+Asset.prototype.GetDescription = GetDescription;
+Asset.prototype.GetId = GetId;
+Asset.prototype.GetName = GetName;
+Asset.prototype.GetQuantityQNT = GetQuantityQNT;
+
 
 module.exports = Asset;

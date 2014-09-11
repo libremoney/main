@@ -4,36 +4,31 @@
  * CC0 license
  */
 
-/*
-import nxt.Account;
-import nxt.Attachment;
-import nxt.Constants;
-import nxt.NxtException;
-import nxt.util.Convert;
-import static nxt.http.JSONResponses.INCORRECT_ACCOUNT_DESCRIPTION_LENGTH;
-import static nxt.http.JSONResponses.INCORRECT_ACCOUNT_NAME_LENGTH;
-*/
+var Attachment_MessagingAccountInfo = require(__dirname + "/../../Accounts/Attachment_MessagingAccountInfo");
+var Constants = require(__dirname + "/../../Constants");
+var Convert = require(__dirname + "/../../Util/Convert");
+var CreateTransaction = require(__dirname + "/../CreateTransaction");
+var JsonResponses = require(__dirname + "/../JsonResponses");
+var ParameterParser = require(__dirname + "/../ParameterParser");
 
-//super("name", "description");
+
+//super(new APITag[] {APITag.ACCOUNTS, APITag.CREATE_TRANSACTION}, "name", "description");
 function SetAccountInfo(req, res) {
-	var obj = CreateTransaction();
-	res.send('This is not implemented');
-	/*
-	String name = Convert.nullToEmpty(req.getParameter("name")).trim();
-	String description = Convert.nullToEmpty(req.getParameter("description")).trim();
+	var name = Convert.NullToEmpty(req.query.name).trim();
+	var description = Convert.NullToEmpty(req.query.description).trim();
 
-	if (name.length() > Constants.MaxAccountNameLength) {
-		return INCORRECT_ACCOUNT_NAME_LENGTH;
+	if (name.length > Constants.MaxAccountNameLength) {
+		return JsonResponses.IncorrectAccountNameLength;
 	}
 
-	if (description.length() > Constants.MaxAccountDescriptionLength) {
-		return INCORRECT_ACCOUNT_DESCRIPTION_LENGTH;
+	if (description.length > Constants.MaxAccountDescriptionLength) {
+		return JsonResponses.IncorrectAccountDescriptionLength;
 	}
 
-	Account account = ParameterParser.getSenderAccount(req);
-	Attachment attachment = new Attachment.MessagingAccountInfo(name, description);
-	return createTransaction(req, account, attachment);
-	*/
+	var account = ParameterParser.GetSenderAccount(req);
+	var attachment = new Attachment_MessagingAccountInfo(name, description);
+	return CreateTransaction(req, account, attachment);
 }
+
 
 module.exports = SetAccountInfo;

@@ -1,10 +1,10 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-var Constants = require(__dirname + '/../Constants');
+var Constants = require(__dirname + '/../../Constants');
 
 
 //static final long serialVersionUID = 0;

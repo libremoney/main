@@ -15,17 +15,12 @@ var Lm = (function(Lm, $, undefined) {
 
 		var blockHeight = $(th).data("block");
 
-		var block = $(Lm.Blocks).filter(function() {
-			return parseInt(th.height) == parseInt(blockHeight);
-		}).get(0);
-
-		if (!block) {
-			Lm.GetBlock($(th).data("blockid"), function(response) {
-				Lm.ShowBlockModal(response);
-			});
-		} else {
-			Lm.ShowBlockModal(block);
-		}
+		Lm.SendRequest("getBlock+", {
+			"height": blockHeight,
+			"includeTransactions": "true"
+		}, function(response) {
+			Lm.ShowBlockModal(response);
+		});
 	}
 
 	function ShowBlockModal(block) {
@@ -48,41 +43,31 @@ var Lm = (function(Lm, $, undefined) {
 			$("#block_info_transactions_none").hide();
 			$("#block_info_transactions_table").show();
 
-			var transactions = {};
-			var nrTransactions = 0;
+			var rows = "";
+
+			block.transactions.sort(function(a, b) {
+				return a.timestamp - b.timestamp;
+			});
 
 			for (var i = 0; i < block.transactions.length; i++) {
-				Lm.SendRequest("getTransaction", {
-					"transaction": block.transactions[i]
-				}, function(transaction, input) {
-					nrTransactions++;
-					transactions[input.transaction] = transaction;
+				var transaction = block.transactions[i];
 
-					if (nrTransactions == block.transactions.length) {
-						var rows = "";
+				if (transaction.amountMilliLm) {
+					transaction.amount = new BigInteger(transaction.amountMilliLm);
+					transaction.fee = new BigInteger(transaction.feeMilliLm);
+				}
 
-						for (var i = 0; i < nrTransactions; i++) {
-							var transaction = transactions[block.transactions[i]];
-
-							if (transaction.amountMilliLm) {
-								transaction.amount = new BigInteger(transaction.amountMilliLm);
-								transaction.fee = new BigInteger(transaction.feeMilliLm);
-							}
-
-							rows += "<tr><td>" + Lm.FormatTime(transaction.timestamp) + "</td>" +
-								"<td>" + Lm.FormatAmount(transaction.amount) + "</td>" +
-								"<td>" + Lm.FormatAmount(transaction.fee) + "</td>" +
-								"<td>" + Lm.GetAccountTitle(transaction, "recipient") + "</td>" +
-								"<td>" + Lm.GetAccountTitle(transaction, "sender") + "</td></tr>";
-						}
-
-						$("#block_info_transactions_table tbody").empty().append(rows);
-						$("#block_info_modal").modal("show");
-
-						Lm.FetchingModalData = false;
-					}
-				});
+				rows += "<tr><td>" + Lm.FormatTime(transaction.timestamp) + "</td>" +
+					"<td>" + Lm.FormatAmount(transaction.amount) + "</td>" +
+					"<td>" + Lm.FormatAmount(transaction.fee) + "</td>" +
+					"<td>" + Lm.GetAccountTitle(transaction, "recipient") + "</td>" +
+					"<td>" + Lm.GetAccountTitle(transaction, "sender") + "</td></tr>";
 			}
+
+			$("#block_info_transactions_table tbody").empty().append(rows);
+			$("#block_info_modal").modal("show");
+
+			Lm.FetchingModalData = false;
 		} else {
 			$("#block_info_transactions_none").show();
 			$("#block_info_transactions_table").hide();

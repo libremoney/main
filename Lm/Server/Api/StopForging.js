@@ -9,7 +9,7 @@ import nxt.Generator;
 import static nxt.http.JSONResponses.MISSING_SECRET_PHRASE;
 */
 
-//super("secretPhrase");
+//super(new APITag[] {APITag.FORGING}, "secretPhrase");
 function StopForging(req, res) {
 	res.send('This is not implemented');
 	/*

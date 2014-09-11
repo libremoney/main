@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -7,8 +7,8 @@
 var Accounts = require(__dirname + '/../../Accounts');
 var Constants = require(__dirname + '/../../Constants');
 var Convert = require(__dirname + '/../../Util/Convert');
+var Payments = require(__dirname + '/../../Payments');
 var TransactionProcessor = require(__dirname + '/../../TransactionProcessor');
-var Transactions = require(__dirname + '/../../Transactions');
 
 
 function SendMoney(req, res, user) {
@@ -99,13 +99,14 @@ function SendMoney(req, res, user) {
 		response.deadline = deadlineValue;
 		return response;
 	} else {
-		var transaction = Transactions.NewOrdinaryPaymentTransaction({
+		var transaction = Payments.NewOrdinaryPaymentTransaction({
 			deadline: deadline,
 			senderPublicKey: user.GetPublicKey(),
 			recipientId: recipient,
 			amountMilliLm: amountMilliLm,
 			feeMilliLm: feeMilliLm
 		});
+		transaction.Validate();
 		transaction.Sign(user.GetSecretPhrase());
 		TransactionProcessor.Broadcast(transaction);
 		return JsonResponses.NOTIFY_OF_ACCEPTED_TRANSACTION;

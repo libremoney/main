@@ -10,7 +10,7 @@ import nxt.util.Convert;
 import org.json.simple.JSONObject;
 */
 
-var Accounts = require(__dirname + '/../Util/Accounts');
+var Accounts = require(__dirname + '/../Accounts');
 var Arrays = require(__dirname + '/../Util/Arrays');
 var Blockchain = require(__dirname + '/../Blockchain');
 var Blocks = require(__dirname + '/../Blocks');
@@ -589,7 +589,6 @@ Transaction.prototype.SignatureOffset = SignatureOffset;
 Transaction.prototype.Sign = Sign;
 Transaction.prototype.Undo = Undo;
 Transaction.prototype.UndoUnconfirmed = UndoUnconfirmed;
-Transaction.prototype.UpdateTotals = UpdateTotals;
 Transaction.prototype.Validate = Validate;
 Transaction.prototype.VerifySignature = VerifySignature;
 

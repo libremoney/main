@@ -1,3 +1,9 @@
+/**!
+ * LibreMoney 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -6,12 +12,8 @@ import org.json.simple.JSONStreamAware;
 
 // GetPeers = PeerServlet.PeerRequestHandler
 
-/*
-static final GetPeers instance = new GetPeers();
-*/
-
-/*
-JSONStreamAware processRequest(JSONObject request, Peer peer) {
+function GetPeers(request, peer) {
+    /*
     JSONObject response = new JSONObject();
 
     JSONArray peers = new JSONArray();
@@ -26,7 +28,9 @@ JSONStreamAware processRequest(JSONObject request, Peer peer) {
 
     }
     response.put("peers", peers);
+    */
 
     return response;
 }
-*/
+
+module.exports = GetPeers;

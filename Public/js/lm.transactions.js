@@ -2,7 +2,6 @@
  * @depends {lm.js}
  */
 var Lm = (function(Lm, $, undefined) {
-	Lm.LastTransactionsTimestamp = 0;
 	Lm.LastTransactions = "";
 
 	Lm.UnconfirmedTransactions = [];
@@ -16,7 +15,7 @@ var Lm = (function(Lm, $, undefined) {
 		Lm.SendRequest("getAccountTransactions", {
 			"account": Lm.Account,
 			"firstIndex": 0,
-			"lastIndex": 10
+			"lastIndex": 9
 		}, function(response) {
 			if (response.transactions && response.transactions.length) {
 				var transactions = [];
@@ -48,15 +47,8 @@ var Lm = (function(Lm, $, undefined) {
 
 			transactions.sort(Lm.SortArray);
 
-			if (transactions.length >= 1) {
+			if (transactions.length) {
 				Lm.LastTransactions = transactionIds.toString();
-
-				for (var i = transactions.length - 1; i >= 0; i--) {
-					if (transactions[i].confirmed) {
-						Lm.LastTransactionsTimestamp = transactions[i].timestamp;
-						break;
-					}
-				}
 			}
 
 			for (var i = 0; i < transactions.length; i++) {
@@ -97,42 +89,34 @@ var Lm = (function(Lm, $, undefined) {
 	function GetNewTransactions() {
 		Lm.SendRequest("getAccountTransactionIds", {
 			"account": Lm.Account,
-			"timestamp": Lm.LastTransactionsTimestamp
+			"timestamp": Lm.Blocks[0].timestamp + 1,
+			"firstIndex": 0,
+			"lastIndex": 0
 		}, function(response) {
+			//if there is, get latest 10 transactions
 			if (response.transactionIds && response.transactionIds.length) {
-				var transactionIds = response.transactionIds.slice(0, 10);
+				Lm.SendRequest("getAccountTransactions", {
+					"account": Lm.Account,
+					"firstIndex": 0,
+					"lastIndex": 9
+				}, function(response) {
+					if (response.transactions && response.transactions.length) {
+						var transactionIds = [];
 
-				if (transactionIds.toString() == Lm.LastTransactions) {
-					Lm.GetUnconfirmedTransactions(function(unconfirmedTransactions) {
-						Lm.HandleIncomingTransactions(unconfirmedTransactions);
-					});
-					return;
-				}
+						$.each(response.transactions, function(key, transaction) {
+							transactionIds.push(transaction.transaction);
+							response.transactions[key].confirmed = true;
+						});
 
-				Lm.TransactionIds = transactionIds;
-
-				var nrTransactions = 0;
-
-				var newTransactions = [];
-
-				//if we have a new transaction, we just get them all.. (10 max)
-				for (var i = 0; i < transactionIds.length; i++) {
-					Lm.SendRequest("getTransaction", {
-						"transaction": transactionIds[i]
-					}, function(transaction, input) {
-						nrTransactions++;
-
-						transaction.transaction = input.transaction;
-						transaction.confirmed = true;
-						newTransactions.push(transaction);
-
-						if (nrTransactions == transactionIds.length) {
-							Lm.GetUnconfirmedTransactions(function(unconfirmedTransactions) {
-								Lm.HandleIncomingTransactions(newTransactions.concat(unconfirmedTransactions), transactionIds);
-							});
-						}
-					});
-				}
+						Lm.GetUnconfirmedTransactions(function(unconfirmedTransactions) {
+							Lm.HandleIncomingTransactions(response.transactions.concat(unconfirmedTransactions), transactionIds);
+						});
+					} else {
+						Lm.GetUnconfirmedTransactions(function(unconfirmedTransactions) {
+							Lm.HandleIncomingTransactions(unconfirmedTransactions);
+						});
+					}
+				});
 			} else {
 				Lm.GetUnconfirmedTransactions(function(unconfirmedTransactions) {
 					Lm.HandleIncomingTransactions(unconfirmedTransactions);
@@ -223,13 +207,6 @@ var Lm = (function(Lm, $, undefined) {
 
 		if (confirmedTransactionIds.length) {
 			Lm.LastTransactions = confirmedTransactionIds.toString();
-
-			for (var i = transactions.length - 1; i >= 0; i--) {
-				if (transactions[i].confirmed) {
-					Lm.LastTransactionsTimestamp = transactions[i].timestamp;
-					break;
-				}
-			}
 		}
 
 		if (confirmedTransactionIds.length || Lm.UnconfirmedTransactionsChange) {

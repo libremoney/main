@@ -10,7 +10,7 @@ function TransactionType() {
 }
 
 
-function Apply(Transaction, SenderAccount, RecipientAccount) {
+function Apply(transaction, senderAccount, recipientAccount) {
 	throw new Error('Not implementted');
 	/*
 	senderAccount.addToBalanceNQT(- (Convert.safeAdd(transaction.getAmountNQT(), transaction.getFeeNQT())));
@@ -21,12 +21,14 @@ function Apply(Transaction, SenderAccount, RecipientAccount) {
 	*/
 }
 
-function ApplyAttachment(Transaction, SenderAccount, RecipientAccount) {}
+function ApplyAttachment(transaction, senderAccount, recipientAccount) {
+}
 
-function ApplyAttachmentUnconfirmed(Transaction, SenderAccount) {}
+function ApplyAttachmentUnconfirmed(transaction, senderAccount) {
+}
 
 // return false iff double spending
-function ApplyUnconfirmed(Transaction, SenderAccount) {
+function ApplyUnconfirmed(transaction, senderAccount) {
 	throw new Error('Not implementted');
 	/*
 	long totalAmountNQT = Convert.safeAdd(transaction.getAmountNQT(), transaction.getFeeNQT());
@@ -58,7 +60,7 @@ function GetType() {}
 function HasRecipient() {
 }
 
-function IsDuplicate(Transaction, Duplicates) {
+function IsDuplicate(transaction, duplicates) {
 	return false;
 }
 
@@ -74,7 +76,7 @@ function ToString() {
 	return "type: " + this.GetType() + ", subtype: " + this.GetSubtype();
 }
 
-function Undo(Transaction, SenderAccount, RecipientAccount) {
+function Undo(transaction, senderAccount, recipientAccount) {
 	throw new Error('Not implementted');
 	/*
 	senderAccount.addToBalanceNQT(Convert.safeAdd(transaction.getAmountNQT(), transaction.getFeeNQT()));
@@ -89,11 +91,13 @@ function Undo(Transaction, SenderAccount, RecipientAccount) {
 	*/
 }
 
-function UndoAttachment(Transaction, SenderAccount, RecipientAccount) {}
+function UndoAttachment(transaction, senderAccount, recipientAccount) {
+}
 
-function UndoAttachmentUnconfirmed(Transaction, SenderAccount) {}
+function UndoAttachmentUnconfirmed(transaction, senderAccount) {
+}
 
-function UndoUnconfirmed(Transaction, SenderAccount) {
+function UndoUnconfirmed(transaction, senderAccount) {
 	throw new Error('Not implementted');
 	/*
 	senderAccount.addToUnconfirmedBalanceNQT(Convert.safeAdd(transaction.getAmountNQT(), transaction.getFeeNQT()));
@@ -104,7 +108,7 @@ function UndoUnconfirmed(Transaction, SenderAccount) {
 	*/
 }
 
-function ValidateAttachment(Transaction) {
+function ValidateAttachment(transaction) {
 }
 
 

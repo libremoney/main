@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -212,7 +212,7 @@ function Init() {
 				throw new RuntimeException(e.toString(), e);
 			}
 		}
-	});
+	}, true);
 	*/
 
 	InitAccouns();

@@ -33,6 +33,9 @@ var BlockSignature = [
 	];
 
 
+exports.GENESIS_BLOCK_ID = GENESIS_BLOCK_ID;
+exports.CREATOR_ID = CREATOR_ID;
+
 exports.Amounts = Amounts;
 exports.BlockSignature = BlockSignature;
 exports.CreatorPublicKey = CreatorPublicKey;

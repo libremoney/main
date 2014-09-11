@@ -1,5 +1,5 @@
 /**!
- * LibreMoney peers 0.0
+ * LibreMoney Peers 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -8,6 +8,7 @@
 import nxt.Account;
 import nxt.Block;
 import nxt.Constants;
+Convert
 import nxt.Transaction;
 import nxt.util.ThreadPool;
 import org.eclipse.jetty.server.Server;
@@ -55,6 +56,7 @@ var knownBlacklistedPeers = [];
 var connectTimeout;
 var readTimeout;
 var blacklistingPeriod;
+var getMorePeers;
 /*
 static final int DEFAULT_PEER_PORT = 7874;
 static final int TESTNET_PEER_PORT = 6874;
@@ -77,6 +79,7 @@ var myPeerInfoResponse;
 
 var listeners = new Listeners();
 var peers = new Array(); // ConcurrentMap<String, PeerImpl>
+var announcedAddresses = []; //new ConcurrentHashMap<>();
 var allPeers = new Array(); //Collections.unmodifiableCollection(peers.values()); // Collection<PeerImpl>
 //var sendToPeersService = Executors.newFixedThreadPool(10);
 
@@ -106,29 +109,53 @@ function AddPeer1(announcedAddress) {
 function AddPeer2(address, announcedAddress) {
 	throw new Error('This is not implemented');
 	/*
-	String peerAddress = normalizeHostAndPort(address);
+	//re-add the [] to ipv6 addresses lost in getHostAddress() above
+	String clean_address = address;
+	if (clean_address.split(":").length > 2) {
+		clean_address = "[" + clean_address + "]";
+	}
+	PeerImpl peer;
+	if ((peer = peers.get(clean_address)) != null) {
+		return peer;
+	}
+	String peerAddress = normalizeHostAndPort(clean_address);
 	if (peerAddress == null) {
 		return null;
 	}
+	if ((peer = peers.get(peerAddress)) != null) {
+		return peer;
+	}
 
-	String announcedPeerAddress = normalizeHostAndPort(announcedAddress);
+	String announcedPeerAddress = address.equals(announcedAddress) ? peerAddress : normalizeHostAndPort(announcedAddress);
 
 	if (Peers.myAddress != null && Peers.myAddress.length() > 0 && Peers.myAddress.equalsIgnoreCase(announcedPeerAddress)) {
 		return null;
 	}
 
-	PeerImpl peer = peers.get(peerAddress);
-	if (peer == null) {
-		peer = new PeerImpl(peerAddress, announcedPeerAddress);
-		if (Constants.isTestnet && peer.getPort() > 0 && peer.getPort() != TESTNET_PEER_PORT) {
-			Logger.logDebugMessage("Peer " + peerAddress + " on testnet is not using port " + TESTNET_PEER_PORT + ", ignoring");
-			return null;
-		}
-		peers.put(peerAddress, peer);
-		listeners.Notify(Event.NEW_PEER, peer);
+	peer = new PeerImpl(peerAddress, announcedPeerAddress);
+	if (Constants.isTestnet && peer.getPort() > 0 && peer.getPort() != TESTNET_PEER_PORT) {
+		Logger.logDebugMessage("Peer " + peerAddress + " on testnet is not using port " + TESTNET_PEER_PORT + ", ignoring");
+		return null;
 	}
-
+	peers.put(peerAddress, peer);
+	if (announcedAddress != null) {
+		updateAddress(peer);
+	}
+	listeners.notify(peer, Event.NEW_PEER);
 	return peer;
+	*/
+}
+
+function GetActivePeers() {
+	throw new Error('This is not implemented');
+	/*
+	List<PeerImpl> activePeers = new ArrayList<>();
+	for (PeerImpl peer : peers.values()) {
+		if (peer.getState() != Peer.State.NON_CONNECTED) {
+			activePeers.add(peer);
+		}
+	}
+	return activePeers;
 	*/
 }
 
@@ -148,6 +175,9 @@ function GetAnyPeer(state, applyPullThreshold) {
 	}
 
 	if (selectedPeers.size() > 0) {
+		if (! Peers.enableHallmarkProtection) {
+			return selectedPeers.get(ThreadLocalRandom.current().nextInt(selectedPeers.size()));
+		}
 		long totalWeight = 0;
 		for (Peer peer : selectedPeers) {
 			long weight = peer.getWeight();
@@ -184,6 +214,7 @@ function GetMorePeersThread() {
 	public void run() {
 		try {
 			try {
+
 				Peer peer = getAnyPeer(Peer.State.CONNECTED, true);
 				if (peer == null) {
 					return;
@@ -193,15 +224,35 @@ function GetMorePeersThread() {
 					return;
 				}
 				JSONArray peers = (JSONArray)response.get("peers");
-				if (peers == null) {
-					return;
+				Set<String> addedAddresses = new HashSet<>();
+				if (peers != null) {
+					for (Object announcedAddress : peers) {
+						if (addPeer((String) announcedAddress) != null) {
+							addedAddresses.add((String) announcedAddress);
+						}
+					}
+					if (savePeers && addedNewPeer) {
+						updateSavedPeers();
+						addedNewPeer = false;
+					}
 				}
-				for (Object announcedAddress : peers) {
-					addPeer((String) announcedAddress);
+
+				JSONArray myPeers = new JSONArray();
+				for (Peer myPeer : Peers.getAllPeers()) {
+					if (! myPeer.isBlacklisted() && myPeer.getAnnouncedAddress() != null
+							&& myPeer.getState() == Peer.State.CONNECTED && myPeer.shareAddress()
+							&& ! addedAddresses.contains(myPeer.getAnnouncedAddress())
+							&& ! myPeer.getAnnouncedAddress().equals(peer.getAnnouncedAddress())) {
+						myPeers.add(myPeer.getAnnouncedAddress());
+					}
 				}
-				if (savePeers) {
-					updateSavedPeers();
+				if (myPeers.size() > 0) {
+					JSONObject request = new JSONObject();
+					request.put("requestType", "addPeers");
+					request.put("peers", myPeers);
+					peer.send(JSON.prepareRequest(request));
 				}
+
 			} catch (Exception e) {
 				Logger.logDebugMessage("Error requesting peers from a peer", e);
 			}
@@ -234,6 +285,9 @@ function GetNumberOfConnectedPublicPeers() {
 	/*
 	int numberOfConnectedPeers = 0;
 	for (Peer peer : peers.values()) {
+		if (! Peers.enableHallmarkProtection) {
+			return selectedPeers.get(ThreadLocalRandom.current().nextInt(selectedPeers.size()));
+		}
 		if (peer.getState() == Peer.State.CONNECTED && peer.getAnnouncedAddress() != null) {
 			numberOfConnectedPeers++;
 		}
@@ -255,9 +309,13 @@ function Init() {
 	Init2();
 	Init3();
 	Init4();
-	ThreadPool.ScheduleThread(Peers.PeerConnectingThread, 5000, 'Peers.PeerConnectingThread');
-	ThreadPool.ScheduleThread(Peers.PeerUnBlacklistingThread, 1000, 'Peers.PeerUnBlacklistingThread');
-	ThreadPool.ScheduleThread(Peers.GetMorePeersThread, 5000, 'Peers.GetMorePeersThread');
+	if (!Constants.isOffline) {
+		ThreadPool.ScheduleThread(Peers.PeerConnectingThread, 5);
+		ThreadPool.ScheduleThread(Peers.PeerUnBlacklistingThread, 1);
+		if (Peers.getMorePeers) {
+			ThreadPool.ScheduleThread(Peers.GetMorePeersThread, 5);
+		}
+	}
 	Init8();
 	Init9();
 }
@@ -266,24 +324,24 @@ function Init1() {
 	/*
 	myPlatform = Nxt.getStringProperty("nxt.myPlatform");
 	myAddress = Nxt.getStringProperty("nxt.myAddress");
-	if (myAddress != null && myAddress.endsWith(":" + TESTNET_PEER_PORT) && ! Constants.isTestnet) {
+	if (myAddress != null && myAddress.endsWith(":" + TESTNET_PEER_PORT) && !Constants.isTestnet) {
 		throw new RuntimeException("Port " + TESTNET_PEER_PORT + " should only be used for testnet!!!");
 	}
 	myPeerServerPort = Nxt.getIntProperty("nxt.peerServerPort");
-	if (myPeerServerPort == TESTNET_PEER_PORT && ! Constants.isTestnet) {
+	if (myPeerServerPort == TESTNET_PEER_PORT && !Constants.isTestnet) {
 		throw new RuntimeException("Port " + TESTNET_PEER_PORT + " should only be used for testnet!!!");
 	}
-	shareMyAddress = Nxt.getBooleanProperty("nxt.shareMyAddress");
+	shareMyAddress = Nxt.getBooleanProperty("nxt.shareMyAddress") && ! Constants.isOffline;
 	myHallmark = Nxt.getStringProperty("nxt.myHallmark");
 	if (Peers.myHallmark != null && Peers.myHallmark.length() > 0) {
 		try {
 			Hallmark hallmark = Hallmark.parseHallmark(Peers.myHallmark);
-			if (! hallmark.isValid() || myAddress == null) {
+			if (!hallmark.isValid() || myAddress == null) {
 				throw new RuntimeException();
 			}
 			URI uri = new URI("http://" + myAddress.trim());
 			String host = uri.getHost();
-			if (! hallmark.getHost().equals(host)) {
+			if (!hallmark.getHost().equals(host)) {
 				throw new RuntimeException();
 			}
 		} catch (RuntimeException|URISyntaxException e) {
@@ -295,38 +353,29 @@ function Init1() {
 }
 
 function Init2() {
-	/*
-	JSONObject json = new JSONObject();
-	if (myAddress != null && myAddress.length() > 0) {
+	var json = {};
+	if (this.myAddress != null && this.myAddress.length > 0) {
 		try {
-			URI uri = new URI("http://"+myAddress.trim());
-			String host = uri.getHost();
-			int port = uri.getPort();
-			if (!Constants.isTestnet) {
-				if (port >= 0)
-					json.put("announcedAddress", myAddress);
-				else
-					json.put("announcedAddress", host+(myPeerServerPort!=DEFAULT_PEER_PORT ? ":"+myPeerServerPort : ""));
-			} else {
-				json.put("announcedAddress", host);
-			}
-		} catch (URISyntaxException e) {
-			Logger.logMessage("Your announce address is invalid: " + myAddress);
-			throw new RuntimeException(e.toString(), e);
+			var uri = new URI("http://" + myAddress.trim());
+			var host = uri.hostname; //uri.getHost();
+			var port = uri.port(); //uri.getPort();
+			json.announcedAddress = host;
+		} catch (e) {
+			Logger.warn("Your announce address is invalid: " + myAddress);
+			throw new Error(e);
 		}
 	}
-	if (Peers.myHallmark != null && Peers.myHallmark.length() > 0) {
-		json.put("hallmark", Peers.myHallmark);
+	if (Peers.myHallmark != null && Peers.myHallmark.length > 0) {
+		json.hallmark = Peers.myHallmark;
 	}
-	json.put("application", "NRS");
-	json.put("version", Nxt.VERSION);
-	json.put("platform", Peers.myPlatform);
-	json.put("shareAddress", Peers.shareMyAddress);
-	Logger.logDebugMessage("My peer info:\n" + json.toJSONString());
-	myPeerInfoResponse = JSON.prepare(json);
-	json.put("requestType", "getInfo");
-	myPeerInfoRequest = JSON.prepareRequest(json);
-	*/
+	json.application = Core.GetApplication();
+	json.version = Core.GetVersion();
+	json.platform = Peers.myPlatform;
+	json.shareAddress = Peers.shareMyAddress;
+	Logger.debug("My peer info:\n" + json);
+	this.myPeerInfoResponse = json;
+	json.requestType = "getInfo";
+	this.myPeerInfoRequest = json;
 }
 
 function Init3() {
@@ -356,19 +405,48 @@ function Init3() {
 	blacklistingPeriod = Nxt.getIntProperty("nxt.blacklistingPeriod");
 	communicationLoggingMask = Nxt.getIntProperty("nxt.communicationLoggingMask");
 	sendToPeersLimit = Nxt.getIntProperty("nxt.sendToPeersLimit");
+	usePeersDb = Nxt.getBooleanProperty("nxt.usePeersDb") && ! Constants.isOffline;
+	savePeers = usePeersDb && Nxt.getBooleanProperty("nxt.savePeers");
+	getMorePeers = Nxt.getBooleanProperty("nxt.getMorePeers");
 
-	if (! wellKnownPeers.isEmpty()) {
-		StringBuilder buf = new StringBuilder();
-		for (String address : wellKnownPeers) {
-			Peer peer = Peers.addPeer(address);
-			if (peer != null) {
-				buf.append(peer.getPeerAddress()).append("; ");
-			} else {
-				Logger.logMessage("Invalid well known peer address: " + address);
+	ThreadPool.runBeforeStart(new Runnable() {
+		private void loadPeers(List<Future<String>> unresolved, Collection<String> addresses) {
+			for (final String address : addresses) {
+				Future<String> unresolvedAddress = sendToPeersService.submit(new Callable<String>() {
+					public String call() {
+						Peer peer = Peers.addPeer(address);
+						return peer == null ? address : null;
+					}
+				});
+				unresolved.add(unresolvedAddress);
 			}
 		}
-		Logger.logDebugMessage("Well known peers: " + buf.toString());
-	}
+
+		public void run() {
+			List<Future<String>> unresolvedPeers = new ArrayList<>();
+			if (! wellKnownPeers.isEmpty()) {
+				loadPeers(unresolvedPeers, wellKnownPeers);
+			}
+			if (usePeersDb) {
+				Logger.logDebugMessage("Loading known peers from the database...");
+				loadPeers(unresolvedPeers, PeerDb.loadPeers());
+			}
+			for (Future<String> unresolvedPeer : unresolvedPeers) {
+				try {
+					String badAddress = unresolvedPeer.get(5, TimeUnit.SECONDS);
+					if (badAddress != null) {
+						Logger.logDebugMessage("Failed to resolve peer address: " + badAddress);
+					}
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				} catch (ExecutionException e) {
+					Logger.logDebugMessage("Failed to add peer", e);
+				} catch (TimeoutException e) {
+				}
+			}
+			Logger.logDebugMessage("Known peers: " + peers.size());
+		}
+	}, false);
 	*/
 }
 
@@ -408,17 +486,26 @@ function Init9() {
 		final String host = Nxt.getStringProperty("nxt.peerServerHost");
 		connector.setHost(host);
 		connector.setIdleTimeout(Nxt.getIntProperty("nxt.peerServerIdleTimeout"));
+		connector.setReuseAddress(true);
 		peerServer.addConnector(connector);
 
+		ServletHolder peerServletHolder = new ServletHolder(new PeerServlet());
+		boolean isGzipEnabled = Nxt.getBooleanProperty("nxt.enablePeerServerGZIPFilter");
+		peerServletHolder.setInitParameter("isGzipEnabled", Boolean.toString(isGzipEnabled));
 		ServletHandler peerHandler = new ServletHandler();
-		peerHandler.addServletWithMapping(PeerServlet.class, "/*");
+		peerHandler.addServletWithMapping(peerServletHolder, "/*");
 		if (Nxt.getBooleanProperty("nxt.enablePeerServerDoSFilter")) {
-			FilterHolder filterHolder = peerHandler.addFilterWithMapping(DoSFilter.class, "/*", FilterMapping.DEFAULT);
-			filterHolder.setInitParameter("maxRequestsPerSec", Nxt.getStringProperty("nxt.peerServerDoSFilter.maxRequestsPerSec"));
-			filterHolder.setInitParameter("delayMs", Nxt.getStringProperty("nxt.peerServerDoSFilter.delayMs"));
-			filterHolder.setInitParameter("maxRequestMs", Nxt.getStringProperty("nxt.peerServerDoSFilter.maxRequestMs"));
-			filterHolder.setInitParameter("trackSessions", "false");
-			filterHolder.setAsyncSupported(true);
+			FilterHolder dosFilterHolder = peerHandler.addFilterWithMapping(DoSFilter.class, "/*", FilterMapping.DEFAULT);
+			dosFilterHolder.setInitParameter("maxRequestsPerSec", Nxt.getStringProperty("nxt.peerServerDoSFilter.maxRequestsPerSec"));
+			dosFilterHolder.setInitParameter("delayMs", Nxt.getStringProperty("nxt.peerServerDoSFilter.delayMs"));
+			dosFilterHolder.setInitParameter("maxRequestMs", Nxt.getStringProperty("nxt.peerServerDoSFilter.maxRequestMs"));
+			dosFilterHolder.setInitParameter("trackSessions", "false");
+			dosFilterHolder.setAsyncSupported(true);
+		}
+		if (isGzipEnabled) {
+			FilterHolder gzipFilterHolder = peerHandler.addFilterWithMapping(GzipFilter.class, "/*", FilterMapping.DEFAULT);
+			gzipFilterHolder.setInitParameter("methods", "GET,POST");
+			gzipFilterHolder.setAsyncSupported(true);
 		}
 
 		peerServer.setHandler(peerHandler);
@@ -429,11 +516,11 @@ function Init9() {
 					peerServer.start();
 					Logger.logMessage("Started peer networking server at " + host + ":" + port);
 				} catch (Exception e) {
-					Logger.logDebugMessage("Failed to start peer networking server", e);
+					Logger.logErrorMessage("Failed to start peer networking server", e);
 					throw new RuntimeException(e.toString(), e);
 				}
 			}
-		});
+		}, true);
 	} else {
 		peerServer = null;
 		Logger.logMessage("shareMyAddress is disabled, will not start peer networking server");
@@ -481,6 +568,13 @@ function PeerConnectingThread() {
 				if (peer != null) {
 					peer.connect();
 				}
+
+				int now = Convert.getEpochTime();
+				for (PeerImpl peer : peers.values()) {
+					if (peer.getState() == Peer.State.CONNECTED && now - peer.getLastUpdated() > 3600) {
+						peer.connect();
+					}
+				}
 			}
 		} catch (Exception e) {
 			Logger.logDebugMessage("Error connecting to peer", e);
@@ -492,6 +586,18 @@ function PeerConnectingThread() {
 	}
 	*/
 }
+
+/*
+private volatile boolean addedNewPeer;
+{
+	Peers.addListener(new Listener<Peer>() {
+		@Override
+		public void notify(Peer peer) {
+			addedNewPeer = true;
+		}
+	}, Event.NEW_PEER);
+}
+*/
 
 function PeerUnBlacklistingThread() {
 	throw new Error('This is not implemented');
@@ -522,7 +628,9 @@ function RemoveListener(eventType, listener) {
 function RemovePeer(peer) {
 	throw new Error('This is not implemented');
 	/*
-	return peers.remove(peer.getPeerAddress());
+	if (peer.getAnnouncedAddress() != null) {
+		announcedAddresses.remove(peer.getAnnouncedAddress());
+	}
 	*/
 }
 
@@ -597,9 +705,9 @@ function SendToSomePeersTransactions(transactions) {
 function Shutdown() {
 	throw new Error('This is not implemented');
 	/*
-	if (peerServer != null) {
+	if (Init.peerServer != null) {
 		try {
-			peerServer.stop();
+			Init.peerServer.stop();
 		} catch (Exception e) {
 			Logger.logDebugMessage("Failed to stop peer server", e);
 		}
@@ -607,15 +715,31 @@ function Shutdown() {
 	String dumpPeersVersion = Nxt.getStringProperty("nxt.dumpPeersVersion");
 	if (dumpPeersVersion != null) {
 		StringBuilder buf = new StringBuilder();
-		for (Peer peer : new HashSet<>(peers.values())) {
-			if (peer.getAnnouncedAddress() != null && peer.shareAddress() && !peer.isBlacklisted()
+		for (Map.Entry<String,String> entry : announcedAddresses.entrySet()) {
+			Peer peer = peers.get(entry.getValue());
+			if (peer != null && peer.getState() == Peer.State.CONNECTED && peer.shareAddress() && !peer.isBlacklisted()
 					&& peer.getVersion() != null && peer.getVersion().startsWith(dumpPeersVersion)) {
-				buf.append("('").append(peer.getAnnouncedAddress()).append("'), ");
+				buf.append("('").append(entry.getKey()).append("'), ");
 			}
 		}
 		Logger.logDebugMessage(buf.toString());
 	}
 	ThreadPool.shutdownExecutor(sendToPeersService);
+	*/
+}
+
+function UpdateAddress(peer) {
+	throw new Error('This is not implemented');
+	/*
+	String oldAddress = announcedAddresses.put(peer.getAnnouncedAddress(), peer.getPeerAddress());
+	if (oldAddress != null && !peer.getPeerAddress().equals(oldAddress)) {
+		Logger.logDebugMessage("Peer " + peer.getAnnouncedAddress() + " has changed address from " + oldAddress
+				+ " to " + peer.getPeerAddress());
+		Peer oldPeer = peers.remove(oldAddress);
+		if (oldPeer != null) {
+			Peers.notifyListeners(oldPeer, Peers.Event.REMOVE);
+		}
+	}
 	*/
 }
 
@@ -626,6 +750,7 @@ exports.State = State;
 exports.AddListener = AddListener;
 exports.AddPeer1 = AddPeer1;
 exports.AddPeer2 = AddPeer2;
+exports.GetActivePeers = GetActivePeers;
 exports.GetAllPeers = GetAllPeers;
 exports.GetAnyPeer = GetAnyPeer;
 exports.GetNumberOfConnectedPublicPeers = GetNumberOfConnectedPublicPeers;
@@ -639,3 +764,4 @@ exports.SendToSomePeersBlock = SendToSomePeersBlock;
 exports.SendToSomePeersRequest = SendToSomePeersRequest;
 exports.SendToSomePeersTransactions = SendToSomePeersTransactions;
 exports.Shutdown = Shutdown;
+exports.UpdateAddress = UpdateAddress;

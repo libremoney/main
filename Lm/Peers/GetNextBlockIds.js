@@ -1,3 +1,9 @@
+/**!
+ * LibreMoney 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 import nxt.Nxt;
 import nxt.util.Convert;
@@ -8,12 +14,8 @@ import org.json.simple.JSONStreamAware;
 
 // GetNextBlockIds = PeerServlet.PeerRequestHandler
 
-/*
-static final GetNextBlockIds instance = new GetNextBlockIds();
-*/
-
-/*
-JSONStreamAware processRequest(JSONObject request, Peer peer) {
+function GetNextBlockIds(request, peer) {
+	/*
     JSONObject response = new JSONObject();
 
     JSONArray nextBlockIds = new JSONArray();
@@ -25,7 +27,9 @@ JSONStreamAware processRequest(JSONObject request, Peer peer) {
     }
 
     response.put("nextBlockIds", nextBlockIds);
+	*/
 
     return response;
 }
-*/
+
+module.exports = GetNextBlockIds;

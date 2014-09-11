@@ -1,15 +1,15 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney GetAccountPublicKey api 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
 var Convert = require(__dirname + '/../../Util/Convert');
-var JsonResponses = require(__dirname + '/../JsonResponses');
-var ParameterParser = require(__dirname + '/../ParameterParser');
+var JsonResponses = require(__dirname + '/../../Server/JsonResponses');
+var ParameterParser = require(__dirname + '/../../Server/ParameterParser');
 
 
-//super("account");
+//super(new APITag[] {APITag.ACCOUNTS}, "account");
 function GetAccountPublicKey(req, res) {
 	var account = ParameterParser.GetAccount(req);
 	if (account.GetPublicKey() != null) {

@@ -4,36 +4,29 @@
  * CC0 license
  */
 
+var AbstractAppendix = require(__dirname + '/../Appendix/AbstractAppendix');
 
-/*
-abstract static class AbstractAttachment extends AbstractAppendix implements Attachment {
 
-	private AbstractAttachment(ByteBuffer buffer, byte transactionVersion) {
-		super(buffer, transactionVersion);
+function AbstractAttachment(version) { /*attachmentData*/ /*buffer, transactionVersion*/
+	var obj = new AbstractAppendix(version); //(attachmentData); //(buffer, transactionVersion); //implements Attachment
+
+	function Apply(transaction, senderAccount, recipientAccount) {
+		this.GetTransactionType().Apply(transaction, senderAccount, recipientAccount);
 	}
 
-	private AbstractAttachment(JSONObject attachmentData) {
-		super(attachmentData);
+	function Undo(transaction, senderAccount, recipientAccount) {
+		this.GetTransactionType().Undo(transaction, senderAccount, recipientAccount);
 	}
 
-	private AbstractAttachment(int version) {
-		super(version);
+	function Validate(transaction) {
+		this.GetTransactionType().ValidateAttachment(transaction);
 	}
 
-	private AbstractAttachment() {}
-
-	final void validate(Transaction transaction) throws NxtException.ValidationException {
-		getTransactionType().validateAttachment(transaction);
-	}
-
-	final void apply(Transaction transaction, Account senderAccount, Account recipientAccount) {
-		getTransactionType().apply(transaction, senderAccount, recipientAccount);
-	}
-
-	final void undo(Transaction transaction, Account senderAccount, Account recipientAccount)
-			throws TransactionType.UndoNotSupportedException {
-		getTransactionType().undo(transaction, senderAccount, recipientAccount);
-	}
-
+	obj.Apply = Apply;
+	obj.Undo = Undo;
+	obj.Validate = Validate;
+	return obj;
 }
-*/
+
+
+module.exports = AbstractAttachment;

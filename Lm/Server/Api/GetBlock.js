@@ -1,40 +1,53 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney GetBlock api 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-/*
-import nxt.Block;
-import nxt.util.Convert;
-import static nxt.http.JSONResponses.INCORRECT_BLOCK;
-import static nxt.http.JSONResponses.MISSING_BLOCK;
-import static nxt.http.JSONResponses.UNKNOWN_BLOCK;
-*/
-
+var Blockchain = require(__dirname + '/../../Blockchain');
+var Convert = require(__dirname + '/../../Util/Convert');
 var JsonData = require(__dirname + '/../JsonData');
+var JsonResponses = require(__dirname + '/../JsonResponses');
 
-//super("block");
+
+//super(new APITag[] {APITag.BLOCKS}, "block", "height", "includeTransactions");
 function GetBlock(req, res) {
-	res.send('This is not implemented');
-	/*
-	String block = req.getParameter("block");
+	var height = -1;
+	var block = Convert.EmptyToNull(req.query.block);
+	var heightValue = Convert.EmptyToNull(req.query.height);
 	if (block == null) {
-		return MISSING_BLOCK;
-	}
-
-	Block blockData;
-	try {
-		blockData = Nxt.getBlockchain().getBlock(Convert.parseUnsignedLong(block));
-		if (blockData == null) {
-			return UNKNOWN_BLOCK;
+		try {
+			if (heightValue != null) {
+				height = parseInt(heightValue);
+				if (height < 0 || height > Blockchain.GetHeight()) {
+					return JsonResponses.IncorrectHeight;
+				}
+			} else {
+				return JsonResponses.MissingBlock;
+			}
+		} catch (e) {
+			return JsonResponses.IncorrectHeight;
 		}
-	} catch (RuntimeException e) {
-		return INCORRECT_BLOCK;
 	}
 
-	return JsonData.block(blockData);
-	*/
+	var includeTransactions = (req.query.includeTransactions == "true");
+
+	var blockData;
+	try {
+		if (block != null) {
+			blockData = Blockchain.GetBlock(Convert.ParseUnsignedLong(block));
+		} else {
+			blockData = Blockchain.GetBlockAtHeight(height);
+		}
+		if (blockData == null) {
+			return JsonResponses.UnknownBlock;
+		}
+	} catch (e) {
+		return JsonResponses.IncorrectBlock;
+	}
+
+	res.send(JsonData.Block(blockData, includeTransactions));
 }
+
 
 module.exports = GetBlock;

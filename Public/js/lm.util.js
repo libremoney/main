@@ -731,6 +731,7 @@ var Lm = (function(Lm, $, undefined) {
 		if (!unmodified) {
 			delete data.request_type;
 			delete data.converted_account_id;
+			delete data.merchant_info;
 		}
 
 		return data;

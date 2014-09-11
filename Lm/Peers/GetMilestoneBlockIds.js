@@ -1,3 +1,9 @@
+/**!
+ * LibreMoney 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 import nxt.Block;
 import nxt.Nxt;
@@ -10,12 +16,8 @@ import org.json.simple.JSONStreamAware;
 
 // GetMilestoneBlockIds = PeerServlet.PeerRequestHandler
 
-/*
-static final GetMilestoneBlockIds instance = new GetMilestoneBlockIds();
-*/
-
-/*
-JSONStreamAware processRequest(JSONObject request, Peer peer) {
+function GetMilestoneBlockIds(request, peer) {
+	/*
 	JSONObject response = new JSONObject();
 	try {
 
@@ -71,7 +73,9 @@ JSONStreamAware processRequest(JSONObject request, Peer peer) {
 		Logger.logDebugMessage(e.toString());
 		response.put("error", e.toString());
 	}
+	*/
 
 	return response;
 }
-*/
+
+module.exports = GetMilestoneBlockIds;

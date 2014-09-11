@@ -7,28 +7,36 @@
 var Convert = require(__dirname + '/../../Util/Convert');
 var JsonData = require(__dirname + '/../JsonData');
 var JsonResponses = require(__dirname + '/../JsonResponses');
+//JsonValue
 var Logger = require(__dirname + '/../../Logger').GetLogger(module);
 var TransactionProcessor = require(__dirname + '/../../TransactionProcessor');
 
 
-//super("transactionBytes");
+//super(new APITag[] {APITag.TRANSACTIONS}, "transactionBytes", "transactionJSON");
 function ParseTransaction(req, res) {
-	var transactionBytes = req.query.transactionBytes;
-	if (!transactionBytes) {
-		return JsonResponses.MissingTransactionBytes;
+	var transactionBytes = Convert.EmptyToNull(req.query.transactionBytes);
+	var transactionJson = Convert.EmptyToNull(req.query.transactionJson);
+	if (!transactionBytes && !transactionJson) {
+		return JsonResponses.MissingTransactionBytesOrJson;
 	}
 	var response;
 	try {
-		var bytes = Convert.ParseHexString(transactionBytes);
-		var transaction = TransactionProcessor.ParseTransaction(bytes);
-		transaction.ValidateAttachment();
+		var transaction;
+		if (transactionBytes) {
+			var bytes = Convert.ParseHexString(transactionBytes);
+			transaction = TransactionProcessor.ParseTransaction1(bytes);
+		} else {
+			transaction = TransactionProcessor.ParseTransaction2(transactionJson);
+		}
+
+		transaction.Validate();
 		response = JsonData.UnconfirmedTransaction(transaction);
-		response.verify = transaction.verify();
+		response.verify = transaction.VerifySignature();
 	} catch (e) {
 		return JsonResponses.IncorrectTransactionBytes;
 		Logger.error('ParseTransaction: Error');
 	}
-	return response;
+	res.send(response);
 }
 
 module.exports = ParseTransaction;

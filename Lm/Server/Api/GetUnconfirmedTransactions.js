@@ -10,7 +10,7 @@ import nxt.util.Convert;
 import static nxt.http.JSONResponses.INCORRECT_ACCOUNT;
 */
 
-//super("account");
+//super(new APITag[] {APITag.TRANSACTIONS}, "account");
 function GetUnconfirmedTransactions(req, res) {
 	res.send('This is not implemented');
 	/*

@@ -12,6 +12,7 @@ import nxt.util.Convert;
 import nxt.util.JSON;
 */
 
+//super(new APITag[] {APITag.INFO});
 function GetConstants(req, res) {
 	//private static final JSONStreamAware CONSTANTS;
 	res.send('This is not implemented');
@@ -22,8 +23,8 @@ function GetConstants(req, res) {
 		JSONObject response = new JSONObject();
 		response.put("genesisBlockId", Convert.toUnsignedLong(Genesis.GENESIS_BLOCK_ID));
 		response.put("genesisAccountId", Convert.toUnsignedLong(Genesis.CREATOR_ID));
-		response.put("maxBlockPayloadLength", Constants.MaxPayloadLength);
-		response.put("maxArbitraryMessageLength", Constants.MaxArbitraryMessageLength);
+		response.put("maxBlockPayloadLength", Constants.MAX_PAYLOAD_LENGTH);
+		response.put("maxArbitraryMessageLength", Constants.MAX_ARBITRARY_MESSAGE_LENGTH);
 
 		JSONArray transactionTypes = new JSONArray();
 		JSONObject transactionType = new JSONObject();
@@ -47,6 +48,14 @@ function GetConstants(req, res) {
 		subtype = new JSONObject();
 		subtype.put("value", TransactionType.Messaging.ALIAS_ASSIGNMENT.getSubtype());
 		subtype.put("description", "Alias assignment");
+		subtypes.add(subtype);
+		subtype = new JSONObject();
+		subtype.put("value", TransactionType.Messaging.ALIAS_SELL.getSubtype());
+		subtype.put("description", "Alias sell");
+		subtypes.add(subtype);
+		subtype = new JSONObject();
+		subtype.put("value", TransactionType.Messaging.ALIAS_BUY.getSubtype());
+		subtype.put("description", "Alias buy");
 		subtypes.add(subtype);
 		subtype = new JSONObject();
 		subtype.put("value", TransactionType.Messaging.POLL_CREATION.getSubtype());

@@ -1,8 +1,15 @@
+/**!
+ * LibreMoney 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 import nxt.Db;
 */
 
 function AddPeers(peers) {
+	throw new Error('This is not implemented');
 	/*
 	try (Connection con = Db.getConnection();
 		 PreparedStatement pstmt = con.prepareStatement("INSERT INTO peer (address) values (?)")) {
@@ -18,6 +25,7 @@ function AddPeers(peers) {
 }
 
 function DeletePeers(peers) {
+	throw new Error('This is not implemented');
 	/*
 	try (Connection con = Db.getConnection();
 		 PreparedStatement pstmt = con.prepareStatement("DELETE FROM peer WHERE address = ?")) {
@@ -33,6 +41,7 @@ function DeletePeers(peers) {
 }
 
 function LoadPeers() {
+	throw new Error('This is not implemented');
 	/*
 	try (Connection con = Db.getConnection();
 		 PreparedStatement pstmt = con.prepareStatement("SELECT * FROM peer")) {

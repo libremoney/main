@@ -87,7 +87,7 @@ var ALREADY_DELIVERED = {
 
 var DUPLICATE_REFUND = {
 	errorCode: 8,
-	errorDescription "Refund already sent"
+	errorDescription: "Refund already sent"
 }
 
 var GOODS_NOT_DELIVERED = {
@@ -144,6 +144,8 @@ exports.IncorrectAccountNameLength = incorrect("name", "(length must be less tha
 exports.IncorrectAlias = incorrect("alias");
 exports.IncorrectAliasLength = incorrect("alias", "(length must be in [1.." + Constants.MaxAliasLength + "] range)");
 exports.IncorrectAliasName = incorrect("alias", "(must contain only digits and latin letters)");
+exports.IncorrectAliasNotForSale = incorrect("alias", "(alias is not for sale at the moment)");
+exports.IncorrectAliasOwner = incorrect("alias", "(invalid alias owner)");
 exports.IncorrectAmount = incorrect("amount");
 exports.IncorrectArbitraryMessage = incorrect("message");
 exports.IncorrectAsset = incorrect("asset");
@@ -252,7 +254,6 @@ exports.UnknownOrder = unknown("order");
 exports.UnknownPeer = unknown("peer");
 exports.UnknownPoll = unknown("poll");
 exports.UnknownTransaction = unknown("transaction");
-
 
 exports.NotEnoughFunds = NotEnoughFunds;
 exports.NOT_ENOUGH_ASSETS = NOT_ENOUGH_ASSETS;

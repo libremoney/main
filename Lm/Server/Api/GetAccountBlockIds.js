@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney GetAccountBlockIds api 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -9,7 +9,7 @@ var JsonResponses = require(__dirname + '/../JsonResponses');
 var ParameterParser = require(__dirname + '/../ParameterParser');
 
 
-//super("account", "timestamp");
+//super(new APITag[] {APITag.ACCOUNTS}, "account", "timestamp");
 function GetAccountBlockIds(req, res) {
 	var account = ParameterParser.GetAccount(req);
 	var timestamp = ParameterParser.GetTimestamp(req);

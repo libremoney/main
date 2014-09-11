@@ -4,17 +4,8 @@
  * CC0 license
  */
 
-/*
-import nxt.Account;
-import nxt.Asset;
-import nxt.Attachment;
-import nxt.NxtException;
-import nxt.util.Convert;
-*/
-
-//super("asset", "quantityQNT", "priceNQT");
+//super(new APITag[] {APITag.AE, APITag.CREATE_TRANSACTION}, "asset", "quantityQNT", "priceNQT");
 function PlaceBidOrder(req, res) {
-	var obj = CreateTransaction();
 	res.send('This is not implemented');
 	/*
 	Asset asset = ParameterParser.getAsset(req);

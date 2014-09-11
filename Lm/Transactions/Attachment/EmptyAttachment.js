@@ -4,26 +4,32 @@
  * CC0 license
  */
 
+var AbstractAttachment = require(__dirname + '/AbstractAttachment');
 
-/*
-abstract static class EmptyAttachment extends AbstractAttachment {
 
-	private EmptyAttachment() {
-		super(0);
-	}
+function EmptyAttachment() {
+	var obj = new AbstractAttachment(0);
 
-	final int getMySize() {
+	function GetMySize() {
 		return 0;
 	}
 
-	final void putMyBytes(ByteBuffer buffer) {
+	function PutMyBytes(buffer) {
 	}
 
-	final void putMyJSON(JSONObject json) {
+	function PutMyJson(json) {
 	}
 
-	final boolean verifyVersion(byte transactionVersion) {
+	function VerifyVersion(transactionVersion) {
 		return true;
 	}
+
+	obj.GetMySize = GetMySize;
+	obj.PutMyBytes = PutMyBytes;
+	obj.PutMyJson = PutMyJson;
+	obj.VerifyVersion = VerifyVersion;
+	return obj;
 }
-*/
+
+
+module.exports = EmptyAttachment;

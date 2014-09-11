@@ -17,9 +17,8 @@ import static nxt.http.JSONResponses.INCORRECT_DECIMALS;
 import static nxt.http.JSONResponses.MISSING_NAME;
 */
 
-//super("name", "description", "quantityQNT", "decimals");
+//super(new APITag[] {APITag.AE, APITag.CREATE_TRANSACTION}, "name", "description", "quantityQNT", "decimals");
 function IssueAsset(req, res) {
-	var obj = CreateTransaction();
 	res.send('This is not implemented');
 	/*
 	String name = req.getParameter("name");

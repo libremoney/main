@@ -160,8 +160,6 @@ function AesEncrypt(plaintext, myPrivateKey, theirPublicKey) {
 	*/
 }
 
-}
-
 function AesEncrypt2(plaintext, myPrivateKey, theirPublicKey, nonce) {
 	throw new Error('Not implementted');
 	/*
@@ -193,8 +191,6 @@ function AesEncrypt2(plaintext, myPrivateKey, theirPublicKey, nonce) {
 
 function AesDecrypt(ivCiphertext, myPrivateKey, theirPublicKey) {
 	return AesDecrypt2(ivCiphertext, myPrivateKey, theirPublicKey, []);
-}
-
 }
 
 function AesDecrypt2(ivCiphertext, myPrivateKey, theirPublicKey, nonce) {

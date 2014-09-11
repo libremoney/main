@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney GetAssetsByIssuer api 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -9,7 +9,7 @@ var JsonData = require(__dirname + '/../JsonData');
 var ParameterParser = require(__dirname + '/../ParameterParser');
 
 
-//super("account", "account", "account");
+//super(new APITag[] {APITag.AE, APITag.ACCOUNTS}, "account", "account", "account");
 function GetAssetsByIssuer(req, res) {
 	var accounts = ParameterParser.GetAccounts(req);
 	var response = {};

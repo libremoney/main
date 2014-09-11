@@ -16,6 +16,13 @@ var Lm = (function(Lm, $, undefined) {
 		} else {
 			$("#account_name").html($.t("no_name_set")).attr("data-i18n", "no_name_set");
 		}
+
+		var description = $.trim(String(data.description));
+
+		setTimeout(function() {
+			Lm.AccountInfo.description = description;
+			Lm.AccountInfo.name = name;
+		}, 1000);
 	}
 
 

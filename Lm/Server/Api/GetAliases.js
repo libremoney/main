@@ -1,3 +1,9 @@
+/**!
+ * LibreMoney GetAliases api 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 import nxt.Alias;
 import nxt.NxtException;
@@ -6,29 +12,22 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
 */
 
-function Main(req, res) {
+//super(new APITag[] {APITag.ALIASES}, "timestamp", "account");
+function GetAliases(req, res) {
 	res.send('This is not implemented');
 	/*
-	static final GetAliases instance = new GetAliases();
-
-	private GetAliases() {
-		super("timestamp", "account");
-	}
-
-	JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
-		int timestamp = ParameterParser.getTimestamp(req);
-		Long accountId = ParameterParser.getAccount(req).getId();
-		JSONArray aliases = new JSONArray();
-		for (Alias alias : Alias.getAllAliases()) {
-			if (alias.getTimestamp() >= timestamp && (accountId == null || alias.getAccount().getId().equals(accountId))) {
-				aliases.add(JSONData.alias(alias));
-			}
+	int timestamp = ParameterParser.getTimestamp(req);
+	Long accountId = ParameterParser.getAccount(req).getId();
+	JSONArray aliases = new JSONArray();
+		for (Alias alias : Alias.getAliasesByOwner(accountId)) {
+			if (alias.getTimestamp() >= timestamp) {
+			aliases.add(JSONData.alias(alias));
 		}
-		JSONObject response = new JSONObject();
-		response.put("aliases", aliases);
-		return response;
 	}
-*/
+	JSONObject response = new JSONObject();
+	response.put("aliases", aliases);
+	return response;
+	*/
 }
 
-module.exports = Main;
+module.exports = GetAliases;

@@ -91,45 +91,37 @@ function CreateTransaction(req, res, senderAccount, recipientId, amountMilliLm, 
 	}
 
 	if (!secretPhrase && !publicKeyValue) {
-		res.send(JsonResponses.MissingSecretPhrase);
-		return false;
+		return JsonResponses.MissingSecretPhrase;
 	} else if (!deadlineValue) {
-		res.send(JsonResponses.MissingDeadline);
-		return false;
+		return JsonResponses.MissingDeadline;
 	}
 
 	var deadline;
 	try {
 		deadline = parseInt(deadlineValue); // parseShort
 		if (deadline < 1 || deadline > 1440) {
-			res.send(JsonResponses.IncorrectDeadline);
-			return false;
+			return JsonResponses.IncorrectDeadline;
 		}
 	} catch (e) {
 		Logger.error(e);
-		res.send(JsonResponses.IncorrectDeadline);
-		return false;
+		return JsonResponses.IncorrectDeadline;
 	}
 
 	var feeMilliLm = ParameterParser.GetFeeMilliLm(req);
 	if (feeMilliLm < Constants.OneLm/*minimumFeeMilliLm()*/) {
-		res.send(JsonResponses.IncorrectFee);
-		return false;
+		return JsonResponses.IncorrectFee;
 	}
 
 	try {
 		if (Convert.SafeAdd(amountMilliLm, feeMilliLm) > senderAccount.GetUnconfirmedBalanceMilliLm()) {
-			res.send(JsonResponses.NotEnoughFunds);
-			return false;
+			return JsonResponses.NotEnoughFunds;
 		}
 	} catch (e) {
-		res.send(JsonResponses.NotEnoughFunds);
-		return false;
+		return JsonResponses.NotEnoughFunds;
 	}
 
 	if (referencedTransactionId != null) {
-		res.send(JsonResponses.IncorrectReferencedTransaction);
-		return false;
+		return JsonResponses.IncorrectReferencedTransaction;
 	}
 
 	// shouldn't try to get publicKey from senderAccount as it may have not been set yet
@@ -143,7 +135,7 @@ function CreateTransaction(req, res, senderAccount, recipientId, amountMilliLm, 
 			feeMilliLm: feeMilliLm,
 			referencedTransactionFullHash: referencedTransactionFullHash,
 			attachment: attachment
-			);
+			};
 		if (attachment.GetTransactionType().HasRecipient()) {
 			builder.recipientId = recipientId;
 		}
@@ -182,8 +174,7 @@ function CreateTransaction(req, res, senderAccount, recipientId, amountMilliLm, 
 		//return JsonResponses.FEATURE_NOT_AVAILABLE;
 		response.error = e;
 	}
-	res.send(response);
-	return true;
+	return response;
 }
 
 

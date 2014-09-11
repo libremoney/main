@@ -1,3 +1,9 @@
+/**!
+ * LibreMoney 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
@@ -18,6 +24,7 @@ import org.json.simple.JSONValue;
 */
 
 /*
+private volatile int lastUpdated;
 private final String peerAddress;
 private volatile String announcedAddress;
 private volatile int port;
@@ -47,6 +54,10 @@ function Peer(peerAddress, announcedAddress) {
 	return this;
 }
 
+function GetLastUpdated() {
+	return this.lastUpdated;
+}
+
 function GetPeerAddress() {
 	throw new Error('This is not implemented');
 	/*
@@ -59,6 +70,10 @@ function GetState() {
 	/*
 	return state;
 	*/
+}
+
+function SetLastUpdated(lastUpdated) {
+	this.lastUpdated = lastUpdated;
 }
 
 function SetState(state) {
@@ -248,12 +263,12 @@ function Blacklist(cause) {
 		*/
 	} else {
 		/*
-		if (cause instanceof TransactionType.NotYetEnabledException || cause instanceof BlockchainProcessor.BlockOutOfOrderException) {
+		if (cause instanceof NxtException.NotCurrentlyValidException || cause instanceof BlockchainProcessor.BlockOutOfOrderException) {
 			// don't blacklist peers just because a feature is not yet enabled
 			// prevents erroneous blacklisting during loading of blockchain from scratch
 			return;
 		}
-		if (! isBlacklisted()) {
+		if (! isBlacklisted() && ! (cause instanceof IOException)) {
 			Logger.logDebugMessage("Blacklisting " + peerAddress + " because of: " + cause.toString());
 		}
 		blacklist();
@@ -307,19 +322,20 @@ function Send(request) {
 	try {
 
 		String address = announcedAddress != null ? announcedAddress : peerAddress;
+		URL url = new URL("http://" + address + (port <= 0 ? ":" + (Constants.isTestnet ? Peers.TESTNET_PEER_PORT : Peers.DEFAULT_PEER_PORT) : "") + "/nxt");
 
 		if (Peers.communicationLoggingMask != 0) {
 			StringWriter stringWriter = new StringWriter();
 			request.writeJSONString(stringWriter);
-			log = "\"" + address + "\": " + stringWriter.toString();
+			log = "\"" + url.toString() + "\": " + stringWriter.toString();
 		}
 
-		URL url = new URL("http://" + address + (port <= 0 ? ":" + (Constants.isTestnet ? Peers.TESTNET_PEER_PORT : Peers.DEFAULT_PEER_PORT) : "") + "/nxt");
 		connection = (HttpURLConnection)url.openConnection();
 		connection.setRequestMethod("POST");
 		connection.setDoOutput(true);
 		connection.setConnectTimeout(Peers.connectTimeout);
 		connection.setReadTimeout(Peers.readTimeout);
+		connection.setRequestProperty("Accept-Encoding", "gzip");
 
 		CountingOutputStream cos = new CountingOutputStream(connection.getOutputStream());
 		try (Writer writer = new BufferedWriter(new OutputStreamWriter(cos, "UTF-8"))) {
@@ -328,33 +344,33 @@ function Send(request) {
 		updateUploadedVolume(cos.getCount());
 
 		if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-
+			CountingInputStream cis = new CountingInputStream(connection.getInputStream());
+			InputStream responseStream = cis;
+			if ("gzip".equals(connection.getHeaderField("Content-Encoding"))) {
+				responseStream = new GZIPInputStream(cis);
+			}
 			if ((Peers.communicationLoggingMask & Peers.LOGGING_MASK_200_RESPONSES) != 0) {
-				// inefficient
 				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-				byte[] buffer = new byte[65536];
+				byte[] buffer = new byte[1024];
 				int numberOfBytes;
-				try (InputStream inputStream = connection.getInputStream()) {
-					while ((numberOfBytes = inputStream.read(buffer)) > 0) {
+				try (InputStream inputStream = responseStream) {
+					while ((numberOfBytes = inputStream.read(buffer, 0, buffer.length)) > 0) {
 						byteArrayOutputStream.write(buffer, 0, numberOfBytes);
 					}
 				}
 				String responseValue = byteArrayOutputStream.toString("UTF-8");
+				if (responseValue.length() > 0 && responseStream instanceof GZIPInputStream) {
+					log += String.format("[length: %d, compression ratio: %.2f]", cis.getCount(), (double)cis.getCount() / (double)responseValue.length());
+				}
 				log += " >>> " + responseValue;
 				showLog = true;
-				updateDownloadedVolume(responseValue.getBytes("UTF-8").length);
 				response = (JSONObject) JSONValue.parse(responseValue);
-
 			} else {
-
-				CountingInputStream cis = new CountingInputStream(connection.getInputStream());
-				try (Reader reader = new BufferedReader(new InputStreamReader(cis, "UTF-8"))) {
+				try (Reader reader = new BufferedReader(new InputStreamReader(responseStream, "UTF-8"))) {
 					response = (JSONObject)JSONValue.parse(reader);
 				}
-				updateDownloadedVolume(cis.getCount());
-
 			}
-
+			updateDownloadedVolume(cis.getCount());
 		} else {
 
 			if ((Peers.communicationLoggingMask & Peers.LOGGING_MASK_NON200_RESPONSES) != 0) {
@@ -417,15 +433,24 @@ function Connect() {
 		version = (String)response.get("version");
 		platform = (String)response.get("platform");
 		shareAddress = Boolean.TRUE.equals(response.get("shareAddress"));
+		String newAnnouncedAddress = Convert.emptyToNull((String)response.get("announcedAddress"));
+		if (newAnnouncedAddress != null && ! newAnnouncedAddress.equals(announcedAddress)) {
+			// force verification of changed announced address
+			setState(Peer.State.NON_CONNECTED);
+			setAnnouncedAddress(newAnnouncedAddress);
+			return;
+		}
 		if (announcedAddress == null) {
 			setAnnouncedAddress(peerAddress);
 			Logger.logDebugMessage("Connected to peer without announced address, setting to " + peerAddress);
 		}
 		if (analyzeHallmark(announcedAddress, (String)response.get("hallmark"))) {
 			setState(State.CONNECTED);
+			Peers.updateAddress(this);
 		} else {
 			blacklist();
 		}
+		lastUpdated = Convert.getEpochTime();
 	} else {
 		setState(State.NON_CONNECTED);
 	}
@@ -453,8 +478,8 @@ function AnalyzeHallmark(address, hallmarkString) {
 		String host = uri.getHost();
 
 		Hallmark hallmark = Hallmark.parseHallmark(hallmarkString);
-		if (! hallmark.isValid()
-				|| ! (hallmark.getHost().equals(host) || InetAddress.getByName(host).equals(InetAddress.getByName(hallmark.getHost())))) {
+		if (!hallmark.isValid()
+				|| !(hallmark.getHost().equals(host) || InetAddress.getByName(host).equals(InetAddress.getByName(hallmark.getHost())))) {
 			//Logger.logDebugMessage("Invalid hallmark for " + host + ", hallmark host is " + hallmark.getHost());
 			return false;
 		}
@@ -485,7 +510,8 @@ function AnalyzeHallmark(address, hallmarkString) {
 
 		return true;
 
-	} catch (URISyntaxException | UnknownHostException | RuntimeException e) {
+	} catch (UnknownHostException ignore) {
+	} catch (URISyntaxException | RuntimeException e) {
 		Logger.logDebugMessage("Failed to analyze hallmark for peer " + address + ", " + e.toString());
 	}
 	return false;
@@ -503,39 +529,41 @@ function GetHallmarkWeight(date) {
 }
 
 
-Peer.prototype.GetPeerAddress = GetPeerAddress;
-Peer.prototype.GetState = GetState;
-Peer.prototype.SetState = SetState;
-Peer.prototype.GetDownloadedVolume = GetDownloadedVolume;
-Peer.prototype.UpdateDownloadedVolume = UpdateDownloadedVolume;
-Peer.prototype.GetUploadedVolume = GetUploadedVolume;
-Peer.prototype.UpdateUploadedVolume = UpdateUploadedVolume;
-Peer.prototype.GetVersion = GetVersion;
-Peer.prototype.SetVersion = SetVersion;
-Peer.prototype.GetApplication = GetApplication;
-Peer.prototype.SetApplication = SetApplication;
-Peer.prototype.GetPlatform = GetPlatform;
-Peer.prototype.SetPlatform = SetPlatform;
-Peer.prototype.GetSoftware = GetSoftware;
-Peer.prototype.ShareAddress = ShareAddress;
-Peer.prototype.SetShareAddress = SetShareAddress;
-Peer.prototype.GetAnnouncedAddress = GetAnnouncedAddress;
-Peer.prototype.SetAnnouncedAddress = SetAnnouncedAddress;
-Peer.prototype.GetPort = GetPort;
-Peer.prototype.IsWellKnown = IsWellKnown;
-Peer.prototype.GetHallmark = GetHallmark;
-Peer.prototype.GetWeight = GetWeight;
-Peer.prototype.IsBlacklisted = IsBlacklisted;
+Peer.prototype.AnalyzeHallmark = AnalyzeHallmark;
 Peer.prototype.Blacklist = Blacklist;
-Peer.prototype.UnBlacklist = UnBlacklist;
-Peer.prototype.UpdateBlacklistedStatus = UpdateBlacklistedStatus;
-Peer.prototype.Deactivate = Deactivate;
-Peer.prototype.Remove = Remove;
-Peer.prototype.Send = Send;
 Peer.prototype.CompareTo = CompareTo;
 Peer.prototype.Connect = Connect;
-Peer.prototype.AnalyzeHallmark = AnalyzeHallmark;
+Peer.prototype.Deactivate = Deactivate;
+Peer.prototype.GetAnnouncedAddress = GetAnnouncedAddress;
+Peer.prototype.GetApplication = GetApplication;
+Peer.prototype.GetDownloadedVolume = GetDownloadedVolume;
+Peer.prototype.GetHallmark = GetHallmark;
 Peer.prototype.GetHallmarkWeight = GetHallmarkWeight;
+Peer.prototype.GetLastUpdated = GetLastUpdated;
+Peer.prototype.GetPeerAddress = GetPeerAddress;
+Peer.prototype.GetPlatform = GetPlatform;
+Peer.prototype.GetPort = GetPort;
+Peer.prototype.GetState = GetState;
+Peer.prototype.GetSoftware = GetSoftware;
+Peer.prototype.GetUploadedVolume = GetUploadedVolume;
+Peer.prototype.GetVersion = GetVersion;
+Peer.prototype.GetWeight = GetWeight;
+Peer.prototype.IsBlacklisted = IsBlacklisted;
+Peer.prototype.IsWellKnown = IsWellKnown;
+Peer.prototype.Remove = Remove;
+Peer.prototype.Send = Send;
+Peer.prototype.SetAnnouncedAddress = SetAnnouncedAddress;
+Peer.prototype.SetApplication = SetApplication;
+Peer.prototype.SetLastUpdated = SetLastUpdated;
+Peer.prototype.SetPlatform = SetPlatform;
+Peer.prototype.SetShareAddress = SetShareAddress;
+Peer.prototype.SetState = SetState;
+Peer.prototype.SetVersion = SetVersion;
+Peer.prototype.ShareAddress = ShareAddress;
+Peer.prototype.UnBlacklist = UnBlacklist;
+Peer.prototype.UpdateBlacklistedStatus = UpdateBlacklistedStatus;
+Peer.prototype.UpdateDownloadedVolume = UpdateDownloadedVolume;
+Peer.prototype.UpdateUploadedVolume = UpdateUploadedVolume;
 
 
 module.exports = Peer;

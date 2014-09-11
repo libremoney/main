@@ -4,12 +4,9 @@
  * CC0 license
  */
 
-/*
-import nxt.Account;
-import nxt.Attachment;
-*/
-
+var Attachment_MessagingPollCreation = require(__dirname + '/../../Pools/MessagingPollCreationAttachment');
 var Constants = require(__dirname + '/../../Constants');
+var CreateTransaction = require(__dirname + '/../CreateTransaction');
 var JsonResponses = require(__dirname + '/../JsonResponses');
 var Logger = require(__dirname + '/../../Logger').GetLogger(module);
 var ParameterParser = require(__dirname + '/../ParameterParser');
@@ -88,12 +85,10 @@ function CreatePoll(req, res) {
 
 	var account = ParameterParser.GetSenderAccount(req);
 
-	/*
-	var attachment = new Attachment.MessagingPollCreation(nameValue.trim(), descriptionValue.trim(),
-			options.toArray(new String[options.size()]), minNumberOfOptions, maxNumberOfOptions, optionsAreBinary);
-	return createTransaction(req, account, attachment);
-	*/
-	res.send('This is not implemented');
+	var attachment = new Attachment_MessagingPollCreation(nameValue.trim(), descriptionValue.trim(),
+			options, minNumberOfOptions, maxNumberOfOptions, optionsAreBinary);
+	res.send(CreateTransaction(req, account, attachment));
 }
+
 
 module.exports = CreatePoll;

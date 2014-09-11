@@ -12,28 +12,20 @@ import nxt.NxtException;
 import org.json.simple.JSONStreamAware;
 */
 
+//super(new APITag[] {APITag.AE, APITag.CREATE_TRANSACTION}, "asset", "quantityQNT", "priceNQT");
 function PlaceAskOrders(req, res) {
-	var obj = CreateTransaction();
 	res.send('This is not implemented');
 	/*
-	static final PlaceAskOrder instance = new PlaceAskOrder();
-
-	private PlaceAskOrder() {
-		super("asset", "quantityQNT", "priceNQT");
+	Asset asset = ParameterParser.getAsset(req);
+	long priceNQT = ParameterParser.getPriceNQT(req);
+	long quantityQNT = ParameterParser.getQuantityQNT(req);
+	Account account = ParameterParser.getSenderAccount(req);
+	Long assetBalance = account.getUnconfirmedAssetBalanceQNT(asset.getId());
+	if (assetBalance == null || quantityQNT > assetBalance) {
+		return JsonResponses.NOT_ENOUGH_ASSETS;
 	}
-
-	JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
-		Asset asset = ParameterParser.getAsset(req);
-		long priceNQT = ParameterParser.getPriceNQT(req);
-		long quantityQNT = ParameterParser.getQuantityQNT(req);
-		Account account = ParameterParser.getSenderAccount(req);
-		Long assetBalance = account.getUnconfirmedAssetBalanceQNT(asset.getId());
-		if (assetBalance == null || quantityQNT > assetBalance) {
-			return JsonResponses.NOT_ENOUGH_ASSETS;
-		}
-		Attachment attachment = new Attachment.ColoredCoinsAskOrderPlacement(asset.getId(), quantityQNT, priceNQT);
-		return createTransaction(req, account, attachment);
-	}
+	Attachment attachment = new Attachment.ColoredCoinsAskOrderPlacement(asset.getId(), quantityQNT, priceNQT);
+	return createTransaction(req, account, attachment);
 	*/
 }
 

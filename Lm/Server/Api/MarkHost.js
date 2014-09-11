@@ -16,7 +16,7 @@ import static nxt.http.JSONResponses.MISSING_SECRET_PHRASE;
 import static nxt.http.JSONResponses.MISSING_WEIGHT;
 */
 
-//super("secretPhrase", "host", "weight", "date");
+//super(new APITag[] {APITag.TOKENS}, "secretPhrase", "host", "weight", "date");
 function MarkHost(req, res) {
 	res.send('This is not implemented');
 	/*

@@ -1,11 +1,11 @@
 /**!
- * LibreMoney accounts 0.0
+ * LibreMoney Accounts 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
+var Api = require(__dirname + "/Api");
 var Convert = require(__dirname + '/../Util/Convert');
-var Crypto = require(__dirname + '/../Crypto/Crypto');
 var BlockchainProcessor = require(__dirname + '/../BlockchainProcessor/BlockchainProcessor');
 var Listeners = require(__dirname + '/../Util/Listeners');
 
@@ -79,7 +79,15 @@ function GetAccountById(id) {
 function GetAccountByPublicKey(publicKey) {
 	var accId = GetId(publicKey);
 	console.log("GetAccountByPublicKey: accId="+accId);
-	return accounts[accId];
+	var account = accounts[accId];
+	if (account == null) {
+		return null;
+	}
+	if (account.GetPublicKey() == null || Arrays.equals(account.GetPublicKey(), publicKey)) {
+		return account;
+	}
+	throw new Error("DUPLICATE KEY for account " + Convert.ToUnsignedLong(account.GetId()) + " existing key " +
+		Convert.ToHexString(account.GetPublicKey()) + " new key " + Convert.ToHexString(publicKey));
 }
 
 function GetAllAccounts() {
@@ -87,60 +95,90 @@ function GetAllAccounts() {
 }
 
 function GetId(publicKey) {
-	// Prof1983 - ????
-	var publicKeyHash = Crypto.Sha256().update(publicKey).digest('hex');
-	console.log("GetId: publicKeyHash="+publicKeyHash);
-	return Convert.FullHashToId(publicKeyHash);
+	return Convert.GetAccountId(publicKey);
 }
 
 function Init() {
-	BlockchainProcessor.AddListener(BlockchainProcessor.Event.AFTER_BLOCK_APPLY, function(block) {
-		var height = block.GetHeight();
-		for (account in leasingAccounts) {
-			/*
-			if (height == account.GetCurrentLeasingHeightFrom()) {
-				Accounts.GetAccount(account.GetCurrentLesseeId()).GetLessorIds().Add(account.getId());
-				leaseListeners.Notify(Event.LEASE_STARTED,
-						new AccountLease(account.getId(), account.currentLesseeId, height, account.currentLeasingHeightTo));
-			} else if (height == account.currentLeasingHeightTo) {
-				Account.getAccount(account.currentLesseeId).lessorIds.remove(account.getId());
-				leaseListeners.Notify(Event.LEASE_ENDED,
-						new AccountLease(account.getId(), account.currentLesseeId, account.currentLeasingHeightFrom, height));
-				if (account.nextLeasingHeightFrom == Integer.MAX_VALUE) {
-					account.currentLeasingHeightFrom = Integer.MAX_VALUE;
-					account.currentLesseeId = null;
-					//iterator.remove();
-				} else {
-					account.currentLeasingHeightFrom = account.nextLeasingHeightFrom;
-					account.currentLeasingHeightTo = account.nextLeasingHeightTo;
-					account.currentLesseeId = account.nextLesseeId;
-					account.nextLeasingHeightFrom = Integer.MAX_VALUE;
-					account.nextLesseeId = null;
-					if (height == account.currentLeasingHeightFrom) {
-						Account.getAccount(account.currentLesseeId).lessorIds.add(account.getId());
-						leaseListeners.Notify(Event.LEASE_STARTED,
-								new AccountLease(account.getId(), account.currentLesseeId, height, account.currentLeasingHeightTo));
-					}
-				}
-			} else if (height == account.currentLeasingHeightTo + 1440) {
-				//keep expired leases for up to 1440 blocks to be able to handle block pop-off
-				iterator.remove();
-			}
-			*/
-		}
-	});
+	var Core = require(__dirname + '/../Core');
+	Core.AddListener(Core.Event.Clear, OnClear);
+	Core.AddListener(Core.Event.GetState, OnGetState);
+	Core.AddListener(Core.Event.InitServer, OnInitServer);
+	BlockchainProcessor.AddListener(BlockchainProcessor.Event.AFTER_BLOCK_APPLY, OnAfterBlockApply);
+	BlockchainProcessor.AddListener(BlockchainProcessor.Event.BLOCK_POPPED, OnBlockPopped);
+}
 
-	BlockchainProcessor.AddListener(BlockchainProcessor.Event.BLOCK_POPPED, function(block) {
+function OnAfterBlockApply(block) {
+	var height = block.GetHeight();
+	for (account in leasingAccounts) {
 		/*
-		int height = block.getHeight();
-		for (Account account : leasingAccounts.values()) {
-			if (height == account.currentLeasingHeightFrom || height == account.currentLeasingHeightTo) {
-				// hack
-				throw new RuntimeException("Undo of lease start or end not supported");
+		if (height == account.GetCurrentLeasingHeightFrom()) {
+			Accounts.GetAccount(account.GetCurrentLesseeId()).GetLessorIds().Add(account.getId());
+			leaseListeners.Notify(Event.LEASE_STARTED,
+					new AccountLease(account.getId(), account.currentLesseeId, height, account.currentLeasingHeightTo));
+		} else if (height == account.currentLeasingHeightTo) {
+			Account.getAccount(account.currentLesseeId).lessorIds.remove(account.getId());
+			leaseListeners.Notify(Event.LEASE_ENDED,
+					new AccountLease(account.getId(), account.currentLesseeId, account.currentLeasingHeightFrom, height));
+			if (account.nextLeasingHeightFrom == Integer.MAX_VALUE) {
+				account.currentLeasingHeightFrom = Integer.MAX_VALUE;
+				account.currentLesseeId = null;
+				//iterator.remove();
+			} else {
+				account.currentLeasingHeightFrom = account.nextLeasingHeightFrom;
+				account.currentLeasingHeightTo = account.nextLeasingHeightTo;
+				account.currentLesseeId = account.nextLesseeId;
+				account.nextLeasingHeightFrom = Integer.MAX_VALUE;
+				account.nextLesseeId = null;
+				if (height == account.currentLeasingHeightFrom) {
+					Account.getAccount(account.currentLesseeId).lessorIds.add(account.getId());
+					leaseListeners.Notify(Event.LEASE_STARTED,
+							new AccountLease(account.getId(), account.currentLesseeId, height, account.currentLeasingHeightTo));
+				}
 			}
+		} else if (height == account.currentLeasingHeightTo + 1440) {
+			//keep expired leases for up to 1440 blocks to be able to handle block pop-off
+			iterator.remove();
 		}
 		*/
-	});
+	}
+}
+
+function OnBlockPopped(block) {
+	/*
+	int height = block.getHeight();
+	for (Account account : leasingAccounts.values()) {
+		if (height == account.currentLeasingHeightFrom || height == account.currentLeasingHeightTo) {
+			// hack
+			throw new RuntimeException("Undo of lease start or end not supported");
+		}
+	}
+	*/
+}
+
+function OnClear() {
+	Clear();
+}
+
+function OnGetState(response) {
+	var totalEffectiveBalance = 0;
+	for (var i in allAccounts) {
+		account = allAccounts[i];
+		var effectiveBalanceLm = account.GetEffectiveBalanceLm();
+		if (effectiveBalanceLm > 0) {
+			totalEffectiveBalance += effectiveBalanceLm;
+		}
+	}
+	response.totalEffectiveBalanceLm = totalEffectiveBalance;
+	response.numberOfAccounts = allAccounts.length;
+}
+
+function OnInitServer(app) {
+	app.get("/api/getAccount", Api.GetAccount);
+	app.get("/api/getAccountId", Api.GetAccountId);
+	app.get("/api/getAccountPublicKey", Api.GetAccountPublicKey);
+	app.get("/api/getBalance", Api.GetBalance);
+	app.get("/api/getGuaranteedBalance", Api.GetGuaranteedBalance);
+	app.get("/api/leaseBalance", Api.LeaseBalance);
 }
 
 function RemoveAssetListener(eventType, listener) {

@@ -4,7 +4,6 @@
  * CC0 license
  */
 
-var Accounts = require(__dirname + '/../../Accounts');
 var Aliases = require(__dirname + '/../../Aliases');
 var Assets = require(__dirname + '/../../Assets');
 var Blockchain = require(__dirname + '/../../Blockchain');
@@ -15,28 +14,19 @@ var Generators = require(__dirname + '/../../Generators');
 var Logger = require(__dirname + '/../../Logger').GetLogger(module);
 var Orders = require(__dirname + '/../../Orders');
 var Peers = require(__dirname + '/../../Peers');
-var Polls = require(__dirname + '/../../Polls');
 var Trades = require(__dirname + '/../../Trades');
 var Votes = require(__dirname + '/../../Votes');
 
 
+//super(new APITag[] {APITag.INFO});
 function GetState(req, res) {
 	var response = {};
 
+	response.application = Core.GetApplication();
 	response.version = Core.GetVersion();
 	response.time = Convert.GetEpochTime();
 	response.lastBlock = Blockchain.GetLastBlock().GetStringId();
 	response.cumulativeDifficulty = Blockchain.GetLastBlock().GetCumulativeDifficulty().toString();
-
-	var totalEffectiveBalance = 0;
-	for (var account in Account.GetAllAccounts()) {
-		var effectiveBalanceLm = account.GetEffectiveBalanceLm();
-		if (effectiveBalanceLm > 0) {
-			totalEffectiveBalance += effectiveBalanceLm;
-		}
-	}
-	response.totalEffectiveBalanceLm = totalEffectiveBalance;
-
 	response.numberOfBlocks = Blockchain.GetHeight() + 1;
 	response.numberOfTransactions = Blockchain.GetTransactionCount(function(err, count) {
 		if (err) {
@@ -44,7 +34,9 @@ function GetState(req, res) {
 			Logger.warn('Error');
 			return;
 		}
-		response.numberOfAccounts = Accounts.GetAllAccounts().length;
+
+		Core.DoGetState(response);
+
 		response.numberOfAssets = Assets.GetAllAssets().length;
 		response.numberOfOrders = Orders.Ask.GetAllAskOrders().length + Orders.Bid.GetAllBidOrders().length;
 		var numberOfTrades = 0;
@@ -53,7 +45,6 @@ function GetState(req, res) {
 		}
 		response.numberOfTrades = numberOfTrades;
 		response.numberOfAliases = Aliases.GetAllAliases().length;
-		response.numberOfPolls = Polls.GetAllPolls().length;
 		response.numberOfVotes = Votes.GetVotes().length;
 		response.numberOfPeers = Peers.GetAllPeers().length;
 		response.numberOfUnlockedAccounts = Generators.GetAllGenerators().length;

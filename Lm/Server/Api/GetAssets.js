@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney GetAssets api 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -9,7 +9,7 @@ var Convert = require(__dirname + '/../../Util/Convert');
 var JsonResponses = require(__dirname + '/../JsonResponses');
 
 
-//super("assets", "assets", "assets"); // limit to 3 for testing
+//super(new APITag[] {APITag.AE}, "assets", "assets", "assets"); // limit to 3 for testing
 function GetAssets(req, res) {
 	var assets = req.query.assets;
 	var response = {};

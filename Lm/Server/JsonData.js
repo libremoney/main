@@ -1,5 +1,5 @@
 /*!
- * LibreMoney 0.0
+ * LibreMoney 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -89,8 +89,9 @@ function BidOrder(order) {
 	return json;
 }
 
-function Block(block) {
+function Block(block, includeTransactions) {
 	var json = {};
+	json.block = block.GetStringId();
 	json.height = block.GetHeight();
 	PutAccount(json, "generator", block.GetGeneratorId());
 	json.generatorPublicKey = Convert.ToHexString(block.GetGeneratorPublicKey());
@@ -114,9 +115,10 @@ function Block(block) {
 	}
 	json.blockSignature = Convert.toHexString(block.GetBlockSignature());
 	var transactions = [];
-	var ids = block.GetTransactionIds();
-	for (var i in ids) {
-		transactions.push(Convert.ToUnsignedLong(ids[i]));
+	var trs = block.GetTransactions();
+	for (var i in trs) {
+		transaction = trs[i];
+		transactions.push(includeTransactions ? Transaction(transaction) : Convert.ToUnsignedLong(transaction.GetId()));
 	}
 	json.transactions = transactions;
 	return json;
@@ -136,7 +138,7 @@ function Goods(goods) {
 	json.description = goods.GetDescription();
 	json.quantity = goods.GetQuantity();
 	json.priceMilliLm = goods.GetPriceMilliLm();
-	PutAccount(json, "seller", goods.GetSellerId();
+	PutAccount(json, "seller", goods.GetSellerId());
 	json.tags = goods.GetTags();
 	json.delisted = goods.IsDelisted();
 	return json;

@@ -1,10 +1,15 @@
+/**!
+ * LibreMoney 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
-var LmAttachment = require(__dirname + '/LmAttachment');
-var LmTrTypeColoredCoins = require(__dirname + '/LmTransactionType_ColoredCoins');
+var Attachment = require(__dirname + '/../../Transactions/Attachment/Attachment');
+var ColoredCoinsTrType = require(__dirname + '/../ColoredCoinsTrType');
 
 
-function CreateColoredCoinsAssetIssuance(Name, Description, QuantityMilliLm, Decimals) {
-	var obj = LmAttachment.Create();
+function ColoredCoinsAssetIssuance(Name, Description, QuantityMilliLm, Decimals) {
+	this.prototype = new Attachment();
 
 	//static final long serialVersionUID = 0;
 
@@ -55,7 +60,7 @@ function CreateColoredCoinsAssetIssuance(Name, Description, QuantityMilliLm, Dec
 	}
 
 	function GetTransactionType() {
-		return LmTrTypeColoredCoins.GetAssetIssuance();
+		return ColoredCoinsTrType.GetAssetIssuance();
 	}
 
 	function GetName() {
@@ -75,18 +80,21 @@ function CreateColoredCoinsAssetIssuance(Name, Description, QuantityMilliLm, Dec
 	}
 
 
-	obj.Name = Name;
-	obj.Description = Description;
-	obj.QuantityMilliLm = QuantityMilliLm;
-	obj.Decimals = Decimals;
+	this.Name = Name;
+	this.Description = Description;
+	this.QuantityMilliLm = QuantityMilliLm;
+	this.Decimals = Decimals;
 
-	obj.GetSize = GetSize;
-	obj.GetBytes = GetBytes;
-	obj.GetJsonObject = GetJsonObject;
-	obj.GetTransactionType = GetTransactionType;
-	obj.GetName = GetName;
-	obj.GetDescription = GetDescription;
-	obj.GetQuantityMilliLm = GetQuantityMilliLm;
-	obj.GetDecimals = GetDecimals;
-	return obj;
+	this.GetSize = GetSize;
+	this.GetBytes = GetBytes;
+	this.GetJsonObject = GetJsonObject;
+	this.GetTransactionType = GetTransactionType;
+	this.GetName = GetName;
+	this.GetDescription = GetDescription;
+	this.GetQuantityMilliLm = GetQuantityMilliLm;
+	this.GetDecimals = GetDecimals;
+	return this;
 }
+
+
+module.exports = ColoredCoinsAssetIssuance;

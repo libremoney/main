@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -137,7 +137,7 @@ function UnlockAccount(req, res) {
 			}
 		}
 
-		try (DbIterator<? extends Transaction> transactionIterator = Nxt.getBlockchain().getTransactions(account, (byte) -1, (byte) -1, 0, null)) {
+		try (DbIterator<? extends Transaction> transactionIterator = Nxt.getBlockchain().getTransactions(account, (byte) -1, (byte) -1, 0)) {
 			while (transactionIterator.hasNext()) {
 				Transaction transaction = transactionIterator.next();
 				if (transaction.getSenderId().equals(accountId)) {

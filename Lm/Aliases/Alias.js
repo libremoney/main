@@ -4,6 +4,7 @@
  * CC0 license
  */
 
+// id - int
 function Alias(account, id, aliasName, aliasUri, timestamp) {
 	this.accountId = account.GetId();
 	this.id = id;

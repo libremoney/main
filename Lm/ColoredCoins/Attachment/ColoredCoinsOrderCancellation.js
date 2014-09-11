@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -14,7 +14,7 @@ var Transactions = require(__dirname + '/../Transactions');
 
 function ColoredCoinsOrderCancellation(orderId) {
 	//obj.orderId;
-	var obj = Transactions.CreateAttachment(orderId);
+	this.prototype = Transactions.CreateAttachment(orderId);
 
 	function GetBytes() {
 		res.send('This is not implemented');
@@ -40,13 +40,12 @@ function ColoredCoinsOrderCancellation(orderId) {
 		return 8;
 	}
 
-	obj.GetBytes = GetBytes;
-	obj.GetJsonObject = GetJsonObject;
-	obj.GetOrderId = GetOrderId;
-	obj.GetSize = GetSize;
-	return obj;
+	this.GetBytes = GetBytes;
+	this.GetJsonObject = GetJsonObject;
+	this.GetOrderId = GetOrderId;
+	this.GetSize = GetSize;
+	return this;
 }
-
 
 
 module.exports = ColoredCoinsOrderCancellation;

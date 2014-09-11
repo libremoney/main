@@ -22,6 +22,8 @@ var Accounts = require(__dirname + '/Accounts');
 var Blockchain = require(__dirname + '/Blockchain');
 var Blocks = require(__dirname + '/Blocks');
 var Groups = require(__dirname + '/Groups');
+var Messages = require(__dirname + '/Messages');
+//var Payments = require(__dirname + '/Payments');
 var Projects = require(__dirname + '/Projects');
 var Users = require(__dirname + '/Users');
 var Transactions = require(__dirname + '/Transactions');
@@ -33,13 +35,16 @@ var ThreadPool = require(__dirname + '/ThreadPool');
 var defaultProperties;
 var listeners = new Listeners();
 var properties;
-var version = "0.1.2";
+var version = "0.1.3";
+var application = "Lm";
 
 
 var Event = {
 	Clear:0,
 	Shutdown:1,
-	Start:2
+	Start:2,
+	InitServer:3,
+	GetState:4
 	};
 
 
@@ -48,11 +53,26 @@ function AddListener(eventType, listener) {
 }
 
 function Clear() {
-	Accounts.Clear();
 	Groups.Clear();
 	Projects.Clear();
 	//Users.Clear();
 	listeners.Notify(Event.Clear, null);
+}
+
+function DoGetState(response) {
+	listeners.Notify(Event.GetState, response);
+}
+
+function DoInitServer(app) {
+	listeners.Notify(Event.InitServer, app);
+}
+
+function GetApplication() {
+	return application;
+}
+
+function GetVersion() {
+	return version;
 }
 
 function Init(callback) {
@@ -65,6 +85,8 @@ function Init(callback) {
 	Projects.Init();
 	Users.Init();
 	Transactions.Init();
+	//Payments.Init();
+	Messages.Init();
 	if (callback)
 		callback(null);
 	
@@ -129,10 +151,6 @@ function Init(callback) {
 	*/
 }
 
-function GetVersion() {
-	return version;
-}
-
 function Main(args) {
 	throw new Error('Not implementted');
 	/*
@@ -166,7 +184,10 @@ exports.Event = Event;
 
 exports.AddListener = AddListener;
 exports.Clear = Clear;
+exports.DoGetState = DoGetState;
+exports.DoInitServer = DoInitServer;
 exports.Init = Init;
+exports.GetApplication = GetApplication;
 exports.GetVersion = GetVersion;
 exports.RemoveListener = RemoveListener;
 exports.Shutdown = Shutdown;

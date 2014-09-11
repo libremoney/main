@@ -11,7 +11,7 @@ import static nxt.http.JSONResponses.MISSING_PEER;
 import static nxt.http.JSONResponses.UNKNOWN_PEER;
 */
 
-//super("peer");
+//super(new APITag[] {APITag.INFO}, "peer");
 function GetPeer(req, res) {
 	res.send('This is not implemented');
 	/*

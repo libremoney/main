@@ -5,43 +5,46 @@
  */
 
 var AbstractAppendix = require(__dirname + '/AbstractAppendix');
+var Constants = require(__dirname + '/../../Constants');
 
 
-function AbstractEncryptedMessage {
-	obj = new AbstractAppendix();
-	/*
-	private final EncryptedData encryptedData;
-	private final boolean isText;
-	*/
+function AbstractEncryptedMessage(data) {
 
-	/*
-	private AbstractEncryptedMessage(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
-		super(buffer, transactionVersion);
-		int length = buffer.getInt();
+	if (typeof data.buffer != 'undefined' && data.transactionVersion != 'undefind') {
+		this.prototype = new AbstractAppendix({
+			buffer: data.buffer,
+			transactionVersion: data.transactionVersion
+		});
+		var length = buffer.GetInt();
 		this.isText = length < 0;
 		if (length < 0) {
-			length &= Integer.MAX_VALUE;
+			length &= Constants.MaxInt;
 		}
-		this.encryptedData = EncryptedData.readEncryptedData(buffer, length, Constants.MAX_ENCRYPTED_MESSAGE_LENGTH);
-	}
-	*/
-
-	/*
-	private AbstractEncryptedMessage(JSONObject attachmentJSON, JSONObject encryptedMessageJSON) throws NxtException.NotValidException {
+		this.encryptedData = EncryptedData.ReadEncryptedData(buffer, length, Constants.MaxEncryptedMessageLength);
+	} else if (typeof data.attachmentJson != 'undefined' && typeof data.encryptedMessageJson != 'undefined') {
+		throw new Error('Not implementted AbstractEncryptedMessage');
+		/*
 		super(attachmentJSON);
 		byte[] data = Convert.parseHexString((String)encryptedMessageJSON.get("data"));
 		byte[] nonce = Convert.parseHexString((String)encryptedMessageJSON.get("nonce"));
 		this.encryptedData = new EncryptedData(data, nonce);
 		this.isText = Boolean.TRUE.equals(encryptedMessageJSON.get("isText"));
-	}
-	*/
-
-	/*
-	private AbstractEncryptedMessage(EncryptedData encryptedData, boolean isText) {
+		*/
+	} else if (typeof data.encryptedData != 'undefined' && typeof data.isText != 'undefined') {
+		throw new Error('Not implementted AbstractEncryptedMessage');
+		/*
 		this.encryptedData = encryptedData;
 		this.isText = isText;
-	}
+		*/
+	} else
+		throw new Error('Unknown params AbstractEncryptedMessage');
+
+
+	/*
+	private final EncryptedData encryptedData;
+	private final boolean isText;
 	*/
+
 
 	/*
 	int getMySize() {

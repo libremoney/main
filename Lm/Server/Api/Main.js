@@ -22,7 +22,7 @@ var LockAccount = require(__dirname + '/LockAccount');
 var RemoveActivePeer = require(__dirname + '/RemoveActivePeer');
 var RemoveBlacklistedPeer = require(__dirname + '/RemoveBlacklistedPeer');
 var RemoveKnownPeer = require(__dirname + '/RemoveKnownPeer');
-var SendMoney = require(__dirname + '/SendMoney2');
+//var SendMoney = require(__dirname + '/SendMoney2'); - Payments
 var UnlockAccount = require(__dirname + '/UnlockAccount');
 
 
@@ -43,7 +43,7 @@ var userRequestHandlers = {
 	removeActivePeer: RemoveActivePeer,
 	removeBlacklistedPeer: RemoveBlacklistedPeer,
 	removeKnownPeer: RemoveKnownPeer,
-	sendMoney: SendMoney,
+	//sendMoney: SendMoney,
 	unlockAccount: UnlockAccount
 	};
 

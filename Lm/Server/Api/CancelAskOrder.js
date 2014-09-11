@@ -15,10 +15,11 @@ function CancelAskOrder(req, res) {
 	var account = ParameterParser.GetSenderAccount(req);
 	var orderData = Order.Ask.GetAskOrder(orderId);
 	if (!orderData || !orderData.GetAccount().GetId() == account.GetId()) {
-		return JsonResponses.UnknownOrder;
+		res.send(JsonResponses.UnknownOrder);
+		return;
 	}
 	var attachment = ColoredCoins.CreateColoredCoinsAskOrderCancellationAttachment(orderId);
-	return CreateTransaction(req, res, account, null, null, attachment);
+	res.send(CreateTransaction(req, res, account, null, null, attachment));
 }
 
 module.exports = CancelAskOrder;

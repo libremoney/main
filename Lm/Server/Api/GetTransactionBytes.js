@@ -9,7 +9,7 @@ var JsonResponses = require(__dirname + '/../JsonResponses');
 var TransactionProcessor = require(__dirname + '/../../TransactionProcessor');
 
 
-//super("transaction");
+//super(new APITag[] {APITag.TRANSACTIONS}, "transaction");
 function GetTransactionBytes(req, res) {
 	var transactionValue = req.query.transaction;
 	if (!transactionValue) {

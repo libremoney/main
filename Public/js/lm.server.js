@@ -726,7 +726,7 @@ var Lm = (function(Lm, $, undefined) {
 
 				pos += 8;
 
-				transaction.decimals = byteArray[pos];
+				transaction.decimals = String(byteArray[pos]);
 
 				pos++;
 

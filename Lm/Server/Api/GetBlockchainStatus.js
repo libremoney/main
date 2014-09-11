@@ -7,13 +7,15 @@
 var Blockchain = require(__dirname + '/../../Blockchain');
 var BlockchainProcessor = require(__dirname + '/../../BlockchainProcessor');
 var Convert = require(__dirname + '/../../Util/Convert');
+var Core = require(__dirname + '/../../Core');
 
-
+//super(new APITag[] {APITag.BLOCKS, APITag.INFO});
 function GetBlockchainStatus(req, res) {
 	var lastBlock = Blockchain.GetLastBlock();
 	var lastBlockchainFeeder = BlockchainProcessor.GetLastBlockchainFeeder();
 	response = {
-		version: "0",
+		application: Core.GetApplication(),
+		version: Core.GetVersion(),
 		time: "0", //Convert.getEpochTime()
 		lastBlock: "", //lastBlock.GetStringId()
 		cumulativeDifficulty: "", //lastBlock.GetCumulativeDifficulty().ToString()

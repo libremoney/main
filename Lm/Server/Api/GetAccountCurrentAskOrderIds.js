@@ -13,7 +13,7 @@ var JsonResponses = require(__dirname + '/../JsonResponses');
 var ParameterParser = require(__dirname + '/../ParameterParser');
 
 
-//super("account", "asset");
+//super(new APITag[] {APITag.ACCOUNTS, APITag.AE}, "account", "asset");
 function GetAccountCurrentAskOrderIds(req, res) {
 	var accountId = ParameterParser.GetAccount(req).GetId();
 	var assetId;
@@ -24,6 +24,7 @@ function GetAccountCurrentAskOrderIds(req, res) {
 	}
 
 	/*
+	TODO
 	var orderIds = new Array();
 	for (Order.Ask askOrder : Order.Ask.getAllAskOrders()) {
 		if ((assetId == null || askOrder.getAssetId().equals(assetId)) && askOrder.getAccount().getId().equals(accountId)) {

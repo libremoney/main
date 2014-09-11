@@ -19,7 +19,6 @@ import static nxt.http.JSONResponses.MISSING_NAME;
 
 //super(new APITag[] {APITag.DGS, APITag.CREATE_TRANSACTION}, "name", "description", "tags", "quantity", "priceNQT");
 function DgsListing(req, res) {
-	// CreateTransaction
 	res.send('This is not implemented');
 	/*
 	String name = Convert.emptyToNull(req.getParameter("name"));

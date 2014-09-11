@@ -13,9 +13,8 @@ import static nxt.http.JSONResponses.INCORRECT_PERIOD;
 import static nxt.http.JSONResponses.MISSING_PERIOD;
 */
 
-//super("period", "recipient");
+//super(new APITag[] {APITag.FORGING}, "period", "recipient");
 function LeaseBalance(req, res) {
-	var obj = CreateTransaction();
 	res.send('This is not implemented');
 	/*
 	String periodString = Convert.emptyToNull(req.getParameter("period"));

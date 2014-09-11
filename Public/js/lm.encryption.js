@@ -373,7 +373,7 @@ var Lm = (function(Lm, $, undefined) {
 
 		var outputEl = (_encryptedNote.options.outputEl ? String(_encryptedNote.options.outputEl).escapeHTML() : "#transaction_info_output_bottom");
 
-		$(outputEl).html(output).show();
+		$(outputEl).append(output).show();
 
 		_encryptedNote = null;
 
@@ -746,7 +746,7 @@ var Lm = (function(Lm, $, undefined) {
 			$("#decrypt_note_form_container, " + formEl).show();
 		} else {
 			Lm.RemoveDecryptionForm();
-			$(outputEl).html(output).show();
+			$(outputEl).append(output).show();
 		}
 	}
 

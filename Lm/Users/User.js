@@ -1,15 +1,20 @@
+/**!
+ * LibreMoney 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
 function User(UserName) {
-	return {
-		Name: UserName,
-		ChangeName: ChangeName
-	}
+	this.name = userName;
+	return this;
 }
 
-function ChangeName(NewUserName) {
-	this.Name = NewUserName;
+function ChangeName(newUserName) {
+	this.name = newUserName;
 }
 
-// ==== Exports ====
+
+User.prototype.ChangeName = ChangeName;
+
 
 module.exports = User;

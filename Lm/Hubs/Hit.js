@@ -1,21 +1,14 @@
 /**!
- * LibreMoney hit 0.0
+ * LibreMoney Hit 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
 
 function Hit(hub, hitTime) {
-	var obj = {};
-	/*
-	public final Hub hub;
-	public final long hitTime;
-	*/
-	/*
 	this.hub = hub;
 	this.hitTime = hitTime;
-	*/
-	return obj;
+	return this;
 }
 
 function CompareTo(hit) {

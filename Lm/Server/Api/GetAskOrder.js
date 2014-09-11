@@ -10,7 +10,7 @@ import nxt.Order;
 import static nxt.http.JSONResponses.UNKNOWN_ORDER;
 */
 
-//super("order");
+//super(new APITag[] {APITag.AE}, "order");
 function GetAskOrder(req, res) {
 	res.send('This is not implemented');
 	/*

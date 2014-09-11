@@ -4,41 +4,12 @@
  * CC0 license
  */
 
-/*
-import nxt.Alias;
-import nxt.util.Convert;
-import org.json.simple.JSONStreamAware;
-import static nxt.http.JSONResponses.INCORRECT_ALIAS;
-import static nxt.http.JSONResponses.MISSING_ALIAS_OR_ALIAS_NAME;
-import static nxt.http.JSONResponses.UNKNOWN_ALIAS;
-*/
+var ParameterParser = require(__dirname + '/../ParameterParser');
 
-//super("alias", "aliasName");
+//super(new APITag[] {APITag.ALIASES}, "alias", "aliasName");
 function GetAlias(req, res) {
-	res.send('This is not implemented');
-	/*
-	Long aliasId;
-	try {
-		aliasId = Convert.parseUnsignedLong(Convert.emptyToNull(req.getParameter("alias")));
-	} catch (RuntimeException e) {
-		return INCORRECT_ALIAS;
-	}
-	String aliasName = Convert.emptyToNull(req.getParameter("aliasName"));
-
-	Alias alias;
-	if (aliasId != null) {
-		alias = Alias.getAlias(aliasId);
-	} else if (aliasName != null) {
-		alias = Alias.getAlias(aliasName);
-	} else {
-		return MISSING_ALIAS_OR_ALIAS_NAME;
-	}
-	if (alias == null) {
-		return UNKNOWN_ALIAS;
-	}
-
-	return JSONData.alias(alias);
-	*/
+	var alias = ParameterParser.GetAlias(req);
+	res.send(JsonData.Alias(alias))
 }
 
 module.exports = GetAlias;

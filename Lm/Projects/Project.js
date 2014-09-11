@@ -1,21 +1,21 @@
 /*
 State: 0 - Announce; 1 - Start founding; 2 - WorkBegin; 3 - WorkSuccess
 */
-function LmProject(Community, ProjGroup, Name, Description, Author, State, Sum1, Sum2, AnnounceTime, StartTime, BeginTime, EndTime) {
-	this.Community = Community;
-	this.ProjGroup = ProjGroup;
-	this.Name = Name;
-	this.Description = Description;
-	this.Author = Author;
-	this.State = State;
-	this.Sum1 = Sum1;
-	this.Sum2 = Sum2;
-	this.AnnounceTime = AnnounceTime;
-	this.StartTime = StartTime;
-	this.BeginTime = BeginTime;
-	this.EndTime = EndTime;
+function Project(group, projGroup, name, description, author, state, sum1, sum2, announceTime, startTime, beginTime, endTime) {
+	this.group = group;
+	this.projGroup = projGroup;
+	this.name = name;
+	this.description = description;
+	this.author = author;
+	this.state = state;
+	this.sum1 = sum1;
+	this.sum2 = sum2;
+	this.announceTime = announceTime;
+	this.startTime = startTime;
+	this.beginTime = beginTime;
+	this.endTime = endTime;
 	return this;
 }
 
 
-module.exports = LmProject;
+module.exports = Project;

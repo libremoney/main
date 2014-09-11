@@ -15,7 +15,7 @@ import static nxt.http.JSONResponses.UNKNOWN_ACCOUNT;
 */
 
 
-//super("secretPhrase");
+//super(new APITag[] {APITag.FORGING}, "secretPhrase");
 function GetForging(req, res) {
 	res.send('This is not implemented');
 	/*

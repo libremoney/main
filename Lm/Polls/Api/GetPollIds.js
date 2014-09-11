@@ -10,6 +10,7 @@ import nxt.util.Convert;
 import org.json.simple.JSONArray;
 */
 
+//super(new APITag[] {APITag.VS});
 function GetPollIds(req, res) {
 	res.send('This is not implemented');
 	/*

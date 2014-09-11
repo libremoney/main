@@ -4,9 +4,9 @@
  * CC0 license
  */
 
-var JsonData = require(__dirname + '/../JsonData');
-var JsonResponses = require(__dirname + '/../JsonResponses');
-var ParameterParser = require(__dirname + '/../ParameterParser');
+var JsonData = require(__dirname + '/../../Server/JsonData');
+var JsonResponses = require(__dirname + '/../../Server/JsonResponses');
+var ParameterParser = require(__dirname + '/../../Server/ParameterParser');
 
 
 //super(new APITag[] {APITag.ACCOUNTS}, "account");
@@ -48,6 +48,7 @@ function GetAccount(req, res) {
 	}
 
 	/*
+	TODO
 	var assetBalances = new Array();
 	for (Map.Entry<Long, Long> assetBalanceEntry : account.getAssetBalancesQNT().entrySet()) {
 		JSONObject assetBalance = new JSONObject();

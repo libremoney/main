@@ -1,8 +1,12 @@
 /**!
- * LibreMoney polls 0.0
+ * LibreMoney Polls 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
+
+var Api = require(__dirname + "/Api");
+var Core = require(__dirname + '/../Core');
+
 
 var polls = new Array(); //ConcurrentHashMap<>();
 var allPolls = new Array(); //Collections.unmodifiableCollection(polls.values());
@@ -30,8 +34,20 @@ function GetPoll(id) {
 }
 
 function Init() {
+	Core.AddListener(Core.Event.GetState, OnGetState);
+	Core.AddListener(Core.Event.InitServer, OnInitServer);
 }
 
+function OnGetState(response) {
+	response.numberOfPolls = allPolls.length;
+}
+
+function OnInitServer(app) {
+	app.get("/api/castVote", Api.CastVote);
+	app.get("/api/createPoll", Api.CreatePoll);
+	app.get("/api/getPoll", Api.GetPoll);
+	app.get("/api/getPollIds", Api.GetPollIds);
+}
 
 exports.AddPoll = AddPoll;
 exports.GetAllPolls = GetAllPolls;

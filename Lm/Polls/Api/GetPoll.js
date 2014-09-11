@@ -1,5 +1,5 @@
 /**!
- * LibreMoney GetPoll 0.1
+ * LibreMoney GetPoll api 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -12,6 +12,7 @@ import static nxt.http.JSONResponses.MISSING_POLL;
 import static nxt.http.JSONResponses.UNKNOWN_POLL;
 */
 
+//super(new APITag[] {APITag.VS}, "poll");
 function GetPoll(req, res) {
 	res.send('This is not implemented');
 	/*

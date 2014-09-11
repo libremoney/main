@@ -1,3 +1,9 @@
+/**!
+ * LibreMoney 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 import nxt.util.CountingInputStream;
 import nxt.util.CountingOutputStream;
@@ -15,6 +21,7 @@ private static final Map<String,PeerRequestHandler> peerRequestHandlers;
 /*
 static {
 	Map<String,PeerRequestHandler> map = new HashMap<>();
+	map.put("addPeers", AddPeers.instance);
 	map.put("getCumulativeDifficulty", GetCumulativeDifficulty.instance);
 	map.put("getInfo", GetInfo.instance);
 	map.put("getMilestoneBlockIds", GetMilestoneBlockIds.instance);
@@ -29,46 +36,40 @@ static {
 */
 
 /*
-private static final JSONStreamAware UNSUPPORTED_REQUEST_TYPE;
-static {
-	JSONObject response = new JSONObject();
-	response.put("error", "Unsupported request type!");
-	UNSUPPORTED_REQUEST_TYPE = JSON.prepare(response);
+private boolean isGzipEnabled;
+
+public void init(ServletConfig config) throws ServletException {
+	super.init(config);
+	isGzipEnabled = Boolean.parseBoolean(config.getInitParameter("isGzipEnabled"));
 }
 */
 
-/*
-private static final JSONStreamAware UNSUPPORTED_PROTOCOL;
-static {
-	JSONObject response = new JSONObject();
-	response.put("error", "Unsupported protocol!");
-	UNSUPPORTED_PROTOCOL = JSON.prepare(response);
+var UNSUPPORTED_REQUEST_TYPE = {
+	error: "Unsupported request type!"
 }
-*/
 
-/*
-protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+var UNSUPPORTED_PROTOCOL = {
+	error: "Unsupported protocol!"
+}
 
+function DoPost(req, resp) {
+	throw new Error('This is not implemented');
+	/*
 	PeerImpl peer = null;
 	JSONStreamAware response;
 
 	try {
-		String remoteAddr = req.getRemoteAddr();
-		if (remoteAddr.indexOf(':') >= 0)
-			remoteAddr = "["+remoteAddr+"]";
-		peer = Peers.addPeer(remoteAddr, null);
+		peer = Peers.addPeer(req.getRemoteAddr(), null);
 		if (peer == null) {
-			//Logger.logDebugMessage("Rejected request from "+remoteAddr);
 			return;
 		}
 		if (peer.isBlacklisted()) {
-			//Logger.logDebugMessage("Rejected request from blacklisted peer "+remoteAddr);
 			return;
 		}
 
 		JSONObject request;
 		CountingInputStream cis = new CountingInputStream(req.getInputStream());
-		try (Reader reader = new BufferedReader(new InputStreamReader(cis, "UTF-8"))) {
+		try (Reader reader = new InputStreamReader(cis, "UTF-8")) {
 			request = (JSONObject) JSONValue.parse(reader);
 		}
 		if (request == null) {
@@ -77,6 +78,9 @@ protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws S
 
 		if (peer.getState() == Peer.State.DISCONNECTED) {
 			peer.setState(Peer.State.CONNECTED);
+			if (peer.getAnnouncedAddress() != null) {
+				Peers.updateAddress(peer);
+			}
 		}
 		peer.updateDownloadedVolume(cis.getCount());
 		if (! peer.analyzeHallmark(peer.getPeerAddress(), (String)request.get("hallmark"))) {
@@ -104,13 +108,30 @@ protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws S
 	}
 
 	resp.setContentType("text/plain; charset=UTF-8");
-	CountingOutputStream cos = new CountingOutputStream(resp.getOutputStream());
-	try (Writer writer = new BufferedWriter(new OutputStreamWriter(cos, "UTF-8"))) {
-		response.writeJSONString(writer);
+	try {
+		long byteCount;
+		if (isGzipEnabled) {
+			try (Writer writer = new OutputStreamWriter(resp.getOutputStream(), "UTF-8")) {
+				response.writeJSONString(writer);
+			}
+			byteCount = ((Response) ((CompressedResponseWrapper) resp).getResponse()).getContentCount();
+		} else {
+			CountingOutputStream cos = new CountingOutputStream(resp.getOutputStream());
+			try (Writer writer = new OutputStreamWriter(cos, "UTF-8")) {
+				response.writeJSONString(writer);
+			}
+			byteCount = cos.getCount();
+		}
+		if (peer != null) {
+			peer.updateUploadedVolume(byteCount);
+		}
+	} catch (Exception e) {
+		if (peer != null) {
+			peer.blacklist(e);
+		}
+		throw e;
 	}
-
-	if (peer != null) {
-		peer.updateUploadedVolume(cos.getCount());
-	}
+	*/
 }
-*/
+
+exports.DoPost = DoPost;

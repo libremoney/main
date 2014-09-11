@@ -1,14 +1,14 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney GetBalance api 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-var JsonData = require(__dirname + '/../JsonData');
-var ParameterParser = require(__dirname + '/../ParameterParser');
+var JsonData = require(__dirname + '/../../Server/JsonData');
+var ParameterParser = require(__dirname + '/../../Server/ParameterParser');
 
 
-//super("account");
+//super(new APITag[] {APITag.ACCOUNTS}, "account");
 function GetBalance(req, res) {
 	res.send(JsonData.AccountBalance(ParameterParser.GetAccount(req)));
 	return true;

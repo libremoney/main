@@ -4,15 +4,15 @@
  * CC0 license
  */
 
-var LmTrType = require(__dirname + '/LmTransactionType');
+var LmTrType = require(__dirname + '/../Transactions/TransactionType');
 
 
-var ASSET_ISSUANCE; // Выпуск актива
-var ASSET_TRANSFER; // Передача актива
-var ASK_ORDER_PLACEMENT; // Запрос размещения заказа
-var BID_ORDER_PLACEMENT; // Ставка размещения заказа
-var ASK_ORDER_CANCELLATION; // Запрос отмены заказа
-var BID_ORDER_CANCELLATION; // Ставка отмены заказа
+var ASSET_ISSUANCE;
+var ASSET_TRANSFER;
+var ASK_ORDER_PLACEMENT;
+var BID_ORDER_PLACEMENT;
+var ASK_ORDER_CANCELLATION;
+var BID_ORDER_CANCELLATION;
 
 
 function CreateColoredCoins() {
@@ -107,7 +107,7 @@ function CreateAssetIssuance() {
 	obj.UndoAttachmentUnconfirmed = UndoAttachmentUnconfirmed;
 	obj.ValidateAttachment = ValidateAttachment;
 	return obj;
-};
+}
 
 function CreateAssetTransfer() {
 	var obj = CreateColoredCoins();
@@ -201,7 +201,7 @@ function CreateAssetTransfer() {
 	obj.UndoAttachmentUnconfirmed = UndoAttachmentUnconfirmed;
 	obj.ValidateAttachment = ValidateAttachment;
 	return obj;
-};
+}
 
 function CreateColoredCoinsOrderPlacement() {
 	var obj = CreateColoredCoins();
@@ -302,7 +302,7 @@ function CreateAskOrderPlacement() {
 	obj.UndoAttachment = UndoAttachment;
 	obj.UndoAttachmentUnconfirmed = UndoAttachmentUnconfirmed;
 	return obj;
-};
+}
 
 function CreateBidOrderPlacement() {
 	var obj = CreateColoredCoinsOrderPlacement();
@@ -372,7 +372,7 @@ function CreateBidOrderPlacement() {
 	obj.UndoAttachment = UndoAttachment;
 	obj.UndoAttachmentUnconfirmed = UndoAttachmentUnconfirmed;
 	return obj;
-};
+}
 
 function CreateColoredCoinsOrderCancellation() {
 	var obj = CreateColoredCoins();
@@ -458,7 +458,7 @@ function CreateAskOrderCancellation() {
 	obj.ParseAttachment_Buf = ParseAttachment_Buf;
 	obj.ParseAttachment_Json = ParseAttachment_Json;
 	return obj;
-};
+}
 
 function CreateBidOrderCancellation() {
 	var obj = CreateColoredCoinsOrderCancellation();
@@ -505,7 +505,7 @@ function CreateBidOrderCancellation() {
 	obj.ParseAttachment_Buf = ParseAttachment_Buf;
 	obj.ParseAttachment_Json = ParseAttachment_Json;
 	return obj;
-};
+}
 
 function GetAssetIssuance() {
 	if (!ASSET_ISSUANCE)

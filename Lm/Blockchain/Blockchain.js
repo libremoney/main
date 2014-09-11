@@ -42,6 +42,17 @@ function GetBlock(blockId) {
 	return Blocks.FindBlock(blockId);
 }
 
+function GetBlockAtHeight(height) {
+	var block = lastBlock;
+	if (height > block.GetHeight()) {
+		throw new Error("Invalid height " + height + ", current blockchain is at " + block.GetHeight());
+	}
+	if (height == block.GetHeight()) {
+		return block;
+	}
+	return BlockDb.FindBlockAtHeight(height);
+}
+
 function GetBlockIdAtHeight(height) {
 	var block = lastBlock;
 	if (height > block.GetHeight()) {
@@ -166,25 +177,40 @@ function GetTransactionCount(callback) {
 	});
 }
 
-function GetTransactions1(account, type, subtype, timestamp, from, to) {
+function GetTransactions1(account, numberOfConfirmations, type, subtype, blockTimestamp, from, to, work) {
 	throw 'Not implemented';
+
+	var height = numberOfConfirmations > 0 ? this.GetHeight() - numberOfConfirmations : Constants.MaxInt;
+	if (height < 0) {
+		throw new Error("Number of confirmations required " + numberOfConfirmations
+				+ " exceeds current blockchain height " + this.GetHeight());
+	}
+
 	/*
+	int height = numberOfConfirmations > 0 ? getHeight() - numberOfConfirmations : Integer.MAX_VALUE;
+	if (height < 0) {
+		throw new IllegalArgumentException("Number of confirmations required " + numberOfConfirmations
+				+ " exceeds current blockchain height " + getHeight());
+	}
 	Connection con = null;
 	try {
 		StringBuilder buf = new StringBuilder();
 		buf.append("SELECT * FROM transaction WHERE recipient_id = ? AND sender_id <> ? ");
-		if (timestamp > 0) {
-			buf.append("AND timestamp >= ? ");
+		if (blockTimestamp > 0) {
+			buf.append("AND block_timestamp >= ? ");
 		}
 		if (type >= 0) {
 			buf.append("AND type = ? ");
 			if (subtype >= 0) {
 				buf.append("AND subtype = ? ");
 			}
+		}
+		if (height < Integer.MAX_VALUE) {
+			buf.append("AND height <= ? ");
 		}
 		buf.append("UNION ALL SELECT * FROM transaction WHERE sender_id = ? ");
-		if (timestamp > 0) {
-			buf.append("AND timestamp >= ? ");
+		if (blockTimestamp > 0) {
+			buf.append("AND block_timestamp >= ? ");
 		}
 		if (type >= 0) {
 			buf.append("AND type = ? ");
@@ -192,7 +218,10 @@ function GetTransactions1(account, type, subtype, timestamp, from, to) {
 				buf.append("AND subtype = ? ");
 			}
 		}
-		buf.append("ORDER BY timestamp DESC");
+		if (height < Integer.MAX_VALUE) {
+			buf.append("AND height <= ? ");
+		}
+		buf.append("ORDER BY block_timestamp DESC, id DESC");
 		if (to >= from && to < Integer.MAX_VALUE) {
 			buf.append(" LIMIT " + (to - from + 1));
 		}
@@ -205,18 +234,21 @@ function GetTransactions1(account, type, subtype, timestamp, from, to) {
 		pstmt = con.prepareStatement(buf.toString());
 		pstmt.setLong(++i, account.getId());
 		pstmt.setLong(++i, account.getId());
-		if (timestamp > 0) {
-			pstmt.setInt(++i, timestamp);
+		if (blockTimestamp > 0) {
+			pstmt.setInt(++i, blockTimestamp);
 		}
 		if (type >= 0) {
 			pstmt.setByte(++i, type);
 			if (subtype >= 0) {
 				pstmt.setByte(++i, subtype);
 			}
+		}
+		if (height < Integer.MAX_VALUE) {
+			pstmt.setInt(++i, height);
 		}
 		pstmt.setLong(++i, account.getId());
-		if (timestamp > 0) {
-			pstmt.setInt(++i, timestamp);
+		if (blockTimestamp > 0) {
+			pstmt.setInt(++i, blockTimestamp);
 		}
 		if (type >= 0) {
 			pstmt.setByte(++i, type);
@@ -224,7 +256,12 @@ function GetTransactions1(account, type, subtype, timestamp, from, to) {
 				pstmt.setByte(++i, subtype);
 			}
 		}
-		return getTransactions(con, pstmt);
+		if (height < Integer.MAX_VALUE) {
+			pstmt.setInt(++i, height);
+		}
+	*/
+	//work(null, GetTransactions2(con, pstmt));
+	/*
 	} catch (SQLException e) {
 		DbUtils.close(con);
 		throw new RuntimeException(e.toString(), e);
@@ -238,9 +275,9 @@ function GetTransactions2(con, pstmt) {
 	});
 }
 
-function GetTransactions3(account, type, subtype, timestamp, orderAscending, work) {
+function GetTransactions3(account, type, subtype, blockTimestamp, orderAscending, work) {
 	if (typeof orderAscending == 'undefined')
-		return getTransactions(account, type, subtype, timestamp, 0, -1);
+		return getTransactions(account, 0, type, subtype, blockTimestamp, 0, -1);
 
 	trModel = Db.GetModel('transaction');
 
@@ -331,6 +368,7 @@ function SetLastBlock2(previousBlock, block) {
 exports.GetAllBlocks = GetAllBlocks;
 exports.GetAllTransactions = GetAllTransactions;
 exports.GetBlock = GetBlock;
+exports.GetBlockAtHeight = GetBlockAtHeight;
 exports.GetBlockIdAtHeight = GetBlockIdAtHeight;
 exports.GetBlockIdsAfter = GetBlockIdsAfter;
 exports.GetBlocks1 = GetBlocks1;

@@ -9,26 +9,14 @@ import nxt.NxtException;
 import nxt.Trade;
 */
 
-//super("asset", "firstIndex", "lastIndex");
+//super(new APITag[] {APITag.AE}, "asset", "firstIndex", "lastIndex");
 function GetTrades(req, res) {
 	res.send('This is not implemented');
 	/*
 	Long assetId = ParameterParser.getAsset(req).getId();
 
-	int firstIndex, lastIndex;
-	try {
-		firstIndex = Integer.parseInt(req.getParameter("firstIndex"));
-		if (firstIndex < 0) {
-			firstIndex = 0;
-		}
-	} catch (NumberFormatException e) {
-		firstIndex = 0;
-	}
-	try {
-		lastIndex = Integer.parseInt(req.getParameter("lastIndex"));
-	} catch (NumberFormatException e) {
-		lastIndex = Integer.MAX_VALUE;
-	}
+	int firstIndex = ParameterParser.getFirstIndex(req);
+	int lastIndex = ParameterParser.getLastIndex(req);
 
 	JSONObject response = new JSONObject();
 

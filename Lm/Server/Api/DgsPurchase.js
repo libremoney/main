@@ -20,7 +20,6 @@ import static nxt.http.JSONResponses.UNKNOWN_GOODS;
 
 //super(new APITag[] {APITag.DGS, APITag.CREATE_TRANSACTION}, "goods", "priceNQT", "quantity", "deliveryDeadlineTimestamp");
 function DgsPurchase(req, res) {
-	// CreateTransaction
 	res.send('This is not implemented');
 	/*
 	DigitalGoodsStore.Goods goods = ParameterParser.getGoods(req);

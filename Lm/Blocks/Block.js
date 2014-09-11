@@ -4,7 +4,6 @@
  * CC0 license
  */
 
-var Accounts = require(__dirname + '/../Accounts');
 var BigInteger = require(__dirname + '/../Util/BigInteger');
 var ByteBuffer = require(__dirname + '/../Util/ByteBuffer');
 var Constants = require(__dirname + '/../Constants');
@@ -160,7 +159,7 @@ function GetCumulativeDifficulty() {
 
 function GetGeneratorId() {
 	if (!this.generatorId) {
-		this.generatorId = Accounts.GetId(this.generatorPublicKey);
+		this.generatorId = Convert.GetAccountId(this.generatorPublicKey);
 	}
 	return this.generatorId;
 }

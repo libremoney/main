@@ -17,7 +17,7 @@ function InitBlockModel(mongoose, modelName) {
 		//db_id INT IDENTITY,
 		id: { type: Number, required: true }, //BIGINT
 		version: { type: Number, required: true }, //INT
-		timestamp: { type: Number, required: true }, //INT
+		block_timestamp: { type: Number, required: true }, //INT
 		previous_block_id: Number, //BIGINT
 		total_amount: { type: Number, required: true }, //BIGINT
 		total_fee: { type: Number, required: true }, //BIGINT

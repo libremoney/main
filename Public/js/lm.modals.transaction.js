@@ -53,6 +53,21 @@ var Lm = (function(Lm, $, undefined) {
 
 		var incorrect = false;
 
+		if (transaction.senderRS == Lm.AccountRS) {
+			$("#transaction_info_actions").hide();
+		} else {
+			if (transaction.senderRS in Lm.Contacts) {
+				var accountButton = Lm.Contacts[transaction.senderRS].name.escapeHTML();
+				$("#transaction_info_modal_add_as_contact").hide();
+			} else {
+				var accountButton = transaction.senderRS;
+				$("#transaction_info_modal_add_as_contact").show();
+			}
+
+			$("#transaction_info_actions").show();
+			$("#transaction_info_actions_tab button").data("account", accountButton);
+		}
+
 		if (transaction.type == 0) {
 			switch (transaction.subtype) {
 				case 0:
@@ -98,7 +113,7 @@ var Lm = (function(Lm, $, undefined) {
 							$output.html("<div style='color:#999999;padding-bottom:10px'><i class='fa fa-unlock'></i> " + $.t("public_message") + "</div><div style='padding-bottom:10px'>" + String(message).escapeHTML().nl2br() + "</div>");
 						}
 
-						if (transaction.attachment.encryptedMessage || transaction.attachment.encryptToSelfMessage) {
+						if (transaction.attachment.encryptedMessage || (transaction.attachment.encryptToSelfMessage && Lm.Account == transaction.sender)) {
 							$output.append("<div id='transaction_info_decryption_form'></div><div id='transaction_info_decryption_output' style='display:none;padding-bottom:10px;'></div>");
 
 							if (Lm.Account == transaction.recipient || Lm.Account == transaction.sender) {
@@ -120,10 +135,8 @@ var Lm = (function(Lm, $, undefined) {
 								$output.append("<div style='padding-bottom:10px'>" + $.t("encrypted_message_no_permission") + "</div>");
 							}
 						}
-						$output.append("<table><tr><td><strong>" + $.t("from") + "</strong>:&nbsp;</td>" +
-							"<td>" + Lm.GetAccountLink(transaction, "sender") + "</td></tr>" +
-							"<tr><td><strong>" + $.t("to") + "</strong>:&nbsp;</td>" +
-							"<td>" + Lm.GetAccountLink(transaction, "recipient") + "</td></tr></table>").show();
+					} else {
+						$output.append("<div style='padding-bottom:10px'>" + $.t("message_empty") + "</div>");
 					}
 
 					$output.append("<table><tr><td><strong>" + $.t("from") + "</strong>:&nbsp;</td>" +
@@ -777,11 +790,21 @@ var Lm = (function(Lm, $, undefined) {
 					$("#transaction_info_output_bottom").append("<div style='padding-left:5px;'><label><i class='fa fa-unlock'></i> " + $.t("public_message") + "</label><div>" + String(message).escapeHTML().nl2br() + "</div></div>");
 				}
 
-				if (transaction.attachment.encryptedMessage) {
+				if (transaction.attachment.encryptedMessage || (transaction.attachment.encryptToSelfMessage && Lm.Account == transaction.sender)) {
+					if (transaction.attachment.message) {
+						$("#transaction_info_output_bottom").append("<div style='height:5px'></div>");
+					}
 					if (Lm.Account == transaction.sender || Lm.Account == transaction.recipient) {
-						Lm.TryToDecrypt(transaction, {
-							"encryptedMessage": $.t("encrypted_message"),
-						}, (transaction.recipient == Lm.Account ? transaction.sender : transaction.recipient), {
+						var fieldsToDecrypt = {};
+
+						if (transaction.attachment.encryptedMessage) {
+							fieldsToDecrypt.encryptedMessage = $.t("encrypted_message");
+						}
+						if (transaction.attachment.encryptToSelfMessage && Lm.Account == transaction.sender) {
+							fieldsToDecrypt.encryptToSelfMessage = $.t("note_to_self");
+						}
+
+						Lm.TryToDecrypt(transaction, fieldsToDecrypt, (transaction.recipient == Lm.Account ? transaction.sender : transaction.recipient), {
 							"formEl": "#transaction_info_output_bottom",
 							"outputEl": "#transaction_info_output_bottom"
 						});

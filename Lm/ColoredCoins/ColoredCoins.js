@@ -6,7 +6,7 @@
 
 
 //var LmTrTypeColoredCoins = require(__dirname + '/TransactionType_ColoredCoins');
-var ColoredCoinsAskOrderCancellationAttachment = require(__dirname + '/Attachment_ColoredCoinsAskOrderCancellation');
+var ColoredCoinsAskOrderCancellationAttachment = require(__dirname + '/Attachment/ColoredCoinsAskOrderCancellation');
 
 
 function CreateColoredCoinsAskOrderCancellationAttachment() {

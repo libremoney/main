@@ -1,42 +1,27 @@
 /**!
- * LibreMoney hub 0.0
+ * LibreMoney Hub 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
 
 function Hub(accountId, minFeePerByteMilliLm, uris) {
-	var obj = {};
-	var AccountId;
-	var MinFeePerByteMilliLm;
-	var uris = new Array(); // List<String>
-	/*
 	this.accountId = accountId;
 	this.minFeePerByteMilliLm = minFeePerByteMilliLm;
-	this.uris = Collections.unmodifiableList(Arrays.asList(uris));
-	*/
-	return obj;
+	this.uris = uris; //Collections.unmodifiableList(Arrays.asList(uris));
+	return this;
 }
 
 function Hub_GetAccountId() {
-	throw 'Not';
-	/*
-	return accountId;
-	*/
+	return this.accountId;
 }
 
 function Hub_GetMinFeePerByteMilliLm() {
-	throw 'Not';
-	/*
-	return minFeePerByteMilliLm;
-	*/
+	return this.minFeePerByteMilliLm;
 }
 
 function Hub_GetUris() {
-	throw 'Not';
-	/*
-	return uris;
-	*/
+	return this.uris;
 }
 
 Hub.prototype.GetAccountId = Hub_GetAccountId;

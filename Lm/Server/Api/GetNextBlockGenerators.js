@@ -12,7 +12,7 @@ import nxt.util.Convert;
 
 var Blockchain = require(__dirname + '/../../Blockchain');
 
-
+//super(new APITag[] {APITag.FORGING});
 function GetNextBlockGenerators(req, res) {
 	res.send('This is not implemented');
 	var curBlock = Blockchain.GetLastBlock();

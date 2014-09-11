@@ -10,7 +10,7 @@ import nxt.Order;
 import nxt.util.Convert;
 */
 
-//super("asset", "limit");
+//super(new APITag[] {APITag.AE}, "asset", "limit");
 function GetAskOrderIds(req, res) {
 	res.send('This is not implemented');
 	/*

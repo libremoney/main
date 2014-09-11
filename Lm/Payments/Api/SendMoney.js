@@ -4,17 +4,16 @@
  * CC0 license
  */
 
-var ParameterParser = require(__dirname + "/../ParameterParser");
-var Transactions = require(__dirname + "/../../Transactions");
-var CreateTransaction = require(__dirname + "/../CreateTransaction");
+var ParameterParser = require(__dirname + "/../../Server/ParameterParser");
+var CreateTransaction = require(__dirname + "/../../Server/CreateTransaction");
 
 
-//super("recipient", "amountNQT");
+//super(new APITag[] {APITag.ACCOUNTS, APITag.CREATE_TRANSACTION}, "recipient", "amountNQT");
 function SendMoney(req, res) {
 	var recipient = ParameterParser.GetRecipientId(req);
 	var amountMilliLm = ParameterParser.GetAmountMilliLm(req);
 	var account = ParameterParser.GetSenderAccount(req);
-	return CreateTransaction(req, res, account, recipient, amountMilliLm, null);
+	return CreateTransaction(req, res, account, recipient, amountMilliLm);
 }
 
 module.exports = SendMoney;

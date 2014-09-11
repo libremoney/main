@@ -1,5 +1,5 @@
 /**!
- * LibreMoney Convert 0.0
+ * LibreMoney Convert 0.1
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -109,6 +109,12 @@ function FullHashToId(hash) {
 	return bigInteger.longValue();
 }
 
+function GetAccountId(publicKey) {
+	var publicKeyHash = Crypto.Sha256().update(publicKey).digest('hex');
+	console.log("Convert.GetAccountId: publicKeyHash="+publicKeyHash);
+	return FullHashToId(publicKeyHash);
+}
+
 function GetEpochTime() {
 	return (Date.now() - Constants.EpochBeginning + 500);
 }
@@ -141,6 +147,9 @@ function ParseAccountId(account) {
 }
 
 function ParseHexString(hex) {
+	if (hex == null) {
+		return null;
+	}
 	var len = hex.length / 2;
 	var bytes = new Array();
 	for (var i = 0; i < len; i++) {
@@ -158,6 +167,24 @@ function ParseHexString(hex) {
 
 function ParseLm(value) {
 	return ParseStringFraction(value, 8, Constants.MaxBalanceLm);
+}
+
+function ParseLong(o) {
+	if (o == null)
+		return 0
+	else
+		return o;
+	/*
+	if (o == null) {
+		return 0;
+	} else if (o instanceof Long) {
+		return o;
+	} else if (o instanceof String) {
+		return Long.parseLong((String)o);
+	} else {
+		throw new IllegalArgumentException("Not a long: " + o);
+	}
+	*/
 }
 
 function ParseStringFraction(value, decimals, maxValue) {
@@ -194,6 +221,18 @@ function ParseUnsignedLong(number) {
 		throw new Error("IllegalArgumentException: overflow: " + number);
 	}
 	return ZeroToNull(bigInt.longValue());
+}
+
+function ReadString(buffer, numBytes, maxLength) {
+	if (numBytes > 3 * maxLength) {
+		throw new Error("Max parameter length exceeded");
+	}
+	return Convert.ToString(buffer);
+	/*
+	var bytes = new [numBytes];
+	buffer.get(bytes);
+	return Convert.toString(bytes);
+	*/
 }
 
 function RsAccount(accountId) {
@@ -276,13 +315,38 @@ function StringToArray(string) {
 	return a;
 }
 
+function ToBytes(s) {
+	throw new Error('Not implementted');
+	/*
+	try {
+		return s.GetBytes("UTF-8");
+	} catch (e) {
+		throw new Error(e.toString(), e);
+	}
+	*/
+}
+
 function ToHexString(bytes) {
+	if (bytes == null) {
+		return null;
+	}
 	var chars = new Array(bytes.length * 2);
 	for (var i = 0; i < bytes.length; i++) {
 		chars[i * 2] = hexChars[((bytes[i] >> 4) & 0xF)];
 		chars[i * 2 + 1] = hexChars[(bytes[i] & 0xF)];
 	}
 	return String.valueOf(chars);
+}
+
+function ToString(bytes) {
+	throw new Error('Not implementted');
+	/*
+	try {
+		return new String(bytes, "UTF-8").trim().intern();
+	} catch (e) {
+		throw new RuntimeException(e.toString(), e);
+	}
+	*/
 }
 
 // objectId - BigInt
@@ -335,6 +399,7 @@ exports.Chr = Chr;
 exports.EmptyToNull = EmptyToNull;
 exports.FromEpochTime = FromEpochTime;
 exports.FullHashToId = FullHashToId;
+exports.GetAccountId = GetAccountId;
 exports.GetEpochTime = GetEpochTime;
 exports.NullToEmpty = NullToEmpty;
 exports.NullToZero = NullToZero;
@@ -342,8 +407,10 @@ exports.Ord = Ord;
 exports.ParseAccountId = ParseAccountId;
 exports.ParseHexString = ParseHexString;
 exports.ParseLm = ParseLm;
+exports.ParseLong = ParseLong;
 exports.ParseStringFraction = ParseStringFraction;
 exports.ParseUnsignedLong = ParseUnsignedLong;
+exports.ReadString = ReadString;
 exports.RsAccount = RsAccount;
 exports.SafeAbs = SafeAbs;
 exports.SafeAdd = SafeAdd;
@@ -352,7 +419,9 @@ exports.SafeMultiply = SafeMultiply;
 exports.SafeNegate = SafeNegate;
 exports.SafeSubtract = SafeSubtract;
 exports.StringToArray = StringToArray;
+exports.ToBytes = ToBytes;
 exports.ToHexString = ToHexString;
+exports.ToString = ToString;
 exports.ToUnsignedBigInt = ToUnsignedBigInt;
 exports.ToUnsignedLong = ToUnsignedLong;
 exports.Truncate = Truncate;

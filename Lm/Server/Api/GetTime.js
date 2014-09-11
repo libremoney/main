@@ -8,6 +8,7 @@
 import nxt.util.Convert;
 */
 
+//super(new APITag[] {APITag.INFO});
 function GetTime(req, res) {
 	res.send('This is not implemented');
 	/*

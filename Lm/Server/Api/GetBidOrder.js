@@ -1,32 +1,27 @@
-/*
-package nxt.http;
+/**!
+ * LibreMoney GetBidOrder api 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
+/*
 import nxt.NxtException;
 import nxt.Order;
 import org.json.simple.JSONStreamAware;
-
-import javax.servlet.http.HttpServletRequest;
-
 import static nxt.http.JSONResponses.UNKNOWN_ORDER;
 */
 
-function Main(req, res) {
-	//static final GetBidOrder instance = new GetBidOrder();
+//super(new APITag[] {APITag.AE}, "order");
+function GetBidOrder(req, res) {
 	res.send('This is not implemented');
 	/*
-	private GetBidOrder() {
-		super("order");
+	Long orderId = ParameterParser.getOrderId(req);
+	Order.Bid bidOrder = Order.Bid.getBidOrder(orderId);
+	if (bidOrder == null) {
+		return UNKNOWN_ORDER;
 	}
-
-	JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
-		Long orderId = ParameterParser.getOrderId(req);
-		Order.Bid bidOrder = Order.Bid.getBidOrder(orderId);
-		if (bidOrder == null) {
-			return UNKNOWN_ORDER;
-		}
-		return JSONData.bidOrder(bidOrder);
-	}
+	return JSONData.bidOrder(bidOrder);
 	*/
 }
 
-module.exports = Main;
+module.exports = GetBidOrder;

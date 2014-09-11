@@ -17,9 +17,8 @@ import static nxt.http.JSONResponses.INCORRECT_URI_LENGTH;
 import static nxt.http.JSONResponses.MISSING_ALIAS_NAME;
 */
 
-//super("aliasName", "aliasURI");
+//super(new APITag[] {APITag.ALIASES, APITag.CREATE_TRANSACTION}, "aliasName", "aliasURI");
 function SetAlias(req, res) {
-	var obj = CreateTransaction();
 	res.send('This is not implemented');
 	/*
 	String aliasName = Convert.emptyToNull(req.getParameter("aliasName"));
@@ -49,7 +48,7 @@ function SetAlias(req, res) {
 	Account account = ParameterParser.getSenderAccount(req);
 
 	Alias alias = Alias.getAlias(normalizedAlias);
-	if (alias != null && !alias.getAccount().getId().equals(account.getId())) {
+	if (alias != null && !alias.getAccountId().equals(account.getId())) {
 		JSONObject response = new JSONObject();
 		response.put("errorCode", 8);
 		response.put("errorDescription", "\"" + aliasName + "\" is already used");

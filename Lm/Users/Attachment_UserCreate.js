@@ -1,3 +1,8 @@
+/**!
+ * LibreMoney 0.1
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
 
 var Transactions = require(__dirname + '/../Transactions');
 //var LmAttachment = require(__dirname + '/LmAttachment');

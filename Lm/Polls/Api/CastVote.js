@@ -5,16 +5,16 @@
  */
 
 var Convert = require(__dirname + '/../../Util/Convert');
+var CreateTransaction = require(__dirname + '/../CreateTransaction');
 var JsonResponses = require(__dirname + '/../JsonResponses');
 var Logger = require(__dirname + '/../../Logger').GetLogger(module);
+var Attachment_MessagingVoteCasting = require(__dirname + '/../../Votes/MessagingVoteCastingAttachment');
 var ParameterParser = require(__dirname + '/../ParameterParser');
 var Polls = require(__dirname + '/../../Polls');
 
 
 //super(new APITag[] {APITag.VS, APITag.CREATE_TRANSACTION}, "poll", "vote1", "vote2", "vote3"); // hardcoded to 3 votes for testing
 function CastVote(req, res) {
-	//var obj = CreateTransaction();
-
 	var pollValue = req.queey.poll;
 	if (!pollValue) {
 		res.send(JsonResponses.MissingPoll);
@@ -53,12 +53,8 @@ function CastVote(req, res) {
 
 	var account = ParameterParser.GetSenderAccount(req);
 
-	/*
-	var attachment = new Attachment.MessagingVoteCasting(pollData.getId(), vote);
-	return createTransaction(req, account, attachment);
-	*/
-
-	res.send('This is not implemented');
+	var attachment = new Attachment_MessagingVoteCasting(pollData.GetId(), vote);
+	res.send(CreateTransaction(req, account, attachment));
 }
 
 module.exports = CastVote;
