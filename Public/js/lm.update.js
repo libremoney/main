@@ -306,6 +306,14 @@ var Lm = (function(Lm, $, undefined) {
 	}
 
 
+	// ---- Init ----
+	Lm.GetState(function() {
+		setTimeout(function() {
+			Lm.CheckAliasVersions();
+		}, 5000);
+	});
+
+
 	Lm.CheckAliasVersions = CheckAliasVersions;
 	Lm.CheckForNewVersion = CheckForNewVersion;
 	Lm.VersionCompare = VersionCompare;

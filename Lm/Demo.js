@@ -4,35 +4,23 @@
  * CC0 license
  */
 
-//var LmAccount = require(__dirname + '/Account');
-//var LmAlias = require(__dirname + '/LmAlias');
-//var LmAliases = require(__dirname + '/LmAliases');
-//var LmAttachment = require(__dirname + '/LmAttachment');
-var AttachmentGroupCreate = require(__dirname + '/Groups/Attachment_GroupCreate');
-var Blocks = require(__dirname + '/Blocks');
+var AttachmentGroupCreate = require(__dirname + '/Modules/Groups/Attachment_GroupCreate');
+var Blocks = require(__dirname + '/Core/Blocks');
 var BigInt = require(__dirname + '/Util/BigInteger');
-var LmBlock = require(__dirname + '/Blocks/Block');
-//var LmBlockchainProcessor = require(__dirname + '/LmBlockchainProcessor');
+var LmBlock = require(__dirname + '/Core/Blocks/Block');
 var Constants = require(__dirname + '/Constants');
 var Convert = require(__dirname + '/Util/Convert');
 var Crypto = require(__dirname + '/Crypto/Crypto');
 var Db = require(__dirname + '/Db');
-//var LmGenerator = require(__dirname + '/LmGenerator');
-var Groups = require(__dirname + '/Groups');
-var JsonResponses = require(__dirname + '/Server/JsonResponses');
-var Logger = require(__dirname + '/Logger').GetLogger(module);
-var ParameterParser = require(__dirname + '/Server/ParameterParser');
-var Projects = require(__dirname + '/Projects');
-var TransactionProcessor = require(__dirname + '/TransactionProcessor');
-var Transactions = require(__dirname + '/Transactions');
-//var LmTrType = require(__dirname + '/Transactions/TransactionType');
-//var LmTrTypeAccountControl = require(__dirname + '/LmTransactionType_AccountControl');
-//var LmTrTypeColoredCoins = require(__dirname + '/LmTransactionType_ColoredCoins');
-var LmTrTypeGroup = require(__dirname + '/Groups/GroupTrType');
-//var LmTrTypeDigitalGoods = require(__dirname + '/LmTransactionType_DigitalGoods');
-//var LmTrTypeMessaging = require(__dirname + '/LmTransactionType_Messaging');
-//var LmTrTypePayment = require(__dirname + '/LmTransactionType_Payment');
-var Users = require(__dirname + '/Users');
+var Groups = require(__dirname + '/Modules/Groups');
+var JsonResponses = require(__dirname + '/Core/Server/JsonResponses');
+var Logger = require(__dirname + '/Util/Logger').GetLogger(module);
+var ParameterParser = require(__dirname + '/Core/Server/ParameterParser');
+var Projects = require(__dirname + '/Modules/Projects');
+var TransactionProcessor = require(__dirname + '/Core/TransactionProcessor');
+var Transactions = require(__dirname + '/Core/Transactions');
+var LmTrTypeGroup = require(__dirname + '/Modules/Groups/GroupTrType');
+var Users = require(__dirname + '/Modules/Users');
 
 
 /*

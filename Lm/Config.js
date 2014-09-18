@@ -6,7 +6,7 @@
 
 
 var nconf = require('nconf');
-var Logger = require(__dirname + '/Logger').GetLogger(module);
+var Logger = require(__dirname + '/Util/Logger').GetLogger(module);
 
 
 function Get(paramName) {

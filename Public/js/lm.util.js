@@ -798,85 +798,6 @@ var Lm = (function(Lm, $, undefined) {
 		}
 	}
 
-	function SetupClipboardFunctionality() {
-		var elements = "#asset_id_dropdown .dropdown-menu a, #account_id_dropdown .dropdown-menu a";
-
-		if (Lm.IsLocalHost) {
-			$("#account_id_dropdown li.remote_only, #asset_info_dropdown li.remote_only").remove();
-		}
-
-		var $el = $(elements);
-
-		if (Lm.InApp) {
-			$el.on("click", function() {
-				parent.postMessage({
-					"type": "copy",
-					"text": Lm.GetClipboardText($(this).data("type"))
-				}, "*");
-
-				$.growl($.t("success_clipboard_copy"), {
-					"type": "success"
-				});
-			});
-		} else {
-			var clipboard = new ZeroClipboard($el, {
-				moviePath: "js/zeroclipboard.swf"
-			});
-
-			clipboard.on("dataRequested", function(client, args) {
-				client.setText(Lm.GetClipboardText($(this).data("type")));
-			});
-
-			if ($el.hasClass("dropdown-toggle")) {
-				$el.removeClass("dropdown-toggle").data("toggle", "");
-				$el.parent().remove(".dropdown-menu");
-			}
-
-			clipboard.on("complete", function(client, args) {
-				$.growl($.t("success_clipboard_copy"), {
-					"type": "success"
-				});
-			});
-
-			clipboard.on("noflash", function(client, args) {
-				$("#account_id_dropdown .dropdown-menu, #asset_id_dropdown .dropdown-menu").remove();
-				$("#account_id_dropdown, #asset_id").data("toggle", "");
-				$.growl($.t("error_clipboard_copy_noflash"), {
-					"type": "danger"
-				});
-			});
-
-			clipboard.on("wrongflash", function(client, args) {
-				$("#account_id_dropdown .dropdown-menu, #asset_id_dropdown .dropdown-menu").remove();
-				$("#account_id_dropdown, #asset_id").data("toggle", "");
-				$.growl($.t("error_clipboard_copy_wrongflash"));
-			});
-		}
-	}
-
-	function GetClipboardText(type) {
-		switch (type) {
-			case "account_rs":
-				return Lm.AccountRS;
-				break;
-			case "message_link":
-				return document.URL.replace(/#.*$/, "") + "#message:" + Lm.Account;
-				break;
-			case "send_link":
-				return document.URL.replace(/#.*$/, "") + "#send:" + Lm.Account;
-				break;
-			case "asset_id":
-				return $("#asset_id").text();
-				break;
-			case "asset_link":
-				return document.URL.replace(/#.*/, "") + "#asset:" + $("#asset_id").text();
-				break;
-			default:
-				return "";
-				break;
-		}
-	}
-
 	function DataLoaded(data, noPageLoad) {
 		var $el = $("#" + Lm.CurrentPage + "_contents");
 
@@ -1512,7 +1433,6 @@ var Lm = (function(Lm, $, undefined) {
 	Lm.ConvertNumericToRSAccountFormat = ConvertNumericToRSAccountFormat;
 	Lm.GetAccountLink = GetAccountLink;
 	Lm.GetAccountTitle = GetAccountTitle;
-	Lm.GetClipboardText = GetClipboardText;
 	Lm.GetCookie = GetCookie;
 	Lm.GetFormData = GetFormData;
 	Lm.GetSelectedText = GetSelectedText;
@@ -1522,7 +1442,6 @@ var Lm = (function(Lm, $, undefined) {
 	Lm.HasTransactionUpdates = HasTransactionUpdates;
 	Lm.IsPrivateIP = IsPrivateIP;
 	Lm.SetCookie = SetCookie;
-	Lm.SetupClipboardFunctionality = SetupClipboardFunctionality;
 	Lm.ShowFullDescription = ShowFullDescription;
 	Lm.ShowMore = ShowMore;
 	Lm.ShowPartialDescription = ShowPartialDescription;

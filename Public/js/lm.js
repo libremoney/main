@@ -8,15 +8,14 @@
  * @depends {webdb.js}
  * @depends {ajaxmultiqueue.js}
  * @depends {growl.js}
- * @depends {zeroclipboard.js}
  * @depends {crypto/curve25519.js}
  * @depends {crypto/curve25519_.js}
  * @depends {crypto/passphrasegenerator.js}
  * @depends {crypto/sha256worker.js}
- * @depends {crypto/3rdparty/cryptojs/aes.js}
- * @depends {crypto/3rdparty/cryptojs/sha256.js}
- * @depends {crypto/3rdparty/jssha256.js}
- * @depends {crypto/3rdparty/seedrandom.js}
+ * @depends {crypto/aes.js}
+ * @depends {crypto/sha256.js}
+ * @depends {crypto/jssha256.js}
+ * @depends {crypto/seedrandom.js}
  * @depends {util/converters.js}
  * @depends {util/extensions.js}
  * @depends {util/lmaddress.js}
@@ -611,6 +610,10 @@ var Lm = (function(Lm, $, undefined) {
 	}
 
 	function Init() {
+		$('.left-side').toggleClass("collapse-left");
+		$(".right-side").toggleClass("strech");
+		Lm.GetVersion();
+
 		if (window.location.port && window.location.port != "6876") {
 			$(".testnet_only").hide();
 		} else {
@@ -639,12 +642,6 @@ var Lm = (function(Lm, $, undefined) {
 
 		Lm.CreateDatabase(function() {
 			Lm.GetSettings();
-		});
-
-		Lm.GetState(function() {
-			setTimeout(function() {
-				Lm.CheckAliasVersions();
-			}, 5000);
 		});
 
 		Lm.ShowLockscreen();

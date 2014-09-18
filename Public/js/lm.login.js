@@ -162,8 +162,6 @@ var Lm = (function(Lm, $, undefined) {
 			Lm.CheckIfOnAFork();
 		}
 
-		Lm.SetupClipboardFunctionality();
-
 		if (callback) {
 			callback();
 		}
@@ -234,7 +232,7 @@ var Lm = (function(Lm, $, undefined) {
 
 		if (typeof PassPhraseGenerator == "undefined") {
 			$.when(
-				$.getScript("js/crypto/3rdparty/seedrandom.js"),
+				$.getScript("js/crypto/seedrandom.js"),
 				$.getScript("js/crypto/passphrasegenerator.js")
 			).done(function() {
 				$loading.hide();
@@ -266,15 +264,17 @@ var Lm = (function(Lm, $, undefined) {
 	}
 
 	function ShowLockscreen() {
-		if (Lm.HasLocalStorage && localStorage.getItem("logged_in")) {
-			setTimeout(function() {
-				$("#login_password").focus()
-			}, 10);
-		} else {
-			Lm.ShowWelcomeScreen();
-		}
-
-		$("#center").show();
+		$(document).ready(function() {
+			Lm.GoToPage('login');
+			if (Lm.HasLocalStorage && localStorage.getItem("logged_in")) {
+				setTimeout(function() {
+					$("#login_password").focus()
+				}, 10);
+			} else {
+				Lm.ShowWelcomeScreen();
+			}
+			$("#login_center").show();
+		});
 	}
 
 	function ShowLoginOrWelcomeScreen() {

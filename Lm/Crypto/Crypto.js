@@ -17,7 +17,7 @@ import org.bouncycastle.crypto.params.ParametersWithIV;
 
 var crypto = require('crypto');
 var ReedSolomon = require(__dirname + '/ReedSolomon');
-var Logger = require(__dirname + '/../Logger').GetLogger(module);
+var Logger = require(__dirname + '/../Util/Logger').GetLogger(module);
 
 
 /*
