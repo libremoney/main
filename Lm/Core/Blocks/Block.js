@@ -1,58 +1,77 @@
 /**!
- * LibreMoney Block 0.1
+ * LibreMoney Block 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-var BigInteger = require(__dirname + '/../../Util/BigInteger');
-var ByteBuffer = require(__dirname + '/../../Util/ByteBuffer');
-var Constants = require(__dirname + '/../../Constants');
-var Convert = require(__dirname + '/../../Util/Convert');
-var Crypto = require(__dirname + '/../../Crypto/Crypto');
-var Logger = require(__dirname + '/../../Util/Logger').GetLogger(module);
+if (typeof module !== "undefined") {
+	var BigInteger = require(__dirname + '/../../Lib/Util/BigInteger');
+	var Constants = require(__dirname + '/../../Lib/Constants');
+	var Convert = require(__dirname + '/../../Lib/Util/Convert');
+	var Crypto = require(__dirname + '/../../Lib/Crypto/Crypto');
+	var Logger = require(__dirname + '/../../Lib/Util/Logger').GetLogger(module);
+}
 
 
 /*
-version, timestamp, previousBlockId, totalAmountMilliLm, totalFeeMilliLm, payloadLength, payloadHash,
+version, timestamp, previousBlockId, totalAmount, totalFee, payloadLength, payloadHash,
 generatorPublicKey, generationSignature, blockSignature, previousBlockHash, transactions,
 cumulativeDifficulty, baseTarget, nextBlockId, height, id
 */
 function Block(data) {
-	if (!data.version || data.version < 1)
-		data.version = 1;
-	this.version = data.version;
-	this.timestamp = data.timestamp;
-	this.previousBlockId = data.previousBlockId;
-	this.generatorPublicKey = data.generatorPublicKey;
-	this.previousBlockHash = data.previousBlockHash;
-	this.totalAmountMilliLm = data.totalAmountMilliLm;
-	this.totalFeeMilliLm = data.totalFeeMilliLm;
-	this.payloadLength = data.payloadLength;
-	this.generationSignature = data.generationSignature;
-	this.payloadHash = data.payloadHash;
-	this.transactionIds = [];
-	this.blockTransactions = data.transactions; //Collections.unmodifiableList(transactions);
-	this.blockSignature = data.blockSignature;
-	this.nextBlockId = data.nextBlockId;
-	this.id = data.id;
-	this.stringId = null;
-	this.generatorId;
-
-	if (data.cumulativeDifficulty)
-		this.cumulativeDifficulty = data.cumulativeDifficulty
-	else {
-		this.cumulativeDifficulty = BigInteger.zero;
+	if ("object" !== typeof data) {
+		data = {}
+	}
+	this.version = data.version || null;
+	this.timestamp = data.timestamp || null;
+	this.previousBlockId = data.previousBlockId || 0;
+	this.generatorPublicKey = data.generatorPublicKey || Config.NULL_HASH;
+	this.previousBlockHash = data.previousBlockHash || Config.NULL_HASH;
+	this.totalAmount = data.totalAmount || 0;
+	this.totalFee = data.totalFee || 0;
+	this.payloadLength = data.payloadLength || 0;
+	this.generationSignature = data.generationSignature || Config.NULL_HASH;
+	this.payloadHash = data.payloadHash || Config.NULL_HASH;
+	this.transactionIds = data.transactionIds || [];
+	this.blockTransactions = data.blockTransactions || [];
+	this.blockSignature = data.blockSignature || null;
+	this.cumulativeDifficulty = data.cumulativeDifficulty || BigInteger.zero; //new bigint("0");
+	this.baseTarget = data.baseTarget || Constants.InitialBaseTarget; //Config.INITIAL_BASE_TARGET;
+	this.nextBlockId = data.nextBlockId || null;
+	this.height = typeof data.height !== "undefined" ? data.height : -1;
+	this.id = data.id || null;
+	this.stringId = data.stringId || null;
+	this.generatorId = data.generatorId || null;
+	this.confirmations = data.confirmations || 0;
+	if (typeof this.previousBlockId == "string") {
+		this.previousBlockId = Utils.stringToLong(this.previousBlockId)
+	}
+	if (typeof this.generatorPublicKey == "string") {
+		this.generatorPublicKey = new Buffer(this.generatorPublicKey, "hex")
+	}
+	if (typeof this.previousBlockHash == "string") {
+		this.previousBlockHash = new Buffer(this.previousBlockHash, "hex")
+	}
+	if (typeof this.generationSignature == "string") {
+		this.generationSignature = new Buffer(this.generationSignature, "hex")
+	}
+	if (typeof this.payloadHash == "string") {
+		this.payloadHash = new Buffer(this.payloadHash, "hex")
+	}
+	if (typeof this.blockSignature == "string") {
+		this.blockSignature = new Buffer(this.blockSignature, "hex")
+	}
+	if (typeof this.nextBlockId == "string") {
+		this.nextBlockId = Utils.stringToLong(this.nextBlockId)
+	}
+	if (typeof this.id == "string") {
+		this.id = Utils.stringToLong(this.id)
+	}
+	if (typeof this.cumulativeDifficulty == "string") {
+		this.cumulativeDifficulty = new bigint(this.cumulativeDifficulty)
 	}
 
-	if (data.baseTarget)
-		this.baseTarget = data.baseTarget
-	else
-		this.baseTarget = Constants.InitialBaseTarget;
-
-	if (data.height)
-		this.height = data.height
-	else
-		this.height = -1;
+	// --
 
 	if (data.transactions.length > Constants.MaxNumberOfTransactions) {
 		throw new Error("ValidationException: attempted to create a block with " + data.transactions.length + " transactions");
@@ -75,28 +94,71 @@ function Block(data) {
 	return this;
 }
 
-function Apply() {
-	throw new Error('Not implementted');
+Block.prototype.AddConfirmedAndUnconfirmedAmounts = function() {
+	for (var transactionId in this.blockTransactions) {
+		if (this.blockTransactions.HasOwnProperty(transactionId) && transactionId != "count") {
+			var tx = this.blockTransactions[transactionId];
+			var recipientAccount = Accounts.AddOrGetAccount(tx.recipientId.toString());
+			recipientAccount.AddToBalanceAndUnconfirmedBalance(Utils.RoundTo5Float(Utils.NullToNumber(tx.amount)));
+			var senderAccount = Account.AddOrGetAccount(tx.GetSenderId().toString());
+			senderAccount.AddToBalanceAndUnconfirmedBalance(-Utils.roundTo5Float(Utils.NullToNumber(tx.amount)) - Utils.RoundTo5Float(tx.fee));
+		}
+	}
+	var _genereatorAccount = Accounts.AddOrGetAccount(this.generatorId.toString());
+	_genereatorAccount.AddToBalanceAndUnconfirmedBalance(Utils.RoundTo5Float(this.totalFee));
+}
+
+Block.prototype.AddConfirmedAmounts = function() {
+	for (var transactionId in this.blockTransactions) {
+		if (this.blockTransactions.HasOwnProperty(transactionId) && transactionId != "count") {
+			var tx = this.blockTransactions[transactionId];
+			var recipientAccount = Account.AddOrGetAccount(tx.recipientId.toString());
+			recipientAccount.AddToBalance(Utils.RoundTo5Float(Utils.NullToNumber(tx.amount)));
+			var senderAccount = Account.AddOrGetAccount(tx.senderId.toString());
+			senderAccount.AddToBalance(-Utils.RoundTo5Float(Utils.NullToNumber(tx.amount)) - Utils.RoundTo5Float(tx.fee));
+		}
+	}
+	var _genereatorAccount = Account.AddOrGetAccount(this.generatorId.toString());
+	_genereatorAccount.AddToBalance(Utils.RoundTo5Float(this.totalFee));
+}
+
+Block.prototype.AddUnconfirmedAmounts = function() {
+	for (var transactionId in this.blockTransactions) {
+		if (this.blockTransactions.HasOwnProperty(transactionId) && transactionId != "count") {
+			var tx = this.blockTransactions[transactionId];
+			var recipientAccount = Accounts.AddOrGetAccount(tx.recipientId.toString());
+			recipientAccount.AddToUnconfirmedBalance(Utils.RoundTo5Float(Utils.NullToNumber(tx.amount)));
+			var senderAccount = Accounts.AddOrGetAccount(tx.senderId.toString());
+			senderAccount.AddToUnconfirmedBalance(-Utils.RoundTo5Float(Utils.NullToNumber(tx.amount)) - Utils.RoundTo5Float(tx.fee));
+		}
+	}
+	var _genereatorAccount = Accounts.AddOrGetAccount(this.generatorId.toString());
+	_genereatorAccount.AddToUnconfirmedBalance(Utils.RoundTo5Float(this.totalFee));
+}
+
+Block.prototype.AddUnconfirmedFee = function() {
+	var _genereatorAccount = Accounts.AddOrGetAccount(this.generatorId.toString());
+	_genereatorAccount.AddToUnconfirmedBalance(Utils.RoundTo5Float(this.totalFee));
+}
+
+Block.prototype.Apply = function() {
+	var generatorAccount = Accounts.AddOrGetAccount(this.GetGeneratorId());
+	generatorAccount.Apply(this.generatorPublicKey, this.height);
+	generatorAccount.AddToBalanceAndUnconfirmedBalance(Utils.RoundTo5Float(this.totalFee))
 	/*
-	Account generatorAccount = Account.addOrGetAccount(getGeneratorId());
-	generatorAccount.apply(generatorPublicKey, this.height);
-	generatorAccount.addToBalanceAndUnconfirmedBalanceNQT(totalFeeNQT);
-	generatorAccount.addToForgedBalanceNQT(totalFeeNQT);
+	generatorAccount.addToForgedBalance(totalFee); // MilliLm
 	*/
 }
 
-function CalculateBaseTarget(previousBlock) {
-	throw new Error('Not implementted');
-	/*
-	if (this.getId().equals(Genesis.GENESIS_BLOCK_ID) && previousBlockId == null) {
-		baseTarget = Constants.InitialBaseTarget;
-		cumulativeDifficulty = BigInteger.zero;
+Block.prototype.CalculateBaseTarget = function(previousBlock) {
+	if (this.GetId() == Genesis.genesisBlockId && this.previousBlockId == null) {
+		this.baseTarget = Constants.InitialBaseTarget;
+		this.cumulativeDifficulty = 0;
 	} else {
-		long curBaseTarget = previousBlock.baseTarget;
-		long newBaseTarget = BigInteger.valueOf(curBaseTarget)
-				.multiply(BigInteger.valueOf(this.timestamp - previousBlock.timestamp))
-				.divide(BigInteger.valueOf(60)).longValue();
-		if (newBaseTarget < 0 || newBaseTarget > Constants.MaxBaseTarget) {
+		var curBaseTarget = previousBlock.baseTarget;
+		var newBaseTarget = new bigint(curBaseTarget).multiply(this.timestamp - previousBlock.timestamp).divide(60);
+		newBaseTarget = Utils.bigIntToLongBE(newBaseTarget);
+		if (newBaseTarget < 0 || newBaseTarget > Constats.MaxBaseTarget) {
 			newBaseTarget = Constants.MaxBaseTarget;
 		}
 		if (newBaseTarget < curBaseTarget / 2) {
@@ -105,314 +167,336 @@ function CalculateBaseTarget(previousBlock) {
 		if (newBaseTarget == 0) {
 			newBaseTarget = 1;
 		}
-		long twofoldCurBaseTarget = curBaseTarget * 2;
+		var twofoldCurBaseTarget = curBaseTarget * 2;
 		if (twofoldCurBaseTarget < 0) {
 			twofoldCurBaseTarget = Constants.MaxBaseTarget;
 		}
 		if (newBaseTarget > twofoldCurBaseTarget) {
 			newBaseTarget = twofoldCurBaseTarget;
 		}
-		baseTarget = newBaseTarget;
-		cumulativeDifficulty = previousBlock.cumulativeDifficulty.add(Convert.two64.divide(BigInteger.valueOf(baseTarget)));
+		this.baseTarget = newBaseTarget;
+		this.cumulativeDifficulty = previousBlock.cumulativeDifficulty.add(Config.two64.divide(this.baseTarget.toString()));
 	}
-	*/
 }
 
-function Equals(o) {
+Block.prototype.Equals = function(o) {
 	throw new Error('Not implementted');
 	/*
 	return o instanceof BlockImpl && this.getId().equals(((BlockImpl)o).getId());
 	*/
 }
 
-function GetBaseTarget() {
+Block.prototype.GetBaseTarget = function() {
 	return this.baseTarget;
 }
 
-function GetBlockSignature() {
+Block.prototype.GetBlockSignature = function() {
 	return this.blockSignature;
 }
 
-function GetBytes() {
-	var buffer = new ByteBuffer(); //ByteBuffer.allocate(4 + 4 + 8 + 4 + (8 + 8) + 4 + 32 + 32 + (32 + 32) + 64);
-	buffer.littleEndian();
-	buffer.int32(this.version);
-	buffer.int32(this.timestamp);
-	buffer.int64(Convert.NullToZero(this.previousBlockId));
-	buffer.int32(this.blockTransactions.length);
-	buffer.int64(this.totalAmountMilliLm);
-	buffer.int64(this.totalFeeMilliLm);
-	buffer.int32(this.payloadLength);
-	/* TODO: Make - Prof1983
-	buffer.byteArray(this.payloadHash);
-	buffer.byteArray(this.generatorPublicKey);
-	buffer.byteArray(this.generationSignature);
-	buffer.byteArray(this.previousBlockHash);
-	buffer.byteArray(this.blockSignature);
-	*/
-	return buffer.pack();
+Block.prototype.GetBytes = function() {
+	var self = this;
+	var obj = {
+		version: this.version,
+		timestamp: this.timestamp,
+		previousBlockId: this.previousBlockId.toString(),
+		blockTransactions: this.blockTransactions.count,
+		totalAmount: this.totalAmount,
+		totalFee: this.totalFee,
+		payloadLength: this.payloadLength,
+		payloadHash: this.payloadHash,
+		generatorPublicKey: this.generatorPublicKey,
+		generationSignature: this.generationSignature,
+		previousBlockHash: this.previousBlockHash
+	};
+	return JSON.stringify(obj)
 }
 
-function GetCumulativeDifficulty() {
+Block.prototype.GetCumulativeDifficulty = function() {
 	return this.cumulativeDifficulty;
 }
 
-function GetGeneratorId() {
+Block.prototype.GetData = function() {
+	return {
+		version: this.version,
+		timestamp: this.timestamp,
+		previousBlockId: this.previousBlockId.toString(),
+		totalAmount: this.totalAmount,
+		totalFee: this.totalFee,
+		payloadLength: this.payloadLength,
+		payloadHash: this.payloadHash.toString("hex"),
+		generatorPublicKey: this.generatorPublicKey.toString("hex"),
+		generationSignature: this.generationSignature.toString("hex"),
+		previousBlockHash: this.previousBlockHash.toString("hex"),
+		blockSignature: this.blockSignature ? this.blockSignature.toString("hex") : null,
+
+		cumulativeDifficulty: this.cumulativeDifficulty.toString(),
+		baseTarget: this.baseTarget,
+		nextBlockId: this.nextBlockId ? this.nextBlockId.toString() : null,
+		height: this.height,
+		id: this.id.toString(),
+		stringId: this.stringId,
+		generatorId: this.generatorId ? this.generatorId.toString() : null,
+		confirmations: this.confirmations
+	}
+}
+
+Block.prototype.GetDataWithTransactions = function() {
+	var data = this.GetData();
+	data.blockTransactions = this.GetTransactionsDataAsArray().slice(0);
+	return data;
+}
+
+Block.prototype.GetGeneratorId = function() {
 	if (!this.generatorId) {
 		this.generatorId = Convert.GetAccountId(this.generatorPublicKey);
 	}
 	return this.generatorId;
 }
 
-function GetGeneratorPublicKey() {
+Block.prototype.GetGeneratorPublicKey = function() {
 	return this.generatorPublicKey;
 }
 
-function GetGenerationSignature() {
+Block.prototype.GetGenerationSignature = function() {
 	return this.generationSignature;
 }
 
-function GetHeight() {
+Block.prototype.GetHeight = function() {
 	if (this.height == -1) {
 		throw new Error("Block height not yet set");
 	}
 	return this.height;
 }
 
-function GetId() {
+Block.prototype.GetId = function() {
 	if (!this.id) {
 		if (!this.blockSignature) {
-			throw new Error("IllegalStateException: Block is not signed yet");
+			throw new Error("Block is not signed yet");
 		}
-		var hash = Crypto.Sha256().digest(this.GetBytes());
-		var v = [hash[7], hash[6], hash[5], hash[4], hash[3], hash[2], hash[1], hash[0]];
-		var bigInteger = new BigInteger(1, v);
-		this.id = bigInteger.longValue();
-		this.stringId = bigInteger.toString();
+		var hash = Crypto.Sha256(this.GetBytes());
+		this.id = Utils.BufferToLongBE(hash);
+		this.stringId = this.id.toString();
 	}
 	return this.id;
 }
 
-function GetJsonObject() {
-	throw new Error('Not implementted');
-	/*
-	JSONObject json = new JSONObject();
-	json.put("version", version);
-	json.put("timestamp", timestamp);
-	json.put("previousBlock", Convert.toUnsignedLong(previousBlockId));
-	json.put("totalAmountNQT", totalAmountNQT);
-	json.put("totalFeeNQT", totalFeeNQT);
-	json.put("payloadLength", payloadLength);
-	json.put("payloadHash", Convert.toHexString(payloadHash));
-	json.put("generatorPublicKey", Convert.toHexString(generatorPublicKey));
-	json.put("generationSignature", Convert.toHexString(generationSignature));
-	if (version > 1) {
-		json.put("previousBlockHash", Convert.toHexString(previousBlockHash));
-	}
-	json.put("blockSignature", Convert.toHexString(blockSignature));
-	JSONArray transactionsData = new JSONArray();
-	for (Transaction transaction : blockTransactions) {
-		transactionsData.add(transaction.getJSONObject());
-	}
-	json.put("transactions", transactionsData);
-	return json;
-	*/
+// deprecated
+Block.prototype.GetJsonObject = function() {
+	return GetData();
 }
 
-function GetNextBlockId() {
+Block.prototype.GetNextBlockId = function() {
 	return this.nextBlockId;
 }
 
-function GetPayloadHash() {
+Block.prototype.GetPayloadHash = function() {
 	return this.payloadHash;
 }
 
-function GetPayloadLength() {
+Block.prototype.GetPayloadLength = function() {
 	return this.payloadLength;
 }
 
-function GetPreviousBlockHash() {
+Block.prototype.GetPreviousBlockHash = function() {
 	return this.previousBlockHash;
 }
 
-function GetPreviousBlockId() {
+Block.prototype.GetPreviousBlockId = function() {
 	return this.previousBlockId;
 }
 
-function GetStringId() {
-	throw new Error('Not implementted');
-	/*
-	if (stringId == null) {
-		getId();
-		if (stringId == null) {
-			stringId = Convert.toUnsignedLong(id);
+Block.prototype.GetStringId = function() {
+	if (!this.stringId) {
+		this.GetId();
+		if (!this.stringId) {
+			this.stringId = this.id.toString();
 		}
 	}
-	return stringId;
-	*/
+	return this.stringId;
 }
 
-function GetTimestamp() {
+Block.prototype.GetTimestamp = function() {
 	return this.timestamp;
 }
 
-function GetTotalAmountMilliLm() {
-	return this.totalAmountMilliLm;
+Block.prototype.GetTotalAmount = function() {
+	return this.totalAmount;
 }
 
-function GetTotalFeeMilliLm() {
-	return this.totalFeeMilliLm;
+// deprecated
+Block.prototype.GetTotalAmountMilliLm = function() {
+	return this.GetTotalAmount();
 }
 
-function GetTransactionIds() {
+Block.prototype.GetTotalFee = function() {
+	return this.totalFee;
+}
+
+// deprecated
+Block.prototype.GetTotalFeeMilliLm = function() {
+	return this.GetTotalFee();
+}
+
+Block.prototype.GetTransactionIds = function() {
+	if (!this.transactionIds || this.transactionIds.length == 0) {
+		this.transactionIds = [];
+		for (var transactionId in this.blockTransactions) {
+			var transaction;
+			if (this.blockTransactions.HasOwnProperty(transactionId) && transactionId != "count") {
+				transaction = this.blockTransactions[transactionId];
+				this.transactionIds.push(transaction.id.toString());
+			}
+		}
+	}
 	return this.transactionIds;
 }
 
-function GetTransactions() {
+Block.prototype.GetTransactions = function() {
 	return this.blockTransactions;
 }
 
-function GetVersion() {
+Block.prototype.GetTransactionsAsArray = function() {
+	var transactionsArr = [];
+	for (var transactionId in this.blockTransactions) {
+		if (this.blockTransactions.hasOwnProperty(transactionId) && transactionId != "count") {
+			transactionsArr.push(this.blockTransactions[transactionId]);
+		}
+	}
+	return transactionsArr;
+}
+
+Block.prototype.GetTransactionsDataAsArray = function() {
+	var transactionsArr = [];
+	for (var transactionId in this.blockTransactions) {
+		if (this.blockTransactions.HasOwnProperty(transactionId) && transactionId != "count") {
+			transactionsArr.push(this.blockTransactions[transactionId].GetData());
+		}
+	}
+	return transactionsArr;
+}
+
+Block.prototype.GetVersion = function() {
 	return this.version;
 }
 
-function HashCode() {
-	throw new Error('Not implementted');
-	/*
-	return getId().hashCode();
-	*/
+Block.prototype.HashCode = function() {
+	var id = this.GetId();
+	id.toString("16");
 }
 
-function SetPrevious(previousBlock) {
+Block.prototype.RemoveUnconfirmedTxs = function(callback) {
+	var txArr = this.GetTransactionsAsArray();
+	UnconfirmedTransactions.DeleteTransactions(txArr, callback)
+}
+
+Block.prototype.SetPrevious = function(previousBlock) {
 	if (previousBlock != null) {
-		if (!previousBlock.GetId() == GetPreviousBlockId()) {
+		if (!previousBlock.getId() == this.previousBlockId) {
 			// shouldn't happen as previous id is already verified, but just in case
-			throw new Error("Previous block id doesn't match");
+			throw new Error("Previous block id doesn't match")
 		}
 		this.height = previousBlock.GetHeight() + 1;
-		this.CalculateBaseTarget(previousBlock);
+		this.calculateBaseTarget(previousBlock)
 	} else {
-		this.height = 0;
+		this.height = 0
 	}
 	for (var i in this.blockTransactions) {
 		transaction = this.blockTransactions[i];
 		transaction.SetBlock(this);
+		/*
+		var transaction;
+		if (this.blockTransactions.hasOwnProperty(transactionId) && transactionId != "count") {
+			transaction = this.blockTransactions[transactionId];
+			transaction.setBlock(this)
+		}
+		*/
 	}
 }
 
-function Sign(secretPhrase) {
-	throw new Error('Not implementted');
-	/*
-	if (blockSignature != null) {
-		throw new IllegalStateException("Block already signed");
+Block.prototype.Sign = function(secretPhrase) {
+	if (this.blockSignature != null) {
+		return this.blockSignature;
 	}
-	blockSignature = new byte[64];
-	byte[] data = getBytes();
-	byte[] data2 = new byte[data.length - 64];
-	System.arraycopy(data, 0, data2, 0, data2.length);
-	blockSignature = Crypto.sign(data2, secretPhrase);
-	*/
+	if (!secretPhrase instanceof Buffer) {
+		secretPhrase = Curve.Sha256(secretPhrase);
+	}
+	this.blockSignature = Crypto.Sign(Curve.Sha256(this.GetBytes()).toString("hex"), secretPhrase.toString("hex"));
+	return this.blockSignature;
 }
 
-function VerifyBlockSignature() {
-	throw new Error('Not implementted');
-	/*
-	Account account = Account.getAccount(getGeneratorId());
-	if (account == null) {
+Block.prototype.VerifyBlockSignature = function() {
+	var account = Account.AddOrGetAccount(this.GetGeneratorId());
+	if (!account) {
 		return false;
 	}
-
-	byte[] data = getBytes();
-	byte[] data2 = new byte[data.length - 64];
-	System.arraycopy(data, 0, data2, 0, data2.length);
-
-	return Crypto.verify(blockSignature, data2, generatorPublicKey, version >= 3) && account.setOrVerify(generatorPublicKey, this.height);
-	*/
+	var data = Curve.Sha256(this.GetBytes());
+	var isSignVerified = Crypto.Verify(this.blockSignature.toString("hex"), data.toString("hex"), this.generatorPublicKey.toString("hex"));
+	return isSignVerified && account.SetOrVerify(this.generatorPublicKey, this.height);
 }
 
-function VerifyGenerationSignature() {
-	throw new Error('Not implementted');
-	/*
-	try {
-		BlockImpl previousBlock = (BlockImpl)Nxt.getBlockchain().getBlock(this.previousBlockId);
-		if (previousBlock == null) {
-			throw new BlockchainProcessor.BlockOutOfOrderException("Can't verify signature because previous block is missing");
+Block.prototype.VerifyGenerationSignature = function(__callback) {
+	var self = this;
+	BlockDb.FindBlock(this.previousBlockId.toString(), function(err, previousBlock) {
+		if (err) {
+			Logger.error("Error verifying block generation signature", e);
+			if (typeof __callback === "function") {
+				__callback(false);
+			}
+			return;
 		}
+		try {
+			if (!previousBlock && self.height != 0) {
+				__callback(false);
+			}
+			var isSignVerified = Crypto.Verify(self.generationSignature.toString("hex"), previousBlock.generationSignature.toString("hex"),
+				self.generatorPublicKey.toString("hex"));
+			if (self.version == 1 && !isSignVerified) {
+				__callback(false);
+			}
+			var account = Accounts.GetAccount(self.GetGeneratorId());
+			__callback(true);
 
-		if (version == 1 && !Crypto.verify(generationSignature, previousBlock.generationSignature, generatorPublicKey, version >= 3)) {
-			return false;
-		}
-
-		Account account = Account.getAccount(getGeneratorId());
-		long effectiveBalance = account == null ? 0 : account.getEffectiveBalanceNXT();
-		if (effectiveBalance <= 0) {
-			return false;
-		}
-
-		MessageDigest digest = Crypto.sha256();
-		byte[] generationSignatureHash;
-		if (version == 1) {
-			generationSignatureHash = digest.digest(generationSignature);
-		} else {
-			digest.update(previousBlock.generationSignature);
-			generationSignatureHash = digest.digest(generatorPublicKey);
-			if (!Arrays.equals(generationSignature, generationSignatureHash)) {
+			/*
+			long effectiveBalance = account == null ? 0 : account.getEffectiveBalanceNXT();
+			if (effectiveBalance <= 0) {
 				return false;
 			}
+
+			MessageDigest digest = Crypto.sha256();
+			byte[] generationSignatureHash;
+			if (version == 1) {
+				generationSignatureHash = digest.digest(generationSignature);
+			} else {
+				digest.update(previousBlock.generationSignature);
+				generationSignatureHash = digest.digest(generatorPublicKey);
+				if (!Arrays.equals(generationSignature, generationSignatureHash)) {
+					return false;
+				}
+			}
+
+			BigInteger hit = new BigInteger(1, new byte[] {generationSignatureHash[7], generationSignatureHash[6], generationSignatureHash[5], generationSignatureHash[4], generationSignatureHash[3], generationSignatureHash[2], generationSignatureHash[1], generationSignatureHash[0]});
+
+			return Generator.verifyHit(hit, effectiveBalance, previousBlock, timestamp);
+			*/
+		} catch (e) {
+			Logger.error("Error verifying block generation signature", e);
+			__callback(false);
 		}
-
-		BigInteger hit = new BigInteger(1, new byte[] {generationSignatureHash[7], generationSignatureHash[6], generationSignatureHash[5], generationSignatureHash[4], generationSignatureHash[3], generationSignatureHash[2], generationSignatureHash[1], generationSignatureHash[0]});
-
-		return Generator.verifyHit(hit, effectiveBalance, previousBlock, timestamp);
-
-	} catch (RuntimeException e) {
-
-		Logger.logMessage("Error verifying block generation signature", e);
-		return false;
-	}
-	*/
+	});
 }
 
-function Undo() {
+Block.prototype.Undo = function() {
 	throw new Error('Not implementted');
 	/*
 	Account generatorAccount = Account.getAccount(getGeneratorId());
 	generatorAccount.undo(getHeight());
-	generatorAccount.addToBalanceAndUnconfirmedBalanceNQT(-totalFeeNQT);
-	generatorAccount.addToForgedBalanceNQT(-totalFeeNQT);
+	generatorAccount.addToBalanceAndUnconfirmedBalance(-totalFee); // MilliLm
+	generatorAccount.addToForgedBalance(-totalFee); // MilliLm
 	*/
 }
 
 
-Block.prototype.Apply = Apply;
-Block.prototype.CalculateBaseTarget = CalculateBaseTarget;
-Block.prototype.GetBaseTarget = GetBaseTarget;
-Block.prototype.GetBlockSignature = GetBlockSignature;
-Block.prototype.GetBytes = GetBytes;
-Block.prototype.GetCumulativeDifficulty = GetCumulativeDifficulty;
-Block.prototype.GetHeight = GetHeight;
-Block.prototype.GetGenerationSignature = GetGenerationSignature;
-Block.prototype.GetGeneratorId = GetGeneratorId;
-Block.prototype.GetGeneratorPublicKey = GetGeneratorPublicKey;
-Block.prototype.GetId = GetId;
-Block.prototype.GetJsonObject = GetJsonObject;
-Block.prototype.GetNextBlockId = GetNextBlockId;
-Block.prototype.GetPayloadHash = GetPayloadHash;
-Block.prototype.GetPayloadLength = GetPayloadLength;
-Block.prototype.SetPrevious = SetPrevious;
-Block.prototype.GetPreviousBlockHash = GetPreviousBlockHash;
-Block.prototype.GetPreviousBlockId = GetPreviousBlockId;
-Block.prototype.GetStringId = GetStringId;
-Block.prototype.GetTimestamp = GetTimestamp;
-Block.prototype.GetTotalAmountMilliLm = GetTotalAmountMilliLm;
-Block.prototype.GetTotalFeeMilliLm = GetTotalFeeMilliLm;
-Block.prototype.GetTransactionIds = GetTransactionIds;
-Block.prototype.GetTransactions = GetTransactions;
-Block.prototype.GetVersion = GetVersion;
-Block.prototype.Sign = Sign;
-Block.prototype.VerifyBlockSignature = VerifyBlockSignature;
-Block.prototype.VerifyGenerationSignature = VerifyGenerationSignature;
-Block.prototype.Undo = Undo;
-
-
-module.exports = Block;
+if (typeof module !== "undefined") {
+	module.exports = Block;
+}

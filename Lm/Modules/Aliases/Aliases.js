@@ -1,10 +1,12 @@
 /*!
- * LibreMoney Aliases 0.1
+ * LibreMoney Aliases 0.2
  * Copyright(c) 2014 LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-var Core = require(__dirname + '/../Core');
+if (typeof module !== "undefined") {
+	var Core = require(__dirname + '/../../Core');
+}
 
 
 var aliases = new Array();

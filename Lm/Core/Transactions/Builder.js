@@ -1,10 +1,10 @@
 /**!
- * LibreMoney 0.1
+ * LibreMoney 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-var Convert = require(__dirname + '/../../Util/Convert');
+var Convert = require(__dirname + '/../../Lib/Util/Convert');
 
 
 function Builder(version, senderPublicKey, amountMilliLm, feeMilliLm, timestamp, deadline, attachment) {

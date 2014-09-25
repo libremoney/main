@@ -1,5 +1,5 @@
 /*!
- * LibreMoney Generator 0.1
+ * LibreMoney Generator 0.2
  * Copyright(c) 2014 LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */

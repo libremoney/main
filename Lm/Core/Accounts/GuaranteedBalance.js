@@ -1,5 +1,5 @@
 /**!
- * LibreMoney accounts 0.1
+ * LibreMoney GuaranteedBalance 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -30,4 +30,6 @@ GuaranteedBalance.prototype.CompareTo = CompareTo;
 GuaranteedBalance.prototype.ToString = ToString;
 
 
-module.exports = GuaranteedBalance;
+if (typeof module !== "undefined") {
+	module.exports = GuaranteedBalance;
+}

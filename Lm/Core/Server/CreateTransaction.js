@@ -1,20 +1,22 @@
 /**!
- * LibreMoney CreateTransaction 0.1
+ * LibreMoney CreateTransaction 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-var Appendix_EncryptedMessage = require(__dirname + '/../Transactions/Appendix/EncryptedMessage');
-var Appendix_EncryptToSelfMessage = require(__dirname + '/../Transactions/Appendix/EncryptToSelfMessage');
-var Appendix_Message = require(__dirname + '/../Transactions/Appendix/Message');
-var Appendix_PublicKeyAnnouncement = require(__dirname + '/../Transactions/Appendix/PublicKeyAnnouncement');
-var Constants = require(__dirname + '/../../Constants');
-var Convert = require(__dirname + '/../../Util/Convert');
-var Crypto = require(__dirname + '/../../Crypto/Crypto');
-var JsonResponses = require(__dirname + '/JsonResponses');
-var Logger = require(__dirname + '/../../Util/Logger').GetLogger(module);
-var ParameterParser = require(__dirname + '/ParameterParser');
-var TransactionProcessor = require(__dirname + '/../TransactionProcessor');
+if (typeof module !== "undefined") {
+	var Appendix_EncryptedMessage = require(__dirname + '/../Transactions/Appendix/EncryptedMessage');
+	var Appendix_EncryptToSelfMessage = require(__dirname + '/../Transactions/Appendix/EncryptToSelfMessage');
+	var Appendix_Message = require(__dirname + '/../Transactions/Appendix/Message');
+	var Appendix_PublicKeyAnnouncement = require(__dirname + '/../Transactions/Appendix/PublicKeyAnnouncement');
+	var Constants = require(__dirname + '/../../Lib/Constants');
+	var Convert = require(__dirname + '/../../Lib/Util/Convert');
+	var Crypto = require(__dirname + '/../../Lib/Crypto/Crypto');
+	var JsonResponses = require(__dirname + '/JsonResponses');
+	var Logger = require(__dirname + '/../../Lib/Util/Logger').GetLogger(module);
+	var ParameterParser = require(__dirname + '/ParameterParser');
+	var TransactionProcessor = require(__dirname + '/../TransactionProcessor');
+}
 
 
 /*
@@ -171,11 +173,13 @@ function CreateTransaction(req, res, senderAccount, recipientId, amountMilliLm, 
 		}
 		response.unsignedTransactionBytes = Convert.ToHexString(transaction.GetUnsignedBytes());
 	} catch (e) {
-		//return JsonResponses.FEATURE_NOT_AVAILABLE;
+		//return JsonResponses.FeatureNotAvailable;
 		response.error = e;
 	}
 	return response;
 }
 
 
-module.exports = CreateTransaction;
+if (typeof module !== "undefined") {
+	module.exports = CreateTransaction;
+}

@@ -1,10 +1,12 @@
 /**!
- * LibreMoney 0.1
+ * LibreMoney EncryptToSelfMessage 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-var AbstractEncryptedMessage = require(__dirname + '/AbstractEncryptedMessage');
+if (typeof module !== "undefined") {
+	var AbstractEncryptedMessage = require(__dirname + '/AbstractEncryptedMessage');
+}
 
 
 function EncryptToSelfMessage(data) {
@@ -50,7 +52,6 @@ function EncryptToSelfMessage(data) {
 		*/
 	}
 
-
 	this.GetAppendixName = GetAppendixName;
 	this.PutMyJson = PutMyJson;
 	this.Validate = Validate;
@@ -58,4 +59,6 @@ function EncryptToSelfMessage(data) {
 }
 
 
-module.exports = EncryptToSelfMessage;
+if (typeof module !== "undefined") {
+	module.exports = EncryptToSelfMessage;
+}

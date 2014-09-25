@@ -1,17 +1,16 @@
 /**!
- * LibreMoney SignTransaction api 0.1
+ * LibreMoney SignTransaction api 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
 // deprecated
 
-var Crypto = require(__dirname + '/../../../Crypto/Crypto');
-var Convert = require(__dirname + '/../../../Util/Convert');
+var Crypto = require(__dirname + '/../../../Lib/Crypto/Crypto');
+var Convert = require(__dirname + '/../../../Lib/Util/Convert');
 var JsonResponses = require(__dirname + '/../JsonResponses');
-var Logger = require(__dirname + '/../../../Util/Logger').GetLogger(module);
+var Logger = require(__dirname + '/../../../Lib/Util/Logger').GetLogger(module);
 var TransactionProcessor = require(__dirname + '/../../TransactionProcessor');
-//JsonValue
 
 
 //super(new APITag[] {APITag.TRANSACTIONS}, "unsignedTransactionBytes", "unsignedTransactionJSON", "secretPhrase");

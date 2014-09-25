@@ -1,5 +1,5 @@
 /**!
- * LibreMoney PlaceAskOrders api 0.1
+ * LibreMoney PlaceAskOrders api 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -22,11 +22,12 @@ function PlaceAskOrders(req, res) {
 	Account account = ParameterParser.getSenderAccount(req);
 	Long assetBalance = account.getUnconfirmedAssetBalanceQNT(asset.getId());
 	if (assetBalance == null || quantityQNT > assetBalance) {
-		return JsonResponses.NOT_ENOUGH_ASSETS;
+		return JsonResponses.NotEnoughAssets;
 	}
 	Attachment attachment = new Attachment.ColoredCoinsAskOrderPlacement(asset.getId(), quantityQNT, priceNQT);
 	return createTransaction(req, account, attachment);
 	*/
 }
+
 
 module.exports = PlaceAskOrders;

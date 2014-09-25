@@ -1,43 +1,27 @@
 /**!
- * LibreMoney Genesis 0.1
+ * LibreMoney Genesis 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-var GENESIS_BLOCK_ID = 0;
-var CREATOR_ID = 0;
-
-var CreatorPublicKey = [
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-	];
-
-var Recipients = [2391470422895685625]; // LMA-TVZT-PRDS-FB8M-4P3E4
-
-var Amounts = [1000000];
-
-var Signatures = [
-	//[
-		//41, 115, -41, 7, 37, 21, -3, -41, 120, 119, 63, -101, 108, 48, -117, 1,
-		//-43, 32, 85, 95, 65, 42, 92, -22, 123, -36, 6, -99, -61, -53, 93, 7,
-		//23, 8, -30, 65, 57, -127, -2, 42, -92, -104, 11, 72, -66, 108, 17, 113,
-		//99, -117, -75, 123, 110, 107, 119, -25, 67, 64, 32, 117, 111, 54, 82, -14
-	//]
-	];
-
-var BlockSignature = [
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-	];
+var Genesis = {
+	GenesisBlockId: 0,
+	CreatorId: 0,
+	CreatorPublicKey: new Buffer("03362fbbe6611243d853507a82dbe59844d169157fcda08deb171ed238fa3e19", "hex"),
+	Recipients: [2391470422895685625], // LMA-TVZT-PRDS-FB8M-4P3E4
+	Amounts: [1000000],
+	Signatures: [
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+		],
+	BlockSignature: [
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+		]
+}
 
 
-exports.GENESIS_BLOCK_ID = GENESIS_BLOCK_ID;
-exports.CREATOR_ID = CREATOR_ID;
-
-exports.Amounts = Amounts;
-exports.BlockSignature = BlockSignature;
-exports.CreatorPublicKey = CreatorPublicKey;
-exports.Recipients = Recipients;
-exports.Signatures = Signatures;
+if (typeof module !== "undefined") {
+	module.exports = Genesis;
+}

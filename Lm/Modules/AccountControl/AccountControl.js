@@ -1,14 +1,18 @@
 /**!
- * LibreMoney AccountControl 0.1
+ * LibreMoney AccountControl 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-var Core = require(__dirname + '/../Core');
+if (typeof module !== "undefined") {
+	var Core = require(__dirname + '/../Core');
+	var AccountControlTrType = require(__dirname + '/AccountControlTrType');
+}
 
 
 function Init() {
 	Core.AddListaner(Core.Event.InitServer, OnInitServer);
+	AccountControlTrType.Init();
 }
 
 function OnInitServer() {

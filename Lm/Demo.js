@@ -1,20 +1,20 @@
 /*!
- * LibreMoney 0.1
+ * LibreMoney Demo 0.2
  * Copyright(c) 2014 LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
 var AttachmentGroupCreate = require(__dirname + '/Modules/Groups/Attachment_GroupCreate');
 var Blocks = require(__dirname + '/Core/Blocks');
-var BigInt = require(__dirname + '/Util/BigInteger');
+var BigInt = require(__dirname + '/Lib/Util/BigInteger');
 var LmBlock = require(__dirname + '/Core/Blocks/Block');
-var Constants = require(__dirname + '/Constants');
-var Convert = require(__dirname + '/Util/Convert');
-var Crypto = require(__dirname + '/Crypto/Crypto');
+var Constants = require(__dirname + '/Lib/Constants');
+var Convert = require(__dirname + '/Lib/Util/Convert');
+var Crypto = require(__dirname + '/Lib/Crypto/Crypto');
 var Db = require(__dirname + '/Db');
 var Groups = require(__dirname + '/Modules/Groups');
 var JsonResponses = require(__dirname + '/Core/Server/JsonResponses');
-var Logger = require(__dirname + '/Util/Logger').GetLogger(module);
+var Logger = require(__dirname + '/Lib/Util/Logger').GetLogger(module);
 var ParameterParser = require(__dirname + '/Core/Server/ParameterParser');
 var Projects = require(__dirname + '/Modules/Projects');
 var TransactionProcessor = require(__dirname + '/Core/TransactionProcessor');
@@ -106,7 +106,7 @@ function CreateTransaction2(data) {
 		}
 		response.unsignedTransactionBytes = Convert.ToHexString(transaction.GetUnsignedBytes());
 	} catch (e) {
-		return JsonResponses.FEATURE_NOT_AVAILABLE;
+		return JsonResponses.FeatureNotAvailable;
 	}
 	return response;
 }

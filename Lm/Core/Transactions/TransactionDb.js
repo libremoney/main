@@ -1,18 +1,44 @@
 /*!
- * LibreMoney 0.1
+ * LibreMoney TransactionDb 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-var ByteBuffer = require(__dirname + '/../../Util/ByteBuffer');
-var Convert = require(__dirname + '/../../Util/Convert');
-var Db = require(__dirname + '/../../Db');
-var Logger = require(__dirname + '/../../Util/Logger').GetLogger(module);
-var Transaction = require(__dirname + '/Transaction');
-var Transactions = require(__dirname + '/Transactions');
+if (typeof module !== "undefined") {
+	var ByteBuffer = require(__dirname + '/../../Lib/Util/ByteBuffer');
+	var Convert = require(__dirname + '/../../Lib/Util/Convert');
+	var Db = require(__dirname + '/../../Db');
+	var Logger = require(__dirname + '/../../Lib/Util/Logger').GetLogger(module);
+	var Transaction = require(__dirname + '/Transaction');
+	var Transactions = require(__dirname + '/Transactions');
+}
 
 
-function FindTransaction(transactionId, callback) {
+var TransactionDb = function() {
+}
+
+TransactionDb.FindBlockTransactions = function(con, blockId) {
+	throw new Error('Not implemented');
+	/*
+	List<TransactionImpl> list = new ArrayList<>();
+	try (PreparedStatement pstmt = con.prepareStatement("SELECT * FROM transaction WHERE block_id = ? ORDER BY id")) {
+		pstmt.setLong(1, blockId);
+		ResultSet rs = pstmt.executeQuery();
+		while (rs.next()) {
+			list.add(loadTransaction(con, rs));
+		}
+		rs.close();
+		return list;
+	} catch (SQLException e) {
+		throw new RuntimeException(e.toString(), e);
+	} catch (NxtException.ValidationException e) {
+		throw new RuntimeException("Transaction already in database for block_id = " + Convert.toUnsignedLong(blockId)
+				+ " does not pass validation!", e);
+	}
+	*/
+}
+
+TransactionDb.FindTransaction = function(transactionId, callback) {
 	var trModel = Db.GetModel('transaction');
 	trModel.findOne({id:transactionId}).exec(function(err, data) {
 		if (err) {
@@ -25,7 +51,7 @@ function FindTransaction(transactionId, callback) {
 	return true;
 }
 
-function FindTransactionByFullHash(fullHash, callback) {
+TransactionDb.FindTransactionByFullHash = function(fullHash, callback) {
 	var trModel = Db.GetModel('transaction');
 	trModel.findOne({full_hash:Convert.ParseHexString(fullHash)}).exec(function(err, data) {
 		if (err) {
@@ -38,7 +64,7 @@ function FindTransactionByFullHash(fullHash, callback) {
 	return true;
 }
 
-function HasTransaction(transactionId) {
+TransactionDb.HasTransaction = function(transactionId) {
 	throw new Error('Not implemented');
 	/*
 	try (Connection con = Db.getConnection();
@@ -52,7 +78,7 @@ function HasTransaction(transactionId) {
 	*/
 }
 
-function HasTransactionByFullHash(fullHash) {
+TransactionDb.HasTransactionByFullHash = function(fullHash) {
 	throw new Error('Not implemented');
 	/*
 	try (Connection con = Db.getConnection();
@@ -66,7 +92,7 @@ function HasTransactionByFullHash(fullHash) {
 	*/
 }
 
-function LoadTransaction(tr) {
+TransactionDb.LoadTransaction = function(tr) {
 	var type = tr.type; // Byte
 	var subtype = tr.subtype; // Byte
 	var timestamp = tr.timestamp; // Int
@@ -93,7 +119,7 @@ function LoadTransaction(tr) {
 		buffer.littleEndian();
 	}
 
-	var transactionType = Transactions.FindTransactionType(type, subtype);
+	var transactionType = Transactions.Find(type, subtype);
 
 	var builder = {
 		version: version,
@@ -140,28 +166,7 @@ function LoadTransaction(tr) {
 	return transaction;
 }
 
-function FindBlockTransactions(con, blockId) {
-	throw new Error('Not implemented');
-	/*
-	List<TransactionImpl> list = new ArrayList<>();
-	try (PreparedStatement pstmt = con.prepareStatement("SELECT * FROM transaction WHERE block_id = ? ORDER BY id")) {
-		pstmt.setLong(1, blockId);
-		ResultSet rs = pstmt.executeQuery();
-		while (rs.next()) {
-			list.add(loadTransaction(con, rs));
-		}
-		rs.close();
-		return list;
-	} catch (SQLException e) {
-		throw new RuntimeException(e.toString(), e);
-	} catch (NxtException.ValidationException e) {
-		throw new RuntimeException("Transaction already in database for block_id = " + Convert.toUnsignedLong(blockId)
-				+ " does not pass validation!", e);
-	}
-	*/
-}
-
-function SaveTransaction(transaction, callback) {
+TransactionDb.SaveTransaction = function(transaction, callback) {
 	//console.log(transaction);
 	//console.log(transaction.id);
 
@@ -267,18 +272,13 @@ function SaveTransaction(transaction, callback) {
 }
 
 // con, transactions
-function SaveTransactions(transactions) {
+TransactionDb.SaveTransactions = function(transactions) {
 	for (var transaction in transactions) {
 		SaveTransaction(transaction);
 	}
 }
 
 
-exports.FindTransaction = FindTransaction;
-exports.FindTransactionByFullHash = FindTransactionByFullHash;
-exports.HasTransaction = HasTransaction;
-exports.HasTransactionByFullHash = HasTransactionByFullHash;
-exports.LoadTransaction = LoadTransaction;
-exports.FindBlockTransactions = FindBlockTransactions;
-exports.SaveTransaction = SaveTransaction;
-exports.SaveTransactions = SaveTransactions;
+if (typeof module !== "undefined") {
+	module.exports = TransactionDb;
+}

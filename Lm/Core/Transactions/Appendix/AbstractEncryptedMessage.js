@@ -1,15 +1,16 @@
 /**!
- * LibreMoney 0.1
+ * LibreMoney AbstractEncryptedMessage 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-var AbstractAppendix = require(__dirname + '/AbstractAppendix');
-var Constants = require(__dirname + '/../../../Constants');
+if (typeof module !== "undefined") {
+	var AbstractAppendix = require(__dirname + '/AbstractAppendix');
+	var Constants = require(__dirname + '/../../../Lib/Constants');
+}
 
 
 function AbstractEncryptedMessage(data) {
-
 	if (typeof data.buffer != 'undefined' && data.transactionVersion != 'undefind') {
 		this.prototype = new AbstractAppendix({
 			buffer: data.buffer,
@@ -102,4 +103,9 @@ function AbstractEncryptedMessage(data) {
 
 
 	return obj;
+}
+
+
+if (typeof module !== "undefined") {
+	module.exports = AbstractEncryptedMessage;
 }

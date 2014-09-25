@@ -1,5 +1,5 @@
 /**!
- * LibreMoney user page 0.1
+ * LibreMoney user page 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */

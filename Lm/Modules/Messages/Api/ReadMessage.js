@@ -1,5 +1,5 @@
 /**!
- * LibreMoney ReadMessage api 0.1
+ * LibreMoney ReadMessage api 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -35,7 +35,10 @@ function ReadMessage() {
 	var encryptedMessage = transaction.GetEncryptedMessage();
 	var encryptToSelfMessage = transaction.GetEncryptToSelfMessage();
 	if (message == null && encryptedMessage == null && encryptToSelfMessage == null) {
-		return JsonResponses.NO_MESSAGE;
+		return {
+			errorCode: 8,
+			errorDescription: "No attached message found"
+		}
 	}
 	if (message != null) {
 		response.message = message.IsText() ? Convert.ToString(message.GetMessage()) : Convert.ToHexString(message.GetMessage());

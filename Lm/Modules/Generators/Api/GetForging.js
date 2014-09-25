@@ -1,5 +1,5 @@
 /**!
- * LibreMoney GetForging 0.1
+ * LibreMoney GetForging 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -30,7 +30,7 @@ function GetForging(req, res) {
 
 	Generator generator = Generator.getGenerator(secretPhrase);
 	if (generator == null) {
-		return JsonResponses.NOT_FORGING;
+		return JsonResponses.NotForging;
 	}
 
 	JSONObject response = new JSONObject();
@@ -41,5 +41,6 @@ function GetForging(req, res) {
 	return response;
 	*/
 }
+
 
 module.exports = GetForging;

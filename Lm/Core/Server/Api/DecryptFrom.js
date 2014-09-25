@@ -1,5 +1,5 @@
 /**!
- * LibreMoney DecryptFrom api 0.1
+ * LibreMoney DecryptFrom api 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -36,7 +36,10 @@ function DecryptFrom(req, res) {
 			return response;
 		} catch (RuntimeException e) {
 			Logger.logDebugMessage(e.toString());
-			return DECRYPTION_FAILED;
+			return {
+				errorCode: 8,
+				errorDescription: "Decryption failed"
+			}
 		}
 		*/
 		res.send('This is not implemented');

@@ -1,12 +1,14 @@
 /**!
- * LibreMoney 0.1
+ * LibreMoney AliasBuy 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-var Constants = require(__dirname + '/../Constants');
-var Messaging = require(__dirname + '/../Messages/MessagingTrType');
-var TransactionType = require(__dirname + '/../Transactions/TransactionType');
+if (typeof module !== "undefined") {
+	var Constants = require(__dirname + '/../../Lib/Constants');
+	var Messaging = require(__dirname + '/../Messages/MessagingTrType');
+	var TransactionType = require(__dirname + '/../../Core/Transactions/TransactionType');
+}
 
 
 function AliasBuy() {
@@ -83,4 +85,6 @@ function AliasBuy() {
 }
 
 
-module.exports = AliasBuy;
+if (typeof module !== "undefined") {
+	module.exports = AliasBuy;
+}

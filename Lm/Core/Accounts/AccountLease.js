@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.1
+ * LibreMoney 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -12,4 +12,7 @@ private AccountLease(LessorId, LesseeId, FromHeight, ToHeight) {
 	return this;
 }
 
-module.exports = AccountLease;
+
+if (typeof module !== "undefined") {
+	module.exports = AccountLease;
+}

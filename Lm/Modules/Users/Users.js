@@ -1,5 +1,5 @@
 /**!
- * LibreMoney Users 0.1
+ * LibreMoney Users 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */

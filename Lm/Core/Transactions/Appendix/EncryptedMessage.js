@@ -1,14 +1,16 @@
 /**!
- * LibreMoney 0.1
+ * LibreMoney 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-var AbstractEncryptedMessage = require(__dirname + '/AbstractEncryptedMessage');
+if (typeof module !== "undefined") {
+	var AbstractEncryptedMessage = require(__dirname + '/AbstractEncryptedMessage');
+}
 
 
 function EncryptedMessage() {
-	var obj = new AbstractEncryptedMessage();
+	this.prototype = new AbstractEncryptedMessage();
 
 	/*
 	static EncryptedMessage parse(JSONObject attachmentData) throws NxtException.NotValidException {
@@ -67,4 +69,6 @@ function EncryptedMessage() {
 }
 
 
-module.exports = EncryptedMessage;
+if (typeof module !== "undefined") {
+	module.exports = EncryptedMessage;
+}

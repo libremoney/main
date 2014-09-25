@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.1
+ * LibreMoney PaymentTrType 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -13,7 +13,7 @@ function Payment() {
 	this.prototype = new TransactionType();
 
 	function GetType() {
-		return Constants.TYPE_PAYMENT;
+		return Constants.TrTypePayment;
 	}
 
 	this.GetType = GetType

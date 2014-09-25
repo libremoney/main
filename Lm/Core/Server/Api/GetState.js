@@ -1,14 +1,14 @@
 /**!
- * LibreMoney GetState api 0.1
+ * LibreMoney GetState api 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
 var Blockchain = require(__dirname + '/../../Blockchain');
 var BlockchainProcessor = require(__dirname + '/../../BlockchainProcessor');
-var Convert = require(__dirname + '/../../../Util/Convert');
+var Convert = require(__dirname + '/../../../Lib/Util/Convert');
 var Core = require(__dirname + '/../../Core');
-var Logger = require(__dirname + '/../../../Util/Logger').GetLogger(module);
+var Logger = require(__dirname + '/../../../Lib/Util/Logger').GetLogger(module);
 
 
 //super(new APITag[] {APITag.INFO});

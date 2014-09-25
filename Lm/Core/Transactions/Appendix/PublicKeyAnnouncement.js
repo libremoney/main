@@ -1,10 +1,12 @@
 /**!
- * LibreMoney 0.1
+ * LibreMoney PublicKeyAnnouncement 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-var AbstractAppendix = require(__dirname + '/AbstractAppendix');
+if (typeof module !== "undefined") {
+	var AbstractAppendix = require(__dirname + '/AbstractAppendix');
+}
 
 
 function PublicKeyAnnouncement() {
@@ -89,4 +91,7 @@ function PublicKeyAnnouncement() {
 	return obj;
 }
 
-module.exports = PublicKeyAnnouncement;
+
+if (typeof module !== "undefined") {
+	module.exports = PublicKeyAnnouncement;
+}

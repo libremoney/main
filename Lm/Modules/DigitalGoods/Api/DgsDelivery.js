@@ -1,5 +1,5 @@
 /**!
- * LibreMoney DgsDelivery api 0.1
+ * LibreMoney DgsDelivery api 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -9,14 +9,8 @@ import nxt.Account;
 import nxt.Attachment;
 import nxt.Constants;
 import nxt.DigitalGoodsStore;
-import nxt.NxtException;
 import nxt.crypto.EncryptedData;
 import nxt.util.Convert;
-import org.json.simple.JSONStreamAware;
-import static nxt.http.JSONResponses.ALREADY_DELIVERED;
-import static nxt.http.JSONResponses.INCORRECT_DGS_DISCOUNT;
-import static nxt.http.JSONResponses.INCORRECT_DGS_GOODS;
-import static nxt.http.JSONResponses.INCORRECT_PURCHASE;
 */
 
 //super(new APITag[] {APITag.DGS, APITag.CREATE_TRANSACTION}, "purchase", "discountNQT", "goodsToEncrypt", "goodsIsText", "goodsData", "goodsNonce");
@@ -29,7 +23,10 @@ function DgsDelivery(req, res) {
 		return INCORRECT_PURCHASE;
 	}
 	if (! purchase.isPending()) {
-		return ALREADY_DELIVERED;
+		return {
+			errorCode: 8,
+			errorDescription: "Purchase already delivered"
+		}
 	}
 
 	String discountValueNQT = Convert.emptyToNull(req.getParameter("discountNQT"));

@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.1
+ * LibreMoney DigitalGoodsTrType 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -18,7 +18,7 @@ function DigitalGoods() {
 	}
 
 	function GetType() {
-		return TransactionType.TYPE_DIGITAL_GOODS;
+		return Constants.TrTypeDigitalGoods;
 	}
 
 	function UndoAttachmentUnconfirmed(transaction, senderAccount) {

@@ -1,3 +1,9 @@
+/**!
+ * LibreMoney Project 0.2
+ * Copyright (c) LibreMoney Team <libremoney@yandex.com>
+ * CC0 license
+ */
+
 /*
 State: 0 - Announce; 1 - Start founding; 2 - WorkBegin; 3 - WorkSuccess
 */

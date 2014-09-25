@@ -1,17 +1,19 @@
 /**!
- * LibreMoney Account 0.1
+ * LibreMoney Account 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-var Blockchain = require(__dirname + '/../Blockchain');
-var Collections = require(__dirname + '/../Collections');
-var Constants = require(__dirname + '/../Constants');
-var Convert = require(__dirname + '/../../Util/Convert');
-var Crypto = require(__dirname + '/../../Crypto/Crypto');
-var EncryptedData = require(__dirname + '/../../Crypto/EncryptedData');
-var GuaranteedBalance = require(__dirname + '/GuaranteedBalance');
-var Logger = require(__dirname + '/../../Util/Logger').GetLogger(module);
+if (typeof module !== "undefined") {
+	var Blockchain = require(__dirname + '/../Blockchain');
+	var Collections = require(__dirname + '/../Collections');
+	var Constants = require(__dirname + '/../../Lib/Constants');
+	var Convert = require(__dirname + '/../../Lib/Util/Convert');
+	var Crypto = require(__dirname + '/../../Lib/Crypto/Crypto');
+	var EncryptedData = require(__dirname + '/../../Lib/Crypto/EncryptedData');
+	var GuaranteedBalance = require(__dirname + '/GuaranteedBalance');
+	var Logger = require(__dirname + '/../../Lib/Util/Logger').GetLogger(module);
+}
 
 
 var maxTrackedBalanceConfirmations = 2881;
@@ -25,12 +27,12 @@ function Account(id) {
 	this.height = Blockchain.GetLastBlock().GetHeight();
 	this.currentLeasingHeightFrom = Constants.MaxInt;
 
-	this.publicKey;
-	this.keyHeight;
-	this.balanceMilliLm;
-	this.unconfirmedBalanceMilliLm;
-	this.forgedBalanceMilliLm;
-	this.guaranteedBalances = new Array();
+	this.publicKey = null;
+	this.keyHeight = null;
+	this.balance = 0; // MilliLm
+	this.unconfirmedBalance = 0; // MilliLm
+	this.forgedBalance = 0; // MilliLm
+	this.guaranteedBalances = {};
 
 	this.currentLeasingHeightTo;
 	this.currentLesseeId;
@@ -39,400 +41,84 @@ function Account(id) {
 	this.nextLesseeId;
 	this.lessorIds = new Array(); //Collections.newSetFromMap(new ConcurrentHashMap<Long,Boolean>());
 
-	this.assetBalances = new Array(); //HashMap<>();
-	this.unconfirmedAssetBalances = new Array(); //HashMap<>();
+	this.assetBalances = {};
+	this.unconfirmedAssetBalances = {};
 
-	this.name;
-	this.description;
+	this.accountTypes = {}
 
 	return this;
 }
 
-function Apply(key, height) {
-	throw new Error('Not implementted');
-	/*
-	if (! setOrVerify(key, this.height)) {
-		throw new IllegalStateException("Public key mismatch");
-	}
-	if (this.publicKey == null) {
-		throw new IllegalStateException("Public key has not been set for account " + Convert.toUnsignedLong(id)
-				+" at height " + height + ", key height is " + keyHeight);
-	}
-	if (this.keyHeight == -1 || this.keyHeight > height) {
-		this.keyHeight = height;
-	}
-	*/
-}
+Account.prototype.AddToBalance = function(amount) {
+	this.balance += amount;
 
-function DecryptFrom(encryptedData, recipientSecretPhrase) {
-	if (this.GetPublicKey() == null) {
-		throw new Error("Sender account doesn't have a public key set");
-	}
-	return encryptedData.Decrypt(Crypto.GetPrivateKey(recipientSecretPhrase), this.publicKey);
-}
-
-function EncryptTo(data, senderSecretPhrase) {
-	if (this.GetPublicKey() == null) {
-		throw new Error("Recipient account doesn't have a public key set");
-	}
-	return EncryptedData.Encrypt(data, Crypto.GetPrivateKey(senderSecretPhrase), this.publicKey);
-}
-
-function GetAssetBalancesQNT() {
-	return Collections.UnmodifiableMap(this.assetBalances);
-}
-
-function GetBalanceMilliLm() {
-	return this.balanceMilliLm;
-}
-
-function GetCurrentLeasingHeightFrom() {
-	return this.currentLeasingHeightFrom;
-}
-
-function GetCurrentLeasingHeightTo() {
-	return this.currentLeasingHeightTo;
-}
-
-function GetCurrentLesseeId() {
-	return this.currentLesseeId;
-}
-
-function GetDescription() {
-	return this.description;
-}
-
-function GetEffectiveBalanceLm() {
-	var lastBlock = Blockchain.GetLastBlock();
-
-	if (lastBlock.GetHeight() >= Constants.TransparentForgingBlock6
-			&& (this.GetPublicKey() == null || lastBlock.GetHeight() - this.keyHeight <= 1440)) {
-		return 0; // cfb: Accounts with the public key revealed less than 1440 blocks ago are not allowed to generate blocks
-	}
-
-	if (lastBlock.GetHeight() < Constants.TransparentForgingBlock3 && this.height < Constants.TransparentForgingBlock2) {
-		if (this.height == 0) {
-			return this.GetBalanceMilliLm() / Constants.OneLm;
-		}
-		if (lastBlock.GetHeight() - this.height < 1440) {
-			return 0;
-		}
-		var receivedInlastBlock = 0;
-		var transactions = lastBlock.GetTransactions();
-		for (transaction in transactions) {
-			if (this.id.equals(transaction.GetRecipientId())) {
-				receivedInlastBlock += transaction.GetAmountMilliLm();
-			}
-		}
-		return (this.GetBalanceMilliLm() - receivedInlastBlock) / Constants.OneLm;
-	}
-
-	if (lastBlock.GetHeight() < this.currentLeasingHeightFrom) {
-		return (this.GetGuaranteedBalanceMilliLm(1440) + this.GetLessorsGuaranteedBalanceMilliLm()) / Constants.OneLm;
-	}
-
-	return this.GetLessorsGuaranteedBalanceMilliLm() / Constants.OneLm;
-}
-
-function GetForgedBalanceMilliLm() {
-	return this.forgedBalanceMilliLm;
-}
-
-function GetGuaranteedBalanceMilliLm(numberOfConfirmations) {
-	if (numberOfConfirmations >= Blockchain.GetLastBlock().GetHeight()) {
-		return 0;
-	}
-	if (numberOfConfirmations > maxTrackedBalanceConfirmations || numberOfConfirmations < 0) {
-		throw new Error("Number of required confirmations must be between 0 and " + maxTrackedBalanceConfirmations);
-	}
-	if (this.guaranteedBalances.IsEmpty()) {
-		return 0;
-	}
-	var i = Collections.BinarySearch(this.guaranteedBalances, new GuaranteedBalance(Blockchain.GetLastBlock().GetHeight() - numberOfConfirmations, 0));
-	if (i == -1) {
-		return 0;
-	}
-	if (i < -1) {
-		i = -i - 2;
-	}
-	if (i > this.guaranteedBalances.length - 1) {
-		i = this.guaranteedBalances.length - 1;
-	}
-	var result;
-	while ((result = this.guaranteedBalances[i]).ignore && i > 0) {
-		i--;
-	}
-	return result.ignore || result.balance < 0 ? 0 : result.balance;
-}
-
-function GetId() {
-	return this.id;
-}
-
-function GetLessorIds() {
-	return Collections.UnmodifiableSet(this.lessorIds);
-}
-
-function GetLessorsGuaranteedBalanceMilliLm() {
-	var lessorsGuaranteedBalanceMilliLm = 0;
-	for (var i in this.lessorIds) {
-		accountId = this.lessorIds[i];
-		lessorsGuaranteedBalanceMilliLm += Accounts.GetAccount(accountId).GetGuaranteedBalanceMilliLm(1440);
-	}
-	return lessorsGuaranteedBalanceMilliLm;
-}
-
-function GetName() {
-	return this.name;
-}
-
-function GetNextLeasingHeightFrom() {
-	return this.nextLeasingHeightFrom;
-}
-
-function GetNextLeasingHeightTo() {
-	return this.nextLeasingHeightTo;
-}
-
-function GetNextLesseeId() {
-	return this.nextLesseeId;
-}
-
-function GetPublicKey() {
-	if (this.keyHeight == -1) {
-		return null;
-	}
-	return publicKey;
-}
-
-function GetUnconfirmedAssetBalanceQNT(assetId) {
-	return this.unconfirmedAssetBalances[assetId];
-}
-
-function GetUnconfirmedAssetBalancesQNT() {
-	return Collections.UnmodifiableMap(this.unconfirmedAssetBalances);
-}
-
-function GetUnconfirmedBalanceMilliLm() {
-	return this.unconfirmedBalanceMilliLm;
-}
-
-function LeaseEffectiveBalance(lesseeId, period) {
-	throw new Error('Not implementted');
-	/*
-	Account lessee = Account.getAccount(lesseeId);
-	if (lessee != null && lessee.getPublicKey() != null) {
-		Block lastBlock = Nxt.getBlockchain().getLastBlock();
-		leasingAccounts.put(this.getId(), this);
-		if (currentLeasingHeightFrom == Integer.MAX_VALUE) {
-
-			currentLeasingHeightFrom = lastBlock.getHeight() + 1440;
-			currentLeasingHeightTo = currentLeasingHeightFrom + period;
-			currentLesseeId = lesseeId;
-			nextLeasingHeightFrom = Integer.MAX_VALUE;
-			leaseListeners.Notify(Event.LEASE_SCHEDULED,
-					new AccountLease(this.getId(), lesseeId, currentLeasingHeightFrom, currentLeasingHeightTo));
-
-		} else {
-
-			nextLeasingHeightFrom = lastBlock.getHeight() + 1440;
-			if (nextLeasingHeightFrom < currentLeasingHeightTo) {
-				nextLeasingHeightFrom = currentLeasingHeightTo;
-			}
-			nextLeasingHeightTo = nextLeasingHeightFrom + period;
-			nextLesseeId = lesseeId;
-			leaseListeners.Notify(Event.LEASE_SCHEDULED
-					new AccountLease(this.getId(), lesseeId, nextLeasingHeightFrom, nextLeasingHeightTo));
-
-		}
-	}
-	*/
-}
-
-function SetAccountInfo(name, description) {
-	this.name = Convert.EmptyToNull(name.trim());
-	this.description = Convert.EmptyToNull(description.trim());
-}
-
-// returns true iff:
-// this.publicKey is set to null (in which case this.publicKey also gets set to key)
-// or
-// this.publicKey is already set to an array equal to key
-function SetOrVerify(key, height) {
-	throw new Error('Not implementted');
-	/*
-	if (this.publicKey == null) {
-		this.publicKey = key;
-		this.keyHeight = -1;
-		return true;
-	} else if (Arrays.equals(this.publicKey, key)) {
-		return true;
-	} else if (this.keyHeight == -1) {
-		Logger.logMessage("DUPLICATE KEY!!!");
-		Logger.logMessage("Account key for " + Convert.toUnsignedLong(id) + " was already set to a different one at the same height "
-				+ ", current height is " + height + ", rejecting new key");
-		return false;
-	} else if (this.keyHeight >= height) {
-		Logger.logMessage("DUPLICATE KEY!!!");
-		Logger.logMessage("Changing key for account " + Convert.toUnsignedLong(id) + " at height " + height
-				+ ", was previously set to a different one at height " + keyHeight);
-		this.publicKey = key;
-		this.keyHeight = height;
-		return true;
-	}
-	Logger.logMessage("DUPLICATE KEY!!!");
-	Logger.logMessage("Invalid key for account " + Convert.toUnsignedLong(id) + " at height " + height
-			+ ", was already set to a different one at height " + keyHeight);
-	return false;
-	*/
-}
-
-function Undo(height) {
-	throw new Error('Not implementted');
-	/*
-	if (this.keyHeight >= height) {
-		Logger.logDebugMessage("Unsetting key for account " + Convert.toUnsignedLong(id) + " at height " + height
-				+ ", was previously set at height " + keyHeight);
-		this.publicKey = null;
-		this.keyHeight = -1;
-	}
-	if (this.height == height) {
-		Logger.logDebugMessage("Removing account " + Convert.toUnsignedLong(id) + " which was created in the popped off block");
-		accounts.remove(this.getId());
-	}
-	*/
-}
-
-function GetAssetBalanceQNT(assetId) {
-	throw new Error('Not implementted');
-	/*
-	return Convert.nullToZero(assetBalances.get(assetId));
-	*/
-}
-
-function AddToAssetBalanceQNT(assetId, quantityQNT) {
-	throw new Error('Not implementted');
-	/*
-	Long assetBalance;
-	synchronized (this) {
-		assetBalance = assetBalances.get(assetId);
-		assetBalance = assetBalance == null ? quantityQNT : Convert.safeAdd(assetBalance, quantityQNT);
-		if (assetBalance > 0) {
-			assetBalances.put(assetId, assetBalance);
-		} else if (assetBalance == 0) {
-			assetBalances.remove(assetId);
-		} else {
-			throw new DoubleSpendingException("Negative asset balance for account " + Convert.toUnsignedLong(id));
-		}
-	}
-	listeners.notify(this, Event.ASSET_BALANCE);
-	assetListeners.notify(new AccountAsset(id, assetId, assetBalance), Event.ASSET_BALANCE);
-	*/
-}
-
-function AddToUnconfirmedAssetBalanceQNT(assetId, quantityQNT) {
-	throw new Error('Not implementted');
-	/*
-	Long unconfirmedAssetBalance;
-	synchronized (this) {
-		unconfirmedAssetBalance = unconfirmedAssetBalances.get(assetId);
-		unconfirmedAssetBalance = unconfirmedAssetBalance == null ? quantityQNT : Convert.safeAdd(unconfirmedAssetBalance, quantityQNT);
-		if (unconfirmedAssetBalance > 0) {
-			unconfirmedAssetBalances.put(assetId, unconfirmedAssetBalance);
-		} else if (unconfirmedAssetBalance == 0) {
-			unconfirmedAssetBalances.remove(assetId);
-		} else {
-			throw new DoubleSpendingException("Negative unconfirmed asset balance for account " + Convert.toUnsignedLong(id));
-		}
-	}
-	listeners.notify(this, Event.UNCONFIRMED_ASSET_BALANCE);
-	assetListeners.notify(new AccountAsset(id, assetId, unconfirmedAssetBalance), Event.UNCONFIRMED_ASSET_BALANCE);
-	*/
-}
-
-function AddToAssetAndUnconfirmedAssetBalanceQNT(assetId, quantityQNT) {
-	throw new Error('Not implementted');
-	/*
-	Long assetBalance;
-	Long unconfirmedAssetBalance;
-	synchronized (this) {
-		assetBalance = assetBalances.get(assetId);
-		assetBalance = assetBalance == null ? quantityQNT : Convert.safeAdd(assetBalance, quantityQNT);
-		if (assetBalance > 0) {
-			assetBalances.put(assetId, assetBalance);
-		} else if (assetBalance == 0) {
-			assetBalances.remove(assetId);
-		} else {
-			throw new DoubleSpendingException("Negative unconfirmed asset balance for account " + Convert.toUnsignedLong(id));
-		}
-		unconfirmedAssetBalance = unconfirmedAssetBalances.get(assetId);
-		unconfirmedAssetBalance = unconfirmedAssetBalance == null ? quantityQNT : Convert.safeAdd(unconfirmedAssetBalance, quantityQNT);
-		if (unconfirmedAssetBalance > 0) {
-			unconfirmedAssetBalances.put(assetId, unconfirmedAssetBalance);
-		} else if (unconfirmedAssetBalance == 0) {
-			unconfirmedAssetBalances.remove(assetId);
-		} else {
-			throw new DoubleSpendingException("Negative unconfirmed asset balance for account " + Convert.toUnsignedLong(id));
-		}
-	}
-	listeners.notify(this, Event.ASSET_BALANCE);
-	listeners.notify(this, Event.UNCONFIRMED_ASSET_BALANCE);
-	assetListeners.notify(new AccountAsset(id, assetId, assetBalance), Event.ASSET_BALANCE);
-	assetListeners.notify(new AccountAsset(id, assetId, unconfirmedAssetBalance), Event.UNCONFIRMED_ASSET_BALANCE);
-	*/
-}
-
-function AddToBalanceMilliLm(amountMilliLm) {
-	throw new Error('Not implementted');
 	/*
 	synchronized (this) {
-		this.balanceMilliLm = Convert.safeAdd(this.balanceMilliLm, amountMilliLm);
-		addToGuaranteedBalanceMilliLm(amountMilliLm);
+		this.balance = Convert.SafeAdd(this.balance, amount);
+		this.AddToGuaranteedBalance(amount);
 	}
-	if (amountMilliLm != 0) {
+	if (amount != 0) {
 		listeners.Notify(Event.BALANCE, this);
 	}
 	*/
 }
 
-function AddToUnconfirmedBalanceMilliLm(amountMilliLm) {
-	throw new Error('Not implementted');
+// deprecated
+Account.prototype.AddToBalanceMilliLm = function(amount) {
+	return this.AddToBalance(amount);
+}
+
+Account.prototype.AddToUnconfirmedBalance = function(amount) {
+	this.unconfirmedBalance += amount;
+
 	/*
-	if (amountMilliLm == 0) {
+	if (amount == 0) {
 		return;
 	}
 	synchronized (this) {
-		this.unconfirmedBalanceMilliLm = Convert.safeAdd(this.unconfirmedBalanceMilliLm, amountMilliLm);
+		this.unconfirmedBalance = Convert.SafeAdd(this.unconfirmedBalance, amount);
 	}
 	listeners.Notify(Event.UNCONFIRMED_BALANCE, this);
 	*/
 }
 
-function AddToBalanceAndUnconfirmedBalanceMilliLm(amountMilliLm) {
-	throw new Error('Not implementted');
+// deprecated
+Account.prototype.AddToUnconfirmedBalanceMilliLm = function(amount) {
+	return this.AddToUnconfirmedBalance(amount);
+}
+
+Account.prototype.AddToBalanceAndUnconfirmedBalance = function(amount) {
+	this.balance += amount;
+	this.unconfirmedBalance += amount
+
 	/*
 	synchronized (this) {
-		this.balanceMilliLm = Convert.safeAdd(this.balanceMilliLm, amountMilliLm);
-		this.unconfirmedBalanceMilliLm = Convert.safeAdd(this.unconfirmedBalanceMilliLm, amountMilliLm);
-		addToGuaranteedBalanceMilliLm(amountMilliLm);
+		this.balance = Convert.safeAdd(this.balance, amount);
+		this.unconfirmedBalance = Convert.safeAdd(this.unconfirmedBalance, amount);
+		addToGuaranteedBalance(amount);
 	}
-	if (amountMilliLm != 0) {
+	if (amount != 0) {
 		listeners.Notify(Event.BALANCE, this);
 		listeners.Notify(Event.UNCONFIRMED_BALANCE, this);
 	}
 	*/
 }
 
-function AddToForgedBalanceMilliLm(amountMilliLm) {
-	throw new Error('Not implementted');
-	/*
-	synchronized(this) {
-		this.forgedBalanceMilliLm = Convert.safeAdd(this.forgedBalanceMilliLm, amountMilliLm);
-	}
-	*/
+// deprecated
+Account.prototype.AddToBalanceAndUnconfirmedBalanceMilliLm = function(amount) {
+	return this.AddToBalanceAndUnconfirmedBalance(amount);
 }
 
-function AddToGuaranteedBalanceMilliLm(amountMilliLm) {
+Account.prototype.AddToForgedBalance = function(amount) {
+	this.forgedBalance = Convert.SafeAdd(this.forgedBalance, amount);
+}
+
+// deprecated
+Account.prototype.AddToForgedBalanceMilliLm = function(amount) {
+	AddToForgedBalance(amount);
+}
+
+Account.prototype.AddToGuaranteedBalance = function(amountMilliLm) {
 	throw new Error('Not implementted');
 	/*
 	int blockchainHeight = Nxt.getBlockchain().getLastBlock().getHeight();
@@ -483,7 +169,26 @@ function AddToGuaranteedBalanceMilliLm(amountMilliLm) {
 	*/
 }
 
-function CheckBalance() {
+Account.prototype.AddToGuaranteedBalanceMilliLm = function(amount) {
+	return this.AddToGuaranteedBalance(amount);
+}
+
+Account.prototype.Apply = function(key, height) {
+	/*
+	if (! setOrVerify(key, this.height)) {
+		throw new IllegalStateException("Public key mismatch");
+	}
+	if (this.publicKey == null) {
+		throw new IllegalStateException("Public key has not been set for account " + Convert.toUnsignedLong(id)
+				+" at height " + height + ", key height is " + keyHeight);
+	}
+	if (this.keyHeight == -1 || this.keyHeight > height) {
+		this.keyHeight = height;
+	}
+	*/
+}
+
+Account.prototype.CheckBalance = function() {
 	throw new Error('Not implementted');
 	/*
 	if (id.equals(Genesis.CREATOR_ID)) {
@@ -501,42 +206,239 @@ function CheckBalance() {
 	*/
 }
 
+Account.prototype.DecryptFrom = function(encryptedData, recipientSecretPhrase) {
+	if (this.GetPublicKey() == null) {
+		throw new Error("Sender account doesn't have a public key set");
+	}
+	return encryptedData.Decrypt(Crypto.GetPrivateKey(recipientSecretPhrase), this.publicKey);
+}
 
-Account.prototype.AddToAssetAndUnconfirmedAssetBalanceQNT = AddToAssetAndUnconfirmedAssetBalanceQNT;
-Account.prototype.AddToAssetBalanceQNT = AddToAssetBalanceQNT;
-Account.prototype.AddToBalanceAndUnconfirmedBalanceMilliLm = AddToBalanceAndUnconfirmedBalanceMilliLm;
-Account.prototype.AddToBalanceMilliLm = AddToBalanceMilliLm;
-Account.prototype.AddToForgedBalanceMilliLm = AddToForgedBalanceMilliLm;
-Account.prototype.AddToGuaranteedBalanceMilliLm = AddToGuaranteedBalanceMilliLm;
-Account.prototype.AddToUnconfirmedAssetBalanceQNT = AddToUnconfirmedAssetBalanceQNT;
-Account.prototype.AddToUnconfirmedBalanceMilliLm = AddToUnconfirmedBalanceMilliLm;
-Account.prototype.Apply = Apply;
-Account.prototype.CheckBalance = CheckBalance;
-Account.prototype.EncryptTo = EncryptTo;
-Account.prototype.GetId = GetId;
-Account.prototype.GetAssetBalanceQNT = GetAssetBalanceQNT;
-Account.prototype.GetAssetBalancesQNT = GetAssetBalancesQNT;
-Account.prototype.GetBalanceMilliLm = GetBalanceMilliLm;
-Account.prototype.GetCurrentLeasingHeightFrom = GetCurrentLeasingHeightFrom;
-Account.prototype.GetCurrentLeasingHeightTo = GetCurrentLeasingHeightTo;
-Account.prototype.GetCurrentLesseeId = GetCurrentLesseeId;
-Account.prototype.GetDescription = GetDescription;
-Account.prototype.GetEffectiveBalanceLm = GetEffectiveBalanceLm;
-Account.prototype.GetForgedBalanceMilliLm = GetForgedBalanceMilliLm;
-Account.prototype.GetGuaranteedBalanceMilliLm = GetGuaranteedBalanceMilliLm;
-Account.prototype.GetLessorIds = GetLessorIds;
-Account.prototype.GetLessorsGuaranteedBalanceMilliLm = GetLessorsGuaranteedBalanceMilliLm;
-Account.prototype.GetName = GetName;
-Account.prototype.GetNextLeasingHeightFrom = GetNextLeasingHeightFrom;
-Account.prototype.GetNextLeasingHeightTo = GetNextLeasingHeightTo;
-Account.prototype.GetNextLesseeId = GetNextLesseeId;
-Account.prototype.GetPublicKey = GetPublicKey;
-Account.prototype.GetUnconfirmedBalanceMilliLm = GetUnconfirmedBalanceMilliLm;
-Account.prototype.GetUnconfirmedAssetBalanceQNT = GetUnconfirmedAssetBalanceQNT;
-Account.prototype.GetUnconfirmedAssetBalancesQNT = GetUnconfirmedAssetBalancesQNT;
-Account.prototype.LeaseEffectiveBalance = LeaseEffectiveBalance;
-Account.prototype.SetOrVerify = SetOrVerify;
-Account.prototype.Undo = Undo;
+Account.prototype.EncryptTo = function(data, senderSecretPhrase) {
+	if (this.GetPublicKey() == null) {
+		throw new Error("Recipient account doesn't have a public key set");
+	}
+	return EncryptedData.Encrypt(data, Crypto.GetPrivateKey(senderSecretPhrase), this.publicKey);
+}
+
+Account.prototype.GetBalance = function() {
+	return this.balance;
+}
+
+// deprecated
+Account.prototype.GetBalanceMilliLm = function() {
+	return this.balance;
+}
+
+Account.prototype.GetCurrentLeasingHeightFrom = function() {
+	return this.currentLeasingHeightFrom;
+}
+
+Account.prototype.GetCurrentLeasingHeightTo = function() {
+	return this.currentLeasingHeightTo;
+}
+
+Account.prototype.GetCurrentLesseeId = function() {
+	return this.currentLesseeId;
+}
+
+Account.prototype.GetEffectiveBalanceLm = function() {
+	var lastBlock = Blockchain.GetLastBlock();
+
+	if (lastBlock.GetHeight() >= Constants.TransparentForgingBlock6
+			&& (this.GetPublicKey() == null || lastBlock.GetHeight() - this.keyHeight <= 1440)) {
+		return 0; // cfb: Accounts with the public key revealed less than 1440 blocks ago are not allowed to generate blocks
+	}
+
+	if (lastBlock.GetHeight() < Constants.TransparentForgingBlock3 && this.height < Constants.TransparentForgingBlock2) {
+		if (this.height == 0) {
+			return this.GetBalance() / Constants.OneLm;
+		}
+		if (lastBlock.GetHeight() - this.height < 1440) {
+			return 0;
+		}
+		var receivedInlastBlock = 0;
+		var transactions = lastBlock.GetTransactions();
+		for (transaction in transactions) {
+			if (this.id.equals(transaction.GetRecipientId())) {
+				receivedInlastBlock += transaction.GetAmount();
+			}
+		}
+		return (this.GetBalance() - receivedInlastBlock) / Constants.OneLm;
+	}
+
+	if (lastBlock.GetHeight() < this.currentLeasingHeightFrom) {
+		return (this.GetGuaranteedBalance(1440) + this.GetLessorsGuaranteedBalance()) / Constants.OneLm;
+	}
+
+	return this.GetLessorsGuaranteedBalance() / Constants.OneLm;
+}
+
+Account.prototype.GetForgedBalance = function() {
+	return this.forgedBalance;
+}
+
+// deprecated
+Account.prototype.GetForgedBalanceMilliLm = function() {
+	return this.forgedBalance;
+}
+
+Account.prototype.GetGuaranteedBalance = function(numberOfConfirmations) {
+	if (numberOfConfirmations >= Blockchain.GetLastBlock().GetHeight()) {
+		return 0;
+	}
+	if (numberOfConfirmations > maxTrackedBalanceConfirmations || numberOfConfirmations < 0) {
+		throw new Error("Number of required confirmations must be between 0 and " + maxTrackedBalanceConfirmations);
+	}
+	if (this.guaranteedBalances.IsEmpty()) {
+		return 0;
+	}
+	var i = Collections.BinarySearch(this.guaranteedBalances, new GuaranteedBalance(Blockchain.GetLastBlock().GetHeight() - numberOfConfirmations, 0));
+	if (i == -1) {
+		return 0;
+	}
+	if (i < -1) {
+		i = -i - 2;
+	}
+	if (i > this.guaranteedBalances.length - 1) {
+		i = this.guaranteedBalances.length - 1;
+	}
+	var result;
+	while ((result = this.guaranteedBalances[i]).ignore && i > 0) {
+		i--;
+	}
+	return result.ignore || result.balance < 0 ? 0 : result.balance;
+}
+
+// deprecated
+Account.prototype.GetGuaranteedBalanceMilliLm = function(numberOfConfirmations) {
+	return this.GetGuaranteedBalance(numberOfConfirmations);
+}
+
+Account.prototype.GetId = function() {
+	return this.id;
+}
+
+Account.prototype.GetLessorIds = function() {
+	return Collections.UnmodifiableSet(this.lessorIds);
+}
+
+Account.prototype.GetLessorsGuaranteedBalance = function() {
+	var lessorsGuaranteedBalance = 0;
+	for (var i in this.lessorIds) {
+		accountId = this.lessorIds[i];
+		lessorsGuaranteedBalance += Accounts.GetAccount(accountId).GetGuaranteedBalance(1440);
+	}
+	return lessorsGuaranteedBalance;
+}
+
+// deprecated
+Account.prototype.GetLessorsGuaranteedBalanceMilliLm = function() {
+	return this.GetLessorsGuaranteedBalance();
+}
+
+Account.prototype.GetNextLeasingHeightFrom = function() {
+	return this.nextLeasingHeightFrom;
+}
+
+Account.prototype.GetNextLeasingHeightTo = function() {
+	return this.nextLeasingHeightTo;
+}
+
+Account.prototype.GetNextLesseeId = function() {
+	return this.nextLesseeId;
+}
+
+Account.prototype.GetPublicKey = function() {
+	if (this.keyHeight == -1) {
+		return null;
+	}
+	return this.publicKey;
+}
+
+Account.prototype.GetUnconfirmedBalance = function() {
+	return this.unconfirmedBalance;
+}
+
+Account.prototype.GetUnconfirmedBalanceMilliLm = function() {
+	return this.unconfirmedBalance;
+}
+
+Account.prototype.LeaseEffectiveBalance = function(lesseeId, period) {
+	throw new Error('Not implementted');
+	/*
+	Account lessee = Account.getAccount(lesseeId);
+	if (lessee != null && lessee.getPublicKey() != null) {
+		Block lastBlock = Nxt.getBlockchain().getLastBlock();
+		leasingAccounts.put(this.getId(), this);
+		if (currentLeasingHeightFrom == Integer.MAX_VALUE) {
+
+			currentLeasingHeightFrom = lastBlock.getHeight() + 1440;
+			currentLeasingHeightTo = currentLeasingHeightFrom + period;
+			currentLesseeId = lesseeId;
+			nextLeasingHeightFrom = Integer.MAX_VALUE;
+			leaseListeners.Notify(Event.LEASE_SCHEDULED,
+					new AccountLease(this.getId(), lesseeId, currentLeasingHeightFrom, currentLeasingHeightTo));
+
+		} else {
+
+			nextLeasingHeightFrom = lastBlock.getHeight() + 1440;
+			if (nextLeasingHeightFrom < currentLeasingHeightTo) {
+				nextLeasingHeightFrom = currentLeasingHeightTo;
+			}
+			nextLeasingHeightTo = nextLeasingHeightFrom + period;
+			nextLesseeId = lesseeId;
+			leaseListeners.Notify(Event.LEASE_SCHEDULED
+					new AccountLease(this.getId(), lesseeId, nextLeasingHeightFrom, nextLeasingHeightTo));
+
+		}
+	}
+	*/
+}
+
+// returns true iff:
+// this.publicKey is set to null (in which case this.publicKey also gets set to key)
+// or
+// this.publicKey is already set to an array equal to key
+Account.prototype.SetOrVerify = function(key, height) {
+	if (this.publicKey == null) {
+		this.publicKey = key;
+		this.keyHeight = -1;
+		return true
+	} else if (this.publicKey.toString("hex") == key.toString("hex")) {
+		return true
+	} else if (this.keyHeight == -1) {
+		console.log("DUPLICATE KEY!!!");
+		console.log("Account key for " + this.id + " was already set to a different one at the same height " + ", current height is " + height + ", rejecting new key");
+		return false
+	} else if (this.keyHeight >= height) {
+		console.log("DUPLICATE KEY!!!");
+		console.log("Changing key for account " + this.id + " at height " + height + ", was previously set to a different one at height " + this.keyHeight);
+		this.publicKey = key;
+		this.keyHeight = height;
+		return true
+	}
+	console.log("DUPLICATE KEY!!!");
+	console.log("Invalid key for account " + this.id + " at height " + height + ", was already set to a different one at height " + this.keyHeight);
+	return false
+}
+
+Account.prototype.Undo = function(height) {
+	throw new Error('Not implementted');
+	/*
+	if (this.keyHeight >= height) {
+		Logger.logDebugMessage("Unsetting key for account " + Convert.toUnsignedLong(id) + " at height " + height
+				+ ", was previously set at height " + keyHeight);
+		this.publicKey = null;
+		this.keyHeight = -1;
+	}
+	if (this.height == height) {
+		Logger.logDebugMessage("Removing account " + Convert.toUnsignedLong(id) + " which was created in the popped off block");
+		accounts.remove(this.getId());
+	}
+	*/
+}
 
 
-module.exports = Account;
+if (typeof module !== "undefined") {
+	module.exports = Account;
+}

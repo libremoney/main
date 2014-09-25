@@ -1,26 +1,25 @@
 /*!
- * LibreMoney 0.1
+ * LibreMoney Offer 0.2
  * Copyright(c) 2014 LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
 
-function Offer(priceMilliLm, buyerId) {
-	this.priceMilliLm = priceMilliLm;
+function Offer(price, buyerId) {
+	this.price = price; // MilliLm
 	this.buyerId = buyerId;
 }
 
-function GetPriceMilliLm() {
-	return this.priceMilliLm;
+// MilliLm
+Offer.prototype.GetPrice = function() {
+	return this.price;
 }
 
-function GetBuyerId() {
+Offer.prototype.GetBuyerId = function() {
 	return this.buyerId;
 }
 
 
-Offer.prototype.GetPriceMilliLm = GetPriceMilliLm;
-Offer.prototype.GetBuyerId = GetBuyerId;
-
-
-module.exports = Offer;
+if (typeof module !== "undefined") {
+	module.exports = Offer;
+}

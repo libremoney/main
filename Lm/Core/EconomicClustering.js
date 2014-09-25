@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.1
+ * LibreMoney 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -18,6 +18,15 @@
  *
  *                                                                              Come-from-Beyond (21.05.2014)
  */
+
+
+/* cfb: This constant defines a straight edge when "longest chain"
+rule is outweighed by "economic majority" rule; the terminator
+is set as number of seconds before the current time. */
+/*
+EC_RULE_TERMINATOR = 600;
+EC_BLOCK_DISTANCE_LIMIT = 60;
+*/
 
 /*
 final class EconomicClustering {

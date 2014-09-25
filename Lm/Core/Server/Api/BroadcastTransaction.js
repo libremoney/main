@@ -1,12 +1,12 @@
 /**!
- * LibreMoney 0.0
+ * LibreMoney BroadcastTransaction api 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-var Convert = require(__dirname + '/../../../Util/Convert');
+var Convert = require(__dirname + '/../../../Lib/Util/Convert');
 var JsonResponses = require(__dirname + '/../JsonResponses');
-var Logger = require(__dirname + '/../../../Util/Logger').GetLogger(module);
+var Logger = require(__dirname + '/../../../Lib/Util/Logger').GetLogger(module);
 var TransactionProcessor = require(__dirname + '/../../TransactionProcessor');
 
 

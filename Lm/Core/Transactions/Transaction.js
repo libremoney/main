@@ -1,18 +1,20 @@
 /**!
- * LibreMoney Transaction 0.1
+ * LibreMoney Transaction 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-var Accounts = require(__dirname + '/../Accounts');
-var Arrays = require(__dirname + '/../../Util/Arrays');
-var Blockchain = require(__dirname + '/../Blockchain');
-var Blocks = require(__dirname + '/../Blocks');
-var ByteBuffer = require(__dirname + '/../../Util/ByteBuffer');
-var Convert = require(__dirname + '/../../Util/Convert');
-var Crypto = require(__dirname + '/../../Crypto/Crypto');
-var Genesis = require(__dirname + '/../Genesis');
-var Logger = require(__dirname + '/../../Util/Logger').GetLogger(module);
+if (typeof module !== "undefined") {
+	var Accounts = require(__dirname + '/../Accounts');
+	var Arrays = require(__dirname + '/../../Lib/Util/Arrays');
+	var Blockchain = require(__dirname + '/../Blockchain');
+	var Blocks = require(__dirname + '/../Blocks');
+	var ByteBuffer = require(__dirname + '/../../Lib/Util/ByteBuffer');
+	var Convert = require(__dirname + '/../../Lib/Util/Convert');
+	var Crypto = require(__dirname + '/../../Lib/Crypto/Crypto');
+	var Genesis = require(__dirname + '/../Genesis');
+	var Logger = require(__dirname + '/../../Lib/Util/Logger').GetLogger(module);
+}
 
 
 /*
@@ -32,7 +34,7 @@ senderId,
 blockTimestamp,
 fullHash
 */
-function Transaction(data) { /*data*/
+function Transaction(data) {
 	if (data.senderPublicKey == null || typeof data.senderPublicKey != 'object' || typeof data.senderPublicKey.length == 'undefined')
 		throw new Error('Transaction: data.senderPublicKey mast be array');
 
@@ -146,7 +148,7 @@ function Transaction(data) { /*data*/
 	return this;
 }
 
-function Apply() {
+Transaction.prototype.Apply = function() {
 	throw new Error('Not implementted');
 	/*
 	Account senderAccount = Account.getAccount(getSenderId());
@@ -162,7 +164,7 @@ function Apply() {
 }
 
 // returns false iff double spending
-function ApplyUnconfirmed() {
+Transaction.prototype.ApplyUnconfirmed = function() {
 	throw new Error('Not implementted');
 	/*
 	Account senderAccount = Account.getAccount(getSenderId());
@@ -175,7 +177,7 @@ function ApplyUnconfirmed() {
 	*/
 }
 
-function CompareTo(o) {
+Transaction.prototype.CompareTo = function(o) {
 	throw new Error('Not implementted');
 	/*
 	if (height < o.getHeight()) {
@@ -207,41 +209,50 @@ function CompareTo(o) {
 	*/
 }
 
-function Equals(o) {
+Transaction.prototype.Equals = function(o) {
 	throw new Error('Not implementted');
 	/*
 	return o instanceof TransactionImpl && this.getId().equals(((Transaction)o).getId());
 	*/
 }
 
-function GetAmountMilliLm() {
+Transaction.prototype.GetAmountMilliLm = function() {
 	return this.amountMilliLm;
 }
 
-function GetAppendages() {
+Transaction.prototype.GetAppendages = function() {
 	return this.appendages;
 }
 
-function GetAttachment() {
+Transaction.prototype.GetAttachment = function() {
 	return this.attachment;
 }
 
-function GetBlock() {
-	if (this.block == null && this.blockId != null) {
-		this.block = Blocks.FindBlock(this.blockId);
+Transaction.prototype.GetBlock = function(callback) {
+	var tr = this;
+	if (tr.block == null && tr.blockId != null) {
+		Blocks.FindBlock(this.blockId, function(err, block) {
+			if (err) {
+				callback(err);
+				return;
+			}
+			tr.block = block;
+			callback(null, block);
+		});
+	} else {
+		callback(null, tr.block);
 	}
-	return this.block;
 }
 
-function GetBlockId() {
+Transaction.prototype.GetBlockId = function() {
 	return this.blockId;
 }
 
-function GetBlockTimestamp() {
+Transaction.prototype.GetBlockTimestamp = function() {
 	return this.blockTimestamp;
 }
 
-function GetBytes() {
+Transaction.prototype.GetBytes = function() {
 	var buffer = new ByteBuffer();
 	buffer.littleEndian();
 	buffer.byte(this.type.GetType());
@@ -277,35 +288,35 @@ function GetBytes() {
 	return buffer.array();
 }
 
-function GetDeadline() {
+Transaction.prototype.GetDeadline = function() {
 	return this.deadline;
 }
 
-function GetECBlockHeight() {
+Transaction.prototype.GetECBlockHeight = function() {
 	return this.ecBlockHeight;
 }
 
-function GetECBlockId() {
+Transaction.prototype.GetECBlockId = function() {
 	return this.ecBlockId;
 }
 
-function GetEncryptedMessage() {
+Transaction.prototype.GetEncryptedMessage = function() {
 	return this.encryptedMessage;
 }
 
-function GetEncryptToSelfMessage() {
+Transaction.prototype.GetEncryptToSelfMessage = function() {
 	return this.encryptToSelfMessage;
 }
 
-function GetExpiration() {
+Transaction.prototype.GetExpiration = function() {
 	return this.timestamp + this.deadline * 60;
 }
 
-function GetFeeMilliLm() {
+Transaction.prototype.GetFeeMilliLm = function() {
 	return this.feeMilliLm;
 }
 
-function GetFlags() {
+Transaction.prototype.GetFlags = function() {
 	var flags = 0;
 	var position = 1;
 	if (this.message != null) {
@@ -326,18 +337,18 @@ function GetFlags() {
 	return flags;
 }
 
-function GetFullHash() {
+Transaction.prototype.GetFullHash = function() {
 	if (this.fullHash == null) {
 		GetId();
 	}
 	return this.fullHash;
 }
 
-function GetHeight() {
+Transaction.prototype.GetHeight = function() {
 	return this.height;
 }
 
-function GetId() {
+Transaction.prototype.GetId = function() {
 	if (!this.id) {
 		if (!this.signature) {
 			Logger.error("GetId: Transaction is not signed yet");
@@ -358,7 +369,7 @@ function GetId() {
 	return this.id;
 }
 
-function GetJsonObject() {
+Transaction.prototype.GetJsonObject = function() {
 	throw new Error('Not implementted');
 	/*
 	JSONObject json = new JSONObject();
@@ -390,42 +401,42 @@ function GetJsonObject() {
 	*/
 }
 
-function GetMessage() {
+Transaction.prototype.GetMessage = function() {
 	return this.message;
 }
 
-function GetPublicKeyAnnouncement() {
+Transaction.prototype.GetPublicKeyAnnouncement = function() {
 	return this.publicKeyAnnouncement;
 }
 
-function GetRecipientId() {
+Transaction.prototype.GetRecipientId = function() {
 	return this.recipientId;
 }
 
-function GetReferencedTransactionFullHash() {
+Transaction.prototype.GetReferencedTransactionFullHash = function() {
 	return this.referencedTransactionFullHash;
 }
 
-function GetSenderId() {
+Transaction.prototype.GetSenderId = function() {
 	if (this.senderId == null) {
 		this.senderId = this.account.GetId(this.senderPublicKey);
 	}
 	return this.senderId;
 }
 
-function GetSenderPublicKey() {
+Transaction.prototype.GetSenderPublicKey = function() {
 	return this.senderPublicKey;
 }
 
-function GetSignature() {
+Transaction.prototype.GetSignature = function() {
 	return this.signature;
 }
 
-function GetSize() {
+Transaction.prototype.GetSize = function() {
 	return this.SignatureOffset() + 64  + (4 + 4 + 8) + this.appendagesSize;
 }
 
-function GetStringId() {
+Transaction.prototype.GetStringId = function() {
 	if (!this.stringId) {
 		this.GetId();
 		if (!this.stringId) {
@@ -435,54 +446,54 @@ function GetStringId() {
 	return this.stringId;
 }
 
-function GetTimestamp() {
+Transaction.prototype.GetTimestamp = function() {
 	return this.timestamp;
 }
 
 // TransactionType
-function GetType() {
+Transaction.prototype.GetType = function() {
 	return this.type;
 }
 
-function GetUnsignedBytes() {
+Transaction.prototype.GetUnsignedBytes = function() {
 	throw new Error('Not implementted');
 	/*
 	return zeroSignature(getBytes());
 	*/
 }
 
-function GetVersion() {
+Transaction.prototype.GetVersion = function() {
 	return this.version;
 }
 
-function HashCode() {
+Transaction.prototype.HashCode = function() {
 	return this.GetId().HashCode();
 }
 
-function IsDuplicate(Duplicates) {
+Transaction.prototype.IsDuplicate = function(Duplicates) {
 	return this.Type.IsDuplicate(this, Duplicates);
 }
 
-function SetBlock(block) {
+Transaction.prototype.SetBlock = function(block) {
 	this.block = block;
 	this.blockId = block.GetId();
 	this.height = block.GetHeight();
 	this.blockTimestamp = block.GetTimestamp();
 }
 
-function Sign(secretPhrase) {
+Transaction.prototype.Sign = function(secretPhrase) {
 	if (signature != null) {
 		throw new Error("IllegalStateException: Transaction already signed");
 	}
 	signature = Crypto.Sign(GetBytes(), secretPhrase);
 }
 
-function SignatureOffset() {
+Transaction.prototype.SignatureOffset = function() {
 	return 1 + 1 + 4 + 2 + 32 + 8 + 8 + 8 + 32;
 }
 
 // NOTE: when undo is called, lastBlock has already been set to the previous block
-function Undo() {
+Transaction.prototype.Undo = function() {
 	throw new Error('Not implementted');
 	/*
 	Account senderAccount = Account.getAccount(senderId);
@@ -490,7 +501,7 @@ function Undo() {
 	*/
 }
 
-function UndoUnconfirmed() {
+Transaction.prototype.UndoUnconfirmed = function() {
 	throw new Error('Not implementted');
 	/*
 	Account senderAccount = Account.getAccount(getSenderId());
@@ -498,7 +509,7 @@ function UndoUnconfirmed() {
 	*/
 }
 
-function UnsetBlock() {
+Transaction.prototype.UnsetBlock = function() {
 	this.block = null;
 	this.blockId = null;
 	this.blockTimestamp = -1;
@@ -506,7 +517,7 @@ function UnsetBlock() {
 	// get priority when sorted for inclusion in a new block
 }
 
-function Validate() {
+Transaction.prototype.Validate = function() {
 	if (Blockchain.GetHeight() >= Constants.PUBLIC_KEY_ANNOUNCEMENT_BLOCK && this.type.HasRecipient() && this.recipientId != null) {
 		var recipientAccount = Accounts.GetAccount(this.recipientId);
 		if ((recipientAccount == null || recipientAccount.GetPublicKey() == null) && this.publicKeyAnnouncement == null) {
@@ -518,7 +529,7 @@ function Validate() {
 	}
 }
 
-function VerifySignature() {
+Transaction.prototype.VerifySignature = function() {
 	throw new Error('Not implementted');
 	/*
 	Account account = Account.getAccount(getSenderId());
@@ -533,7 +544,7 @@ function VerifySignature() {
 	*/
 }
 
-function ZeroSignature(data) {
+Transaction.prototype.ZeroSignature = function(data) {
 	throw new Error('Not implementted');
 	/*
 	int start = signatureOffset();
@@ -545,47 +556,6 @@ function ZeroSignature(data) {
 }
 
 
-Transaction.prototype.Apply = Apply;
-Transaction.prototype.ApplyUnconfirmed = ApplyUnconfirmed;
-Transaction.prototype.CompareTo = CompareTo;
-Transaction.prototype.Equals = Equals;
-Transaction.prototype.GetAmountMilliLm = GetAmountMilliLm;
-Transaction.prototype.GetAppendages = GetAppendages;
-Transaction.prototype.GetAttachment = GetAttachment;
-Transaction.prototype.GetBlock = GetBlock;
-Transaction.prototype.GetBlockId = GetBlockId;
-Transaction.prototype.GetBlockTimestamp = GetBlockTimestamp;
-Transaction.prototype.GetBytes = GetBytes;
-Transaction.prototype.GetDeadline = GetDeadline;
-Transaction.prototype.GetEncryptedMessage = GetEncryptedMessage;
-Transaction.prototype.GetEncryptToSelfMessage = GetEncryptToSelfMessage;
-Transaction.prototype.GetExpiration = GetExpiration;
-Transaction.prototype.GetFeeMilliLm = GetFeeMilliLm;
-Transaction.prototype.GetFullHash = GetFullHash;
-Transaction.prototype.GetHeight = GetHeight;
-Transaction.prototype.GetId = GetId;
-Transaction.prototype.GetJsonObject = GetJsonObject;
-Transaction.prototype.GetMessage = GetMessage;
-Transaction.prototype.GetRecipientId = GetRecipientId;
-Transaction.prototype.GetReferencedTransactionFullHash = GetReferencedTransactionFullHash;
-Transaction.prototype.GetStringId = GetStringId;
-Transaction.prototype.GetSenderId = GetSenderId;
-Transaction.prototype.GetSenderPublicKey = GetSenderPublicKey;
-Transaction.prototype.GetSignature = GetSignature;
-Transaction.prototype.GetSize = GetSize;
-Transaction.prototype.GetTimestamp = GetTimestamp
-Transaction.prototype.GetType = GetType;
-Transaction.prototype.GetUnsignedBytes = GetUnsignedBytes;
-Transaction.prototype.GetVersion = GetVersion;
-Transaction.prototype.HashCode = HashCode;
-Transaction.prototype.IsDuplicate = IsDuplicate;
-Transaction.prototype.SetBlock = SetBlock;
-Transaction.prototype.SignatureOffset = SignatureOffset;
-Transaction.prototype.Sign = Sign;
-Transaction.prototype.Undo = Undo;
-Transaction.prototype.UndoUnconfirmed = UndoUnconfirmed;
-Transaction.prototype.Validate = Validate;
-Transaction.prototype.VerifySignature = VerifySignature;
-
-
-module.exports = Transaction;
+if (typeof module !== "undefined") {
+	module.exports = Transaction;
+}

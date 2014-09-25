@@ -1,5 +1,5 @@
 /**!
- * LibreMoney DgsRefund api 0.1
+ * LibreMoney DgsRefund api 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -11,11 +11,6 @@ import nxt.Constants;
 import nxt.DigitalGoodsStore;
 import nxt.NxtException;
 import nxt.util.Convert;
-import org.json.simple.JSONStreamAware;
-import static nxt.http.JSONResponses.DUPLICATE_REFUND;
-import static nxt.http.JSONResponses.GOODS_NOT_DELIVERED;
-import static nxt.http.JSONResponses.INCORRECT_DGS_REFUND;
-import static nxt.http.JSONResponses.INCORRECT_PURCHASE;
 */
 
 //super(new APITag[] {APITag.DGS, APITag.CREATE_TRANSACTION}, "purchase", "refundNQT");
@@ -28,7 +23,10 @@ function DgsRefund(req, res) {
 		return INCORRECT_PURCHASE;
 	}
 	if (purchase.getRefundNote() != null) {
-		return DUPLICATE_REFUND;
+		return {
+			errorCode: 8,
+			errorDescription: "Refund already sent"
+		}
 	}
 	if (purchase.getEncryptedGoods() == null) {
 		return GOODS_NOT_DELIVERED;

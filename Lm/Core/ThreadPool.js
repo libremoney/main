@@ -1,10 +1,10 @@
 /**!
- * LibreMoney ThreadPool 0.1
+ * LibreMoney ThreadPool 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-var Logger = require(__dirname + '/../Util/Logger').GetLogger(module);
+var Logger = require(__dirname + '/../Lib/Util/Logger').GetLogger(module);
 
 
 var scheduledThreadPool;

@@ -1,5 +1,5 @@
 /**!
- * LibreMoney Hub 0.1
+ * LibreMoney Hub 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */

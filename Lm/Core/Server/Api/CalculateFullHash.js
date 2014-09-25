@@ -1,11 +1,11 @@
 /**!
- * LibreMoney CalculateFullHash api 0.1
+ * LibreMoney CalculateFullHash api 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-var Convert = require(__dirname + '/../../../Util/Convert');
-var Crypto = require(__dirname + '/../../../Crypto/Crypto');
+var Convert = require(__dirname + '/../../../Lib/Util/Convert');
+var Crypto = require(__dirname + '/../../../Lib/Crypto/Crypto');
 var JsonResponses = require(__dirname + '/../JsonResponses');
 
 

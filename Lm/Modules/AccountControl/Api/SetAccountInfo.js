@@ -1,15 +1,17 @@
 /**!
- * LibreMoney SetAccountInfo api 0.1
+ * LibreMoney SetAccountInfo api 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-var Attachment_MessagingAccountInfo = require(__dirname + "/../../Accounts/Attachment_MessagingAccountInfo");
-var Constants = require(__dirname + "/../../Constants");
-var Convert = require(__dirname + "/../../Util/Convert");
-var CreateTransaction = require(__dirname + "/../CreateTransaction");
-var JsonResponses = require(__dirname + "/../JsonResponses");
-var ParameterParser = require(__dirname + "/../ParameterParser");
+if (typeof module !== "undefined") {
+	var Attachment_MessagingAccountInfo = require(__dirname + "/../../Accounts/Attachment_MessagingAccountInfo");
+	var Constants = require(__dirname + "/../../../Lib/Constants");
+	var Convert = require(__dirname + "/../../../Lib/Util/Convert");
+	var CreateTransaction = require(__dirname + "/../../../Core/Server/CreateTransaction");
+	var JsonResponses = require(__dirname + "/../../../Core/Server/JsonResponses");
+	var ParameterParser = require(__dirname + "/../../../Core/Server/ParameterParser");
+}
 
 
 //super(new APITag[] {APITag.ACCOUNTS, APITag.CREATE_TRANSACTION}, "name", "description");
@@ -31,4 +33,6 @@ function SetAccountInfo(req, res) {
 }
 
 
-module.exports = SetAccountInfo;
+if (typeof module !== "undefined") {
+	module.exports = SetAccountInfo;
+}

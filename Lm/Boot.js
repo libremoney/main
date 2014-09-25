@@ -1,5 +1,5 @@
 /*!
- * LibreMoney Boot 0.1
+ * LibreMoney Boot 0.2
  * Copyright(c) 2014 LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -10,11 +10,12 @@ var Config = require(__dirname + '/Config');
 var Core = require(__dirname + '/Core');
 var Db = require(__dirname + '/Db');
 //var Demo = require(__dirname + '/Demo');
-var Logger = require(__dirname + '/Util/Logger').GetLogger(module);
+var Logger = require(__dirname + '/Lib/Util/Logger').GetLogger(module);
 
 /*
 var AccountControl = require(__dirname + '/Modules/AccountControl');
 var Aliases = require(__dirname + '/Modules/Aliases');
+var BlockGenerator = require(__dirname + '/Modules/Generators/BlockGenerator');
 var ColoredCoins = require(__dirname + '/Modules/ColoredCoins');
 var DigitalGoods = require(__dirname + '/Modules/DigitalGoods');
 */
@@ -22,8 +23,10 @@ var Groups = require(__dirname + '/Modules/Groups');
 /*
 var Generators = require(__dirname + '/Modules/Generators');
 var Messages = require(__dirname + '/Modules/Messages');
-*/
 var Payments = require(__dirname + '/Modules/Payments');
+var Peers = require(__dirname + '/Modules/Peers');
+var PeerProcessor = require(__dirname + '/Modules/PeerProcessor');
+*/
 var Projects = require(__dirname + '/Modules/Projects');
 /*
 var Tokens = require(__dirname + '/Modules/Tokens');
@@ -40,6 +43,7 @@ var port;
 function Boot(app1, port1, callback) {
 	app = app1;
 	port = port1;
+
 	InitConfig(function() {
 		InitCore(function() {
 			InitModules(function() {
@@ -111,6 +115,7 @@ function InitModules(callback) {
 	/*
 	AccountControl.Init();
 	Aliases.Init();
+	BlockGenerator.Init();
 	ColoredCoins.Init();
 	DigitalGoods.Init();
 	*/
@@ -118,8 +123,10 @@ function InitModules(callback) {
 	/*
 	Generators.Init();
 	Messages.Init();
-	*/
 	Payments.Init();
+	Peers.Init();
+	PeerProcessor.Init();
+	*/
 	Projects.Init();
 	/*
 	Users.Init();

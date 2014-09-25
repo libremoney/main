@@ -1,11 +1,11 @@
 /**!
- * LibreMoney GetBlock api 0.1
+ * LibreMoney GetBlock api 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
 var Blockchain = require(__dirname + '/../../Blockchain');
-var Convert = require(__dirname + '/../../../Util/Convert');
+var Convert = require(__dirname + '/../../../Lib/Util/Convert');
 var JsonData = require(__dirname + '/../JsonData');
 var JsonResponses = require(__dirname + '/../JsonResponses');
 
@@ -20,33 +20,37 @@ function GetBlock(req, res) {
 			if (heightValue != null) {
 				height = parseInt(heightValue);
 				if (height < 0 || height > Blockchain.GetHeight()) {
-					return JsonResponses.IncorrectHeight;
+					res.send(JsonResponses.IncorrectHeight);
+					return;
 				}
 			} else {
-				return JsonResponses.MissingBlock;
+				res.send(JsonResponses.MissingBlock);
+				return;
 			}
 		} catch (e) {
-			return JsonResponses.IncorrectHeight;
+			res.send(JsonResponses.IncorrectHeight);
+			return;
 		}
 	}
 
 	var includeTransactions = (req.query.includeTransactions == "true");
 
-	var blockData;
-	try {
-		if (block != null) {
-			blockData = Blockchain.GetBlock(Convert.ParseUnsignedLong(block));
+	if (block != null) {
+		Blockchain.GetBlock(Convert.ParseUnsignedLong(block), function(err, blockData) {
+			if (err || !blockData) {
+				res.send(JsonResponses.UnknownBlock);
+			} else {
+				res.send(JsonData.Block(blockData, includeTransactions));
+			}
+		});
+	} else {
+		var blockData = Blockchain.GetBlockAtHeight(height);
+		if (!blockData) {
+			res.send(JsonResponses.UnknownBlock);
 		} else {
-			blockData = Blockchain.GetBlockAtHeight(height);
+			res.send(JsonData.Block(blockData, includeTransactions));
 		}
-		if (blockData == null) {
-			return JsonResponses.UnknownBlock;
-		}
-	} catch (e) {
-		return JsonResponses.IncorrectBlock;
 	}
-
-	res.send(JsonData.Block(blockData, includeTransactions));
 }
 
 

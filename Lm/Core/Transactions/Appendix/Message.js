@@ -1,10 +1,12 @@
 /**!
- * LibreMoney 0.1
+ * LibreMoney Message 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-var AbstractAppendix = require(__dirname + '/AbstractAppendix');
+if (typeof module !== "undefined") {
+	var AbstractAppendix = require(__dirname + '/AbstractAppendix');
+}
 
 
 /*
@@ -125,4 +127,6 @@ Message(JSONObject attachmentData) throws NxtException.NotValidException {
 */
 
 
-module.exports = Message;
+if (typeof module !== "undefined") {
+	module.exports = Message;
+}

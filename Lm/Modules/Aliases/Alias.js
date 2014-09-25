@@ -1,5 +1,5 @@
 /*!
- * LibreMoney Alias 0.1
+ * LibreMoney Alias 0.2
  * Copyright(c) 2014 LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -13,32 +13,25 @@ function Alias(account, id, aliasName, aliasUri, timestamp) {
 	this.timestamp = timestamp;
 }
 
-function GetAccountId() {
+Alias.prototype.GetAccountId = function() {
 	return this.accountId;
 }
 
-function GetAliasName() {
+Alias.prototype.GetAliasName = function() {
 	return this.aliasName;
 }
 
-function GetAliasUri() {
+Alias.prototype.GetAliasUri = function() {
 	return this.aliasUri;
 }
 
-function GetId() {
+Alias.prototype.GetId = function() {
 	return this.id;
 }
 
-function GetTimestamp() {
+Alias.prototype.GetTimestamp = function() {
 	return this.timestamp;
 }
-
-
-Alias.prototype.GetAccountId = GetAccountId;
-Alias.prototype.GetAliasName = GetAliasName;
-Alias.prototype.GetAliasUri = GetAliasUri;
-Alias.prototype.GetId = GetId;
-Alias.prototype.GetTimestamp = GetTimestamp;
 
 
 module.exports = Alias;

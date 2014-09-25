@@ -1,5 +1,5 @@
 /*!
- * LibreMoney 0.1
+ * LibreMoney CreateColoredCoinsTrType 0.2
  * Copyright(c) 2014 LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -19,7 +19,7 @@ function CreateColoredCoins() {
 	var obj = LmTrType.CreateTransactionType();
 
 	function GetType() {
-		return LmTrType.TYPE_COLORED_COINS;
+		return Constants.TrTypeColoredCoins;
 	}
 
 	obj.GetType = GetType;

@@ -1,5 +1,5 @@
 /**!
- * LibreMoney RebroadcastTransactionsThread 0.1
+ * LibreMoney RebroadcastTransactionsThread 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -33,4 +33,7 @@ function Run() {
 	*/
 }
 
-exports.Run = Run;
+
+if (typeof module !== "undefined") {
+	exports.Run = Run;
+}

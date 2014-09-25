@@ -1,13 +1,15 @@
 /**!
- * LibreMoney GetAccountTransactions api 0.1
+ * LibreMoney GetAccountTransactions api 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-var Blockchain = require(__dirname + '/../../Blockchain');
-var Core = require(__dirname + '/../../Core');
-var JsonData = require(__dirname + '/../JsonData');
-var ParameterParser = require(__dirname + '/../ParameterParser');
+if (typeof module !== "undefined") {
+	var Blockchain = require(__dirname + '/../../Blockchain');
+	var Core = require(__dirname + '/../../Core');
+	var JsonData = require(__dirname + '/../JsonData');
+	var ParameterParser = require(__dirname + '/../ParameterParser');
+}
 
 
 //super(new APITag[] {APITag.ACCOUNTS}, "account", "timestamp", "type", "subtype", "firstIndex", "lastIndex", "numberOfConfirmations");

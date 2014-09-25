@@ -1,13 +1,14 @@
 /**!
- * LibreMoney GetBlockchainStatus api 0.1
+ * LibreMoney GetBlockchainStatus api 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
 var Blockchain = require(__dirname + '/../../Blockchain');
 var BlockchainProcessor = require(__dirname + '/../../BlockchainProcessor');
-var Convert = require(__dirname + '/../../../Util/Convert');
+var Convert = require(__dirname + '/../../../Lib/Util/Convert');
 var Core = require(__dirname + '/../../Core');
+
 
 //super(new APITag[] {APITag.BLOCKS, APITag.INFO});
 function GetBlockchainStatus(req, res) {
@@ -30,5 +31,6 @@ function GetBlockchainStatus(req, res) {
 	//res.send('{"version": "0"}');
 	//res.send('This is not implemented');
 }
+
 
 module.exports = GetBlockchainStatus;

@@ -1,5 +1,5 @@
 /**!
- * LibreMoney TransferAsset api 0.1
+ * LibreMoney TransferAsset api 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -38,7 +38,7 @@ function TransferAsset(req, res) {
 
 		Long assetBalance = account.getUnconfirmedAssetBalanceQNT(asset.getId());
 		if (assetBalance == null || quantityQNT > assetBalance) {
-			return JsonResponses.NOT_ENOUGH_ASSETS;
+			return JsonResponses.NotEnoughAssets;
 		}
 
 		Attachment attachment = new Attachment.ColoredCoinsAssetTransfer(asset.getId(), quantityQNT, comment);

@@ -1,12 +1,12 @@
 /**!
- * LibreMoney config 0.1
+ * LibreMoney Config 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
 
 var nconf = require('nconf');
-var Logger = require(__dirname + '/Util/Logger').GetLogger(module);
+var Logger = require(__dirname + '/Lib/Util/Logger').GetLogger(module);
 
 
 function Get(paramName) {

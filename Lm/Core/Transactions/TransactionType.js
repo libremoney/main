@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.1
+ * LibreMoney TransactionType 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -131,4 +131,6 @@ TransactionType.prototype.UndoUnconfirmed = UndoUnconfirmed;
 TransactionType.prototype.ValidateAttachment = ValidateAttachment;
 
 
-module.exports = TransactionType;
+if (typeof module !== "undefined") {
+	module.exports = TransactionType;
+}
