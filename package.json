@@ -1,6 +1,6 @@
 {
   "name": "LibreMoney",
-  "version": "0.0.4",
+  "version": "0.2.0",
   "description": "LibreMoney project",
   "main": "web.js",
   "private": true,
@@ -11,9 +11,10 @@
   },
   "license": "CC0",
   "dependencies": {
-    "async":"x",
+    "async": "x",
     "logfmt": "~1.1.2",
     "express": "4.x",
+    "serve-favicon": "x",
     "nconf": "~0.6.9",
     "mongoose": "~3.8.6",
     "winston": "x"
