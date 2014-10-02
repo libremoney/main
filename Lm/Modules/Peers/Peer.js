@@ -44,7 +44,7 @@ function Peer(peerAddress, announcedAddress, services) { /*host, port*/
 	this.downloadBytes = 0;
 	this.timestamp = null;
 	this.lastSeen = null;
-	this.status = Peers.Statuses.Disable;
+	this.status = Constants.NetStatuses.Disable;
 	this.oldStatus = null;
 
 	/*

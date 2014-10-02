@@ -21,7 +21,7 @@ function RsConvert(req, res) {
 		return MISSING_ACCOUNT;
 	}
 	try {
-		Long accountId = Convert.parseAccountId(accountValue);
+		Long accountId = ConvertAccount.ParseAccountId(accountValue);
 		if (accountId == null) {
 			return INCORRECT_ACCOUNT;
 		}

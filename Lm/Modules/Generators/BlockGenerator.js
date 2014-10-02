@@ -5,6 +5,8 @@
  */
 
 if (typeof module !== "undefined") {
+	var events = require('events');
+	var util = require('util');
 	var Constants = require(__dirname + '/../../Lib/Constants');
 	var Logger = require(__dirname + '/../../Lib/Util/Logger').GetLogger(module);
 }
@@ -209,6 +211,9 @@ BlockGenerator.prototype.HandleVerifiedPeerResponse = function(e) {
 	this.verifiedPeerResponse.set(e.peer.toString(), e.message.data);
 }
 
+BlockGenerator.prototype.Init = function() {
+}
+
 BlockGenerator.prototype.InitCheckPeers = function() {
 	setTimeout(this.selectPeer.bind(this), 3e4);
 }
@@ -220,7 +225,7 @@ BlockGenerator.prototype.SelectPeer = function() {
 	}
 	var peerProc = this.node.peerProcessor;
 	var filtered = peerProc.connections.filter(function(conn, key) {
-		return conn.peer.status === Peer.prototype.statuses.ACTIVE && this.collectedPeerResponse.has(key)
+		return conn.peer.status === Constants.NetStatuses.Active && this.collectedPeerResponse.has(key)
 	}.bind(this));
 	var self = this;
 	async.eachSeries(filtered.toArray(), function(conn, _callback) {
@@ -306,5 +311,5 @@ BlockGenerator.prototype.VerifiedPeer = function() {
 
 
 if (typeof module !== "undefined") {
-	module.exports = BlockGenerator;
+	module.exports = new BlockGenerator();
 }

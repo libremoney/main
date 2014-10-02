@@ -163,7 +163,7 @@ var Lm = (function(Lm, $, undefined) {
 				} else {
 					if (!messages[i].attachment["version.Message"]) {
 						try {
-							decoded = converters.hexStringToString(messages[i].attachment.message);
+							decoded = Convert.HexStringToString(messages[i].attachment.message);
 						} catch (err) {
 							//legacy
 							if (messages[i].attachment.message.indexOf("feff") === 0) {
@@ -241,7 +241,7 @@ var Lm = (function(Lm, $, undefined) {
 			} else {
 				if (!unconfirmedTransaction.attachment["version.Message"]) {
 					try {
-						decoded = converters.hexStringToString(unconfirmedTransaction.attachment.message);
+						decoded = Convert.HexStringToString(unconfirmedTransaction.attachment.message);
 					} catch (err) {
 						//legacy
 						if (unconfirmedTransaction.attachment.message.indexOf("feff") === 0) {

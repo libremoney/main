@@ -5,23 +5,16 @@
  */
 
 if (typeof module !== "undefined") {
+	var events = require('events');
+	var util = require('util');
 	var Constants = require(__dirname + '/../../Lib/Constants');
 	var Logger = require(__dirname + '/../../Lib/Util/Logger').GetLogger(module);
 }
 
 
-var blockSyncBuffer = new Map();
-var syncBlockRunning = false;
-//var unconfTxsSyncBuffer = new Map();
-var syncUnconfTxsRunning = false;
-var newTxsSyncBuffer = [];
-var newTxsRunning = false;
-
-
 function PeerProcessor(node) {
 	events.EventEmitter.call(this);
-	var self = this;
-	var client, server;
+	var server;
 	this.node = node;
 	this.synced = false;
 	this.enabled = false;
@@ -34,9 +27,21 @@ function PeerProcessor(node) {
 	this.interval = 5e3;
 	this.minConnections = 8;
 	this.MAX_ADDR_COUNT = 1e3;
+	this.blockSyncBuffer = new Map();
+	this.syncBlockRunning = false;
+	this.syncUnconfTxsRunning = false;
+	this.newTxsSyncBuffer = [];
+	this.newTxsRunning = false;
+	this.intervalCheckSynced = null;
+	this.netStatus = Constants.NetStatuses.Disable;
+	return this;
 }
 
 util.inherits(PeerProcessor, events.EventEmitter);
+
+PeerProcessor.prototype.Event = {
+	NetConnected: "NetConnected"
+}
 
 PeerProcessor.prototype.AddConnection = function(socketConn, peer) {
 	var conn = new Connection(socketConn, peer);
@@ -60,10 +65,14 @@ PeerProcessor.prototype.AddConnection = function(socketConn, peer) {
 	return conn;
 }
 
+Core.prototype.AddListener = function(eventType, listener) {
+	return this.addListener(eventType, listener);
+}
+
 PeerProcessor.prototype.AddPeer = function(peer, port) {
 	if (peer instanceof Peer) {
 		logger.netdbg("Add peer: " + peer.toString());
-		var defStatus = Peer.prototype.statuses.DISABLE;
+		var defStatus = Peers.Statuses.Disable;
 		if (!this.peers.has(peer.toString())) {
 			PeersDb.AddReplacePeer(peer);
 			this.peers.set(peer.toString(), peer);
@@ -86,6 +95,55 @@ PeerProcessor.prototype.AddPeer = function(peer, port) {
 	}
 }
 
+PeerProcessor.prototype.Broadcast = function(data, command, options) {
+	var conns = this.GetActiveConnections();
+	var _options = options || {};
+	var f = null;
+	if (typeof command === "string") {
+		f = function(conn, data, command) {
+			return conn.SendMessage(command, data);
+		}
+	} else {
+		f = function(conn, data) {
+			return conn.Broadcast(data);
+		}
+	}
+	var checkOptions;
+	if (_options["peerKey"]) {
+		checkOptions = function(data, key) {
+			if (key == _options["peerKey"]) {
+				data["broadcastSelectPeer"] = true;
+			}
+			return data;
+		}
+	} else {
+		checkOptions = function(data, key) {
+			return data;
+		}
+	}
+	conns.forEach(function(conn, key) {
+		f(conn, checkOptions(data, key), command);
+	});
+}
+
+PeerProcessor.prototype.BroadcastNewBlock = function(block) {
+	var data = block.GetDataWithTransactions();
+	data.broadcasted = true;
+	this.Broadcast(data, Constants.Commands.Block);
+}
+
+PeerProcessor.prototype.BroadcastNewTransaction = function(transaction) {
+	var data = transaction.GetData();
+	this.Broadcast(data, Constants.Commands.NewTransaction);
+}
+
+PeerProcessor.prototype.BroadcastPeerStatus = function(status) {
+	this.netStatus = status;
+	this.Broadcast({
+		status: status
+	}, Constants.Commands.PeerStatus);
+}
+
 PeerProcessor.prototype.CheckStatus = function() {
 	if (this.forcePeers.length) {
 		this.forcePeers.map(function(peer, key) {
@@ -103,6 +161,13 @@ PeerProcessor.prototype.CheckStatus = function() {
 	while (this.connections.length < this.minConnections && connectablePeers.length) {
 		var peer = connectablePeers.splice(Math.random() * connectablePeers.length, 1);
 		this.connectTo(peer[0]);
+	}
+}
+
+PeerProcessor.prototype.CheckSynced = function() {
+	if (this.synced && Accounts.currentAccount) {
+		clearInterval(this.intervalCheckSynced);
+		this.BroadcastPeerStatus(Constants.Statuses.Active);
 	}
 }
 
@@ -150,7 +215,7 @@ PeerProcessor.prototype.HandleAddr = function(e) {
 	}
 	Logger.netdbg("Handle Addr\n" + e.conn.toString());
 	if (typeof e.message.addrs !== "undefined") {
-		var peer, defStatus = Peer.prototype.statuses.DISABLE;
+		var peer, defStatus = Peers.Statuses.Disable;
 		e.peer.status = e.message.netStatus || defStatus;
 		e.message.addrs.forEach(function(addr) {
 			try {
@@ -186,7 +251,7 @@ PeerProcessor.prototype.HandleBlock = function(e) {
 	if (typeof e.message.data.broadcasted !== "undefined" && e.message.data.broadcasted) {
 		broadcasted = true
 	}
-	blockSyncBuffer.set(blockData.id.toString(), {
+	this.blockSyncBuffer.set(blockData.id.toString(), {
 		block: block,
 		conn: e.conn,
 		broadcasted: broadcasted
@@ -234,7 +299,7 @@ PeerProcessor.prototype.HandleGetAddr = function(e) {
 	var peers = this.peers.values();
 	var addrs = [],
 		connection = null,
-		status, defStatus = Peer.prototype.statuses.DISABLE;
+		status, defStatus = Peers.Statuses.Disable;
 	for (var i = 0; i < addressesCount; i++) {
 		if (e.peer.host === peers[i].host) {
 			continue
@@ -253,7 +318,7 @@ PeerProcessor.prototype.HandleGetAddr = function(e) {
 	}
 	e.conn.SendMessage(Connection.prototype.commands.ADDRESSES, {
 		addrs: addrs,
-		netStatus: this.node.netStatus
+		netStatus: this.netStatus
 	})
 }
 
@@ -304,13 +369,13 @@ PeerProcessor.prototype.HandleNewTransaction = function(e) {
 	if (!transactionData) {
 		return;
 	}
-	newTxsSyncBuffer.push(transactionData);
+	this.newTxsSyncBuffer.push(transactionData);
 	this.ProcessNewTransaction();
 }
 
 PeerProcessor.prototype.HandlePeerStatus = function(e) {
 	Logger.netdbg("Handle Peer Status\n", e.conn.toString());
-	e.peer.status = e.message.data.status || Peer.prototype.statuses.DISABLE;
+	e.peer.status = e.message.data.status || Peers.Statuses.Disable;
 }
 
 PeerProcessor.prototype.HandleReady = function(e) {
@@ -328,14 +393,27 @@ PeerProcessor.prototype.HandleReady = function(e) {
 	}
 }
 
+PeerProcessor.prototype.HandleStateChange = function(e) {
+	switch (e.newState) {
+		case "netConnect":
+			this.Run();
+			break;
+		case "blockDownload":
+			this.BroadcastPeerStatus(Constants.Statuses.Check);
+			this.StartCheckSynced();
+			this.SyncTransaction();
+			break;
+	}
+}
+
 PeerProcessor.prototype.HandleUnconfirmedTransactions = function(e) {
 	var self = this;
 	Logger.netdbg("Handle Unconfirmed Transactions\n", e.conn.toString());
 	var unconfTxsData = e.message.data || null;
-	if (syncUnconfTxsRunning) {
+	if (this.syncUnconfTxsRunning) {
 		return;
 	}
-	syncUnconfTxsRunning = true;
+	this.syncUnconfTxsRunning = true;
 	if (unconfTxsData.length) {
 		async.eachSeries(unconfTxsData, function(txData, callback) {
 			UnconfirmedTransactions.HasTransaction(txData.id, function(exist) {
@@ -356,18 +434,18 @@ PeerProcessor.prototype.HandleUnconfirmedTransactions = function(e) {
 		}, function(err) {
 			if (err) {
 				Logger.error("ERROR PeerProcessor.prototype.handleUnconfirmedTransactions " + err);
-				syncUnconfTxsRunning = false;
+				this.syncUnconfTxsRunning = false;
 			} else {
-				syncUnconfTxsRunning = false;
+				this.syncUnconfTxsRunning = false;
 				self.synced = true;
 				self.node.SetState("synced");
-				self.node.BroadcastPeerStatus(Peer.prototype.statuses.SYNCED);
+				self.node.BroadcastPeerStatus(Peers.Statuses.Synced);
 			}
 		})
 	} else {
 		this.synced = true;
 		self.node.SetState("synced");
-		this.node.BroadcastPeerStatus(Peer.prototype.statuses.SYNCED);
+		this.node.BroadcastPeerStatus(Peers.Statuses.Synced);
 	}
 }
 
@@ -382,21 +460,34 @@ PeerProcessor.prototype.HandleVersion = function(e) {
 	}
 }
 
+PeerProcessor.prototype.Init = function() {
+	this.AddListener(this.Event.NetConnected, function() {
+		if (Core.state == "netConnect") {
+			Core.SetState("blockDownload");
+		}
+	});
+	Core.AddListener(Core.Event.StateChange, this.HandleStateChange);
+}
+
+PeerProcessor.prototype.Notify = function(eventType, data) {
+	return this.emit(eventType, data);
+}
+
 PeerProcessor.prototype.PingStatus = function() {
 	if (!this.enabled) {
 		return;
 	}
 	this.CheckStatus();
 	this.clearLostPeers();
-	this.timer = setTimeout(this.PingStatus.bind(this), this.interval);
+	this.timer = setTimeout(this.PingStatus, this.interval);
 }
 
 PeerProcessor.prototype.ProcessNewTransaction = function() {
-	if (newTxsRunning) {
+	if (this.newTxsRunning) {
 		return;
 	}
-	newTxsRunning = true;
-	async.eachSeries(newTxsSyncBuffer, function(transactionData, callback) {
+	this.newTxsRunning = true;
+	async.eachSeries(this.newTxsSyncBuffer, function(transactionData, callback) {
 		var transaction = new Transaction(transactionData);
 		var transactionProcessor = new TransactionProcessor();
 		transactionProcessor.VerifiyTransaction(transaction, function(err) {
@@ -409,23 +500,23 @@ PeerProcessor.prototype.ProcessNewTransaction = function() {
 			}
 		})
 	}, function(err) {
-		newTxsRunning = false;
-		newTxsSyncBuffer = [];
+		this.newTxsRunning = false;
+		this.newTxsSyncBuffer = [];
 	});
 }
 
 PeerProcessor.prototype.ProcessSyncBlock = function() {
 	var self = this;
-	if (syncBlockRunning) {
+	if (this.syncBlockRunning) {
 		return;
 	}
-	syncBlockRunning = true;
-	var blockSyncBufferArr = blockSyncBuffer.toArray();
+	this.syncBlockRunning = true;
+	var blockSyncBufferArr = this.blockSyncBuffer.toArray();
 	async.eachSeries(blockSyncBufferArr, function(data, callback) {
 		var conn = data.conn;
 		var block = data.block;
 		var broadcasted = data.broadcasted;
-		blockSyncBuffer.delete(block.id.toString());
+		this.blockSyncBuffer.delete(block.id.toString());
 		BlockDb.HasBlock(block.id.toString(), function(exist) {
 			if (!exist) {
 				BlockchainProcessor.PushBlock(block, function() {
@@ -453,7 +544,7 @@ PeerProcessor.prototype.ProcessSyncBlock = function() {
 		if (err) {
 			Logger.error(err);
 		}
-		syncBlockRunning = false;
+		this.syncBlockRunning = false;
 	});
 }
 
@@ -466,14 +557,14 @@ PeerProcessor.prototype.Run = function() {
 			throw new Error("PeerManager.enable(): Invalid Configuration for initial" + "peers.");
 		}
 		this.AddPeer(peer);
-	}.bind(this));
+	});
 	forcePeers.forEach(function(peer) {
 		if ("string" !== typeof peer) {
 			throw new Error("PeerManager.enable(): Invalid Configuration for initial" + "peers.")
 		}
 		var _peer = new Peer(peer);
 		this.ForcePeers.set(_peer.toString(), _peer);
-	}.bind(this));
+	});
 	this.server = net.createServer(function(socketConn) {
 		try {
 			var peer = new Peer(socketConn.remoteAddress, Config.peerPort);
@@ -481,7 +572,7 @@ PeerProcessor.prototype.Run = function() {
 		} catch (e) {
 			Logger.error("Add peer errror: " + JSON.stringify(e));
 		}
-	}.bind(this));
+	});
 	Logger.netdbg("this.server.listen on port: " + Config.peerPort);
 	this.server.listen(Config.peerPort);
 	if (!this.timer) {
@@ -499,13 +590,17 @@ PeerProcessor.prototype.SendTransaction = function(trans) {
 				connection.SendNewTransaction();
 				connectionCount++;
 			}
-		}.bind(this));
+		});
 		if (connectionCount === 0) {
 			Logger.netdbg("Error: no connection to force peers.");
 		}
 	} else {
 		Logger.netdbg("Error: forcePeers is empty.");
 	}
+}
+
+PeerProcessor.prototype.StartCheckSynced = function() {
+	this.intervalCheckSynced = setInterval(this.CheckSynced(), 1e4);
 }
 
 PeerProcessor.prototype.SyncTransaction = function() {
@@ -529,5 +624,5 @@ PeerProcessor.prototype.SyncTransaction = function() {
 
 
 if (typeof module !== "undefined") {
-	module.exports = PeerProcessor;
+	module.exports = new PeerProcessor();
 }

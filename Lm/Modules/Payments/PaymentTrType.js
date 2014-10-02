@@ -5,20 +5,22 @@
  */
 
 
-var Constants = require(__dirname + '/../../Constants');
-var TransactionType = require(__dirname + '/../../Core/Transactions/TransactionType');
-
-
-function Payment() {
-	this.prototype = new TransactionType();
-
-	function GetType() {
-		return Constants.TrTypePayment;
-	}
-
-	this.GetType = GetType
-	return this;
+if (typeof module !== "undefined") {
+	var Constants = require(__dirname + '/../../Lib/Constants');
+	var TransactionType = require(__dirname + '/../../Core/Transactions/TransactionType');
 }
 
 
-module.exports = Payment;
+function Payment() {
+}
+
+Payment.prototype = new TransactionType();
+
+Payment.prototype.GetType = function() {
+	return Constants.TrTypePayment;
+}
+
+
+if (typeof module !== "undefined") {
+	module.exports = Payment;
+}

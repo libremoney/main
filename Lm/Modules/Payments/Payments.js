@@ -6,10 +6,12 @@
 
 if (typeof module !== "undefined") {
 	var Core = require(__dirname + '/../../Core');
-	var Logger = require(__dirname + '/../../Util/Logger').GetLogger(module);
+	var Logger = require(__dirname + '/../../Lib/Util/Logger').GetLogger(module);
 	var Ordinary = require(__dirname + '/OrdinaryTrType');
+	var PaymentConstants = require(__dirname + '/PaymentConstants');
 	var Transactions = require(__dirname + '/../../Core/Transactions');
 }
+
 
 var Payments = function() {
 	var ordinary;
@@ -34,8 +36,8 @@ var Payments = function() {
 	deadline,
 	senderPublicKey,
 	recipientId,
-	amountMilliLm,
-	feeMilliLm,
+	amount - MilliLm
+	fee - MilliLm
 	referencedTransactionFullHash,
 	attachment,
 	signature
@@ -47,8 +49,8 @@ var Payments = function() {
 			deadline: data.deadline,
 			senderPublicKey: data.senderPublicKey,
 			recipientId: data.recipientId,
-			amountMilliLm: data.amountMilliLm,
-			feeMilliLm: data.feeMilliLm,
+			amount: data.amount,
+			fee: data.fee,
 			referencedTransactionFullHash: data.referencedTransactionFullHash,
 			signature: data.signature
 			/*blockId,
@@ -80,7 +82,7 @@ var Payments = function() {
 		Init: Init,
 		NewOrdinaryPaymentTransaction: NewOrdinaryPaymentTransaction,
 
-		SUBTYPE_PAYMENT_ORDINARY_PAYMENT: 0
+		SUBTYPE_PAYMENT_ORDINARY_PAYMENT: PaymentConstants.SUBTYPE_PAYMENT_ORDINARY_PAYMENT
 	}
 }
 

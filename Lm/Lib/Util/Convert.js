@@ -7,7 +7,6 @@
 if (typeof module !== "undefined") {
 	var BigInteger = require(__dirname + '/BigInteger');
 	var Constants = require(__dirname + '/../Constants');
-	var Crypto = require(__dirname + '/../Crypto/Crypto');
 }
 
 
@@ -15,6 +14,24 @@ var Convert = function() {
 	var hexChars = new Array('0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f');
 	var multipliers = new Array(1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000);
 	var two64 = new BigInteger("18446744073709551616");
+
+	var charToNibble = {};
+	var nibbleToChar = [];
+	var i;
+	for (i = 0; i <= 9; ++i) {
+		var character = i.toString();
+		charToNibble[character] = i;
+		nibbleToChar.push(character);
+	}
+
+	for (i = 10; i <= 15; ++i) {
+		var lowerChar = String.fromCharCode('a'.charCodeAt(0) + i - 10);
+		var upperChar = String.fromCharCode('A'.charCodeAt(0) + i - 10);
+
+		charToNibble[lowerChar] = i;
+		charToNibble[upperChar] = i;
+		nibbleToChar.push(lowerChar);
+	}
 
 
 	function BigIntToLong(bigIntVal) {
@@ -49,6 +66,110 @@ var Convert = function() {
 		var lowBits = buf.slice(buf.length - 4, buf.length);
 		var higthBits = buf.slice(buf.length - 8, buf.length - 4);
 		return new longInt(lowBits.readInt32LE(0), higthBits.readInt32LE(0), true)
+	}
+
+	function ByteArrayToBigInteger(bytes, opt_startIndex) {
+		var index = this.CheckBytesToIntInput(bytes, 8, opt_startIndex);
+		var value = new BigInteger("0", 10);
+		var temp1, temp2;
+		for (var i = 7; i >= 0; i--) {
+			temp1 = value.multiply(new BigInteger("256", 10));
+			temp2 = temp1.add(new BigInteger(bytes[opt_startIndex + i].toString(10), 10));
+			value = temp2;
+		}
+		return value;
+	}
+
+	function ByteArrayToHexString(bytes) {
+		var str = '';
+		for (var i = 0; i < bytes.length; ++i) {
+			if (bytes[i] < 0) {
+				bytes[i] += 256;
+			}
+			str += nibbleToChar[bytes[i] >> 4] + nibbleToChar[bytes[i] & 0x0F];
+		}
+
+		return str;
+	}
+
+	function ByteArrayToShortArray(byteArray) {
+		var shortArray = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+		var i;
+		for (i = 0; i < 16; i++) {
+			shortArray[i] = byteArray[i * 2] | byteArray[i * 2 + 1] << 8;
+		}
+		return shortArray;
+	}
+
+	function ByteArrayToSignedInt32(bytes, opt_startIndex) {
+		var index = this.CheckBytesToIntInput(bytes, 4, opt_startIndex);
+		value = bytes[index];
+		value += bytes[index + 1] << 8;
+		value += bytes[index + 2] << 16;
+		value += bytes[index + 3] << 24;
+		return value;
+	}
+
+	function ByteArrayToSignedInt64(bytes, opt_startIndex) {
+		var index = this.CheckBytesToIntInput(bytes, 8, opt_startIndex);
+		value = bytes[index];
+		value += bytes[index + 1] << 8;
+		value += bytes[index + 2] << 16;
+		value += bytes[index + 3] << 24;
+		value += bytes[index + 4] << 32;
+		value += bytes[index + 5] << 40;
+		value += bytes[index + 6] << 48;
+		//value += bytes[index + 7] << 56; - todo
+		return value;
+	}
+
+	function ByteArrayToSignedShort(bytes, opt_startIndex) {
+		var index = this.CheckBytesToIntInput(bytes, 2, opt_startIndex);
+		var value = bytes[index];
+		value += bytes[index + 1] << 8;
+		return value;
+	}
+
+	function ByteArrayToString(bytes, opt_startIndex, length) {
+		if (length == 0) {
+			return "";
+		}
+
+		if (opt_startIndex && length) {
+			var index = this.CheckBytesToIntInput(bytes, parseInt(length, 10), parseInt(opt_startIndex, 10));
+
+			bytes = bytes.slice(opt_startIndex, opt_startIndex + length);
+		}
+
+		return decodeURIComponent(escape(String.fromCharCode.apply(null, bytes)));
+	}
+
+	// create a wordArray that is Big-Endian
+	function ByteArrayToWordArray(byteArray) {
+		var i = 0,
+			offset = 0,
+			word = 0,
+			len = byteArray.length;
+		var words = new Uint32Array(((len / 4) | 0) + (len % 4 == 0 ? 0 : 1));
+
+		while (i < (len - (len % 4))) {
+			words[offset++] = (byteArray[i++] << 24) | (byteArray[i++] << 16) | (byteArray[i++] << 8) | (byteArray[i++]);
+		}
+		if (len % 4 != 0) {
+			word = byteArray[i++] << 24;
+			if (len % 4 > 1) {
+				word = word | byteArray[i++] << 16;
+			}
+			if (len % 4 > 2) {
+				word = word | byteArray[i++] << 8;
+			}
+			words[offset] = word;
+		}
+		var wordArray = new Object();
+		wordArray.sigBytes = len;
+		wordArray.words = words;
+
+		return wordArray;
 	}
 
 	//var data = atob("AAAAAABsskAAAAAAAPmxQAAAAAAAKrF");
@@ -94,6 +215,18 @@ var Convert = function() {
 			Math.pow(2, 52);
 
 		return Math.pow(-1, sign) * mantissa * mul;
+	}
+
+	function CheckBytesToIntInput(bytes, numBytes, opt_startIndex) {
+		var startIndex = opt_startIndex || 0;
+		if (startIndex < 0) {
+			throw new Error('Start index should not be negative');
+		}
+
+		if (bytes.length < startIndex + numBytes) {
+			throw new Error('Need at least ' + (numBytes) + ' bytes to convert to an integer');
+		}
+		return startIndex;
 	}
 
 	function Chr(ascii) {
@@ -201,6 +334,72 @@ var Convert = function() {
 		return (Date.now() - Constants.EpochBeginning + 500);
 	}
 
+	function HexStringToByteArray(str) {
+		var bytes = [];
+		var i = 0;
+		if (0 !== str.length % 2) {
+			bytes.push(charToNibble[str.charAt(0)]);
+			++i;
+		}
+
+		for (; i < str.length - 1; i += 2)
+			bytes.push((charToNibble[str.charAt(i)] << 4) + charToNibble[str.charAt(i + 1)]);
+
+		return bytes;
+	}
+
+	function HexStringToString(hex) {
+		return this.ByteArrayToString(this.HexStringToByteArray(hex));
+	}
+
+	function Int32ToBytes(x, opt_bigEndian) {
+		/**
+		 * Produces an array of the specified number of bytes to represent the integer
+		 * value. Default output encodes ints in little endian format. Handles signed
+		 * as well as unsigned integers. Due to limitations in JavaScript's number
+		 * format, x cannot be a true 64 bit integer (8 bytes).
+		 */
+		function intToBytes(x, numBytes, unsignedMax, opt_bigEndian) {
+			var signedMax = Math.floor(unsignedMax / 2);
+			var negativeMax = (signedMax + 1) * -1;
+			if (x != Math.floor(x) || x < negativeMax || x > unsignedMax) {
+				throw new Error(
+					x + ' is not a ' + (numBytes * 8) + ' bit integer');
+			}
+			var bytes = [];
+			var current;
+			// Number type 0 is in the positive int range, 1 is larger than signed int,
+			// and 2 is negative int.
+			var numberType = x >= 0 && x <= signedMax ? 0 :
+				x > signedMax && x <= unsignedMax ? 1 : 2;
+			if (numberType == 2) {
+				x = (x * -1) - 1;
+			}
+			for (var i = 0; i < numBytes; i++) {
+				if (numberType == 2) {
+					current = 255 - (x % 256);
+				} else {
+					current = x % 256;
+				}
+
+				if (opt_bigEndian) {
+					bytes.unshift(current);
+				} else {
+					bytes.push(current);
+				}
+
+				if (numberType == 1) {
+					x = Math.floor(x / 256);
+				} else {
+					x = x >> 8;
+				}
+			}
+			return bytes;
+		}
+
+		return intToBytes(x, 4, 4294967295, opt_bigEndian);
+	}
+
 	function IsEmptyObj(obj) {
 		if (obj == null) return true;
 		if (obj.length && obj.length > 0) return false;
@@ -235,18 +434,6 @@ var Convert = function() {
 
 	function Ord(string) {
 		return string.charCodeAt(0);
-	}
-
-	function ParseAccountId(account) {
-		if (typeof account == 'undefined' || account == null) {
-			return null;
-		}
-		account = account.toUpperCase();
-		if (account.startsWith("LMA-")) {
-			return ZeroToNull(Crypto.RsDecode(account.substring(4)));
-		} else {
-			return ParseUnsignedLong(account);
-		}
 	}
 
 	function ParseHexString(hex) {
@@ -343,10 +530,6 @@ var Convert = function() {
 		return Math.round(numF * 1e5) / 1e5
 	}
 
-	function RsAccount(accountId) {
-		return "LMA-" + Crypto.RsEncode(NullToZero(accountId));
-	}
-
 	function SafeAbs(a) {
 		throw new Error('Not implementted');
 		/*
@@ -415,12 +598,45 @@ var Convert = function() {
 		*/
 	}
 
+	function ShortArrayToByteArray(shortArray) {
+		var byteArray = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+		var i;
+		for (i = 0; i < 16; i++) {
+			byteArray[2 * i] = shortArray[i] & 0xff;
+			byteArray[2 * i + 1] = shortArray[i] >> 8;
+		}
+
+		return byteArray;
+	}
+
+	function ShortArrayToHexString(ary) {
+		var res = "";
+		for (var i = 0; i < ary.length; i++) {
+			res += nibbleToChar[(ary[i] >> 4) & 0x0f] + nibbleToChar[ary[i] & 0x0f] + nibbleToChar[(ary[i] >> 12) & 0x0f] + nibbleToChar[(ary[i] >> 8) & 0x0f];
+		}
+		return res;
+	}
+
 	function StringToArray(string) {
 		var a = new Array();
 		for (var i = 0; i < string.length; i++) {
 			a.push(string[i]);
 		}
 		return a;
+	}
+
+	function StringToByteArray(str) {
+		str = unescape(encodeURIComponent(str)); //temporary
+
+		var bytes = new Array(str.length);
+		for (var i = 0; i < str.length; ++i)
+			bytes[i] = str.charCodeAt(i);
+
+		return bytes;
+	}
+
+	function StringToHexString(str) {
+		return this.ByteArrayToHexString(this.StringToByteArray(str));
 	}
 
 	function StringToLong(str) {
@@ -492,18 +708,40 @@ var Convert = function() {
 		*/
 	}
 
+	// assumes wordArray is Big-Endian
+	function WordArrayToByteArray(wordArray) {
+		var len = wordArray.words.length;
+		if (len == 0) {
+			return new Array(0);
+		}
+		var byteArray = new Array(wordArray.sigBytes);
+		var offset = 0,
+			word, i;
+		for (i = 0; i < len - 1; i++) {
+			word = wordArray.words[i];
+			byteArray[offset++] = word >> 24;
+			byteArray[offset++] = (word >> 16) & 0xff;
+			byteArray[offset++] = (word >> 8) & 0xff;
+			byteArray[offset++] = word & 0xff;
+		}
+		word = wordArray.words[len - 1];
+		byteArray[offset++] = word >> 24;
+		if (wordArray.sigBytes % 4 == 0) {
+			byteArray[offset++] = (word >> 16) & 0xff;
+			byteArray[offset++] = (word >> 8) & 0xff;
+			byteArray[offset++] = word & 0xff;
+		}
+		if (wordArray.sigBytes % 4 > 1) {
+			byteArray[offset++] = (word >> 16) & 0xff;
+		}
+		if (wordArray.sigBytes % 4 > 2) {
+			byteArray[offset++] = (word >> 8) & 0xff;
+		}
+		return byteArray;
+	}
+
 	function ZeroToNull(l) {
 		return l == 0 ? null : l;
-	}
-
-	// ---- String ----
-
-	String.prototype.equalsIgnoreCase = function(str) {
-		return (this.toLowerCase() == str.toLowerCase());
-	}
-
-	String.prototype.startsWith = function(str) {
-		return ( str === this.substr( 0, str.length ) );
 	}
 
 
@@ -512,7 +750,16 @@ var Convert = function() {
 		BigIntToLongBE: BigIntToLongBE,
 		BufferToLongBE: BufferToLongBE,
 		BufferToLongLE: BufferToLongLE,
+		ByteArrayToBigInteger: ByteArrayToBigInteger,
+		ByteArrayToHexString: ByteArrayToHexString,
+		ByteArrayToShortArray: ByteArrayToShortArray,
+		ByteArrayToSignedInt32: ByteArrayToSignedInt32,
+		ByteArrayToSignedInt64: ByteArrayToSignedInt64,
+		ByteArrayToSignedShort: ByteArrayToSignedShort,
+		ByteArrayToString: ByteArrayToString,
+		ByteArrayToWordArray: ByteArrayToWordArray,
 		BytesToDouble: BytesToDouble,
+		CheckBytesToIntInput: CheckBytesToIntInput,
 		Chr: Chr,
 		ClearBuffer: ClearBuffer,
 		DecodeHex: DecodeHex,
@@ -523,13 +770,15 @@ var Convert = function() {
 		GetBEBigIntFromLENumber: GetBEBigIntFromLENumber,
 		GetDateTime: GetDateTime,
 		GetEpochTime: GetEpochTime,
+		HexStringToByteArray: HexStringToByteArray,
+		HexStringToString: HexStringToString,
+		Int32ToBytes: Int32ToBytes,
 		IsEmptyObj: IsEmptyObj,
 		LongToBigInt: LongToBigInt,
 		NullToEmpty: NullToEmpty,
 		NullToNumber: NullToNumber,
 		NullToZero: NullToZero,
 		Ord: Ord,
-		ParseAccountId: ParseAccountId,
 		ParseHexString: ParseHexString,
 		ParseLm: ParseLm,
 		ParseLong: ParseLong,
@@ -537,14 +786,17 @@ var Convert = function() {
 		ParseUnsignedLong: ParseUnsignedLong,
 		ReadString: ReadString,
 		RoundTo5Float: RoundTo5Float,
-		RsAccount: RsAccount,
 		SafeAbs: SafeAbs,
 		SafeAdd: SafeAdd,
 		SafeDivide: SafeDivide,
 		SafeMultiply: SafeMultiply,
 		SafeNegate: SafeNegate,
 		SafeSubtract: SafeSubtract,
+		ShortArrayToByteArray: ShortArrayToByteArray,
+		ShortArrayToHexString: ShortArrayToHexString,
 		StringToArray: StringToArray,
+		StringToByteArray: StringToByteArray,
+		StringToHexString: StringToHexString,
 		StringToLong: StringToLong,
 		ToBytes: ToBytes,
 		ToHexString: ToHexString,
@@ -552,9 +804,21 @@ var Convert = function() {
 		ToUnsignedBigInt: ToUnsignedBigInt,
 		ToUnsignedLong: ToUnsignedLong,
 		Truncate: Truncate,
+		WordArrayToByteArray: WordArrayToByteArray,
 		ZeroToNull: ZeroToNull
 	}
 }();
+
+
+// ---- String ----
+
+String.prototype.equalsIgnoreCase = function(str) {
+	return (this.toLowerCase() == str.toLowerCase());
+}
+
+String.prototype.startsWith = function(str) {
+	return ( str === this.substr( 0, str.length ) );
+}
 
 
 if (typeof module !== "undefined") {

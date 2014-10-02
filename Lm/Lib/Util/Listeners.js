@@ -11,7 +11,11 @@ function Listeners() {
 }
 
 
-function Listeners_AddListener(eventType, listener) {
+Listeners.prototype.addListener = function(eventType, listener) {
+	return this.AddListener(eventType, listener);
+}
+
+Listeners.prototype.AddListener = function(eventType, listener) {
 	var listeners = this.listenersMap[eventType];
 	if (listeners == null) {
 		listeners = new Array(); //CopyOnWriteArrayList<>();
@@ -20,18 +24,26 @@ function Listeners_AddListener(eventType, listener) {
 	return listeners.push(listener);
 }
 
-function Listeners_Notify(eventType, t) {
+Listeners.prototype.emit = function(eventType, data) {
+	return this.Notify(eventType, data);
+}
+
+Listeners.prototype.Notify = function(eventType, data) {
 	var listeners = this.listenersMap[eventType];
 	if (listeners != null) {
 		for (var i in listeners) {
 			listener = listeners[i];
-			if (listener)
-				listener(t);
+			if (typeof listener === "function")
+				listener(data);
 		}
 	}
 }
 
-function Listeners_RemoveListener(eventType, listener) {
+Listeners.prototype.on = function(eventType, listener) {
+	return this.AddListener(eventType, listener);
+}
+
+Listeners.prototype.RemoveListener = function(eventType, listener) {
 	var listeners = listenersMap[eventType];
 	if (listeners != null) {
 		var i = listeners.indexOf(listener);
@@ -42,11 +54,6 @@ function Listeners_RemoveListener(eventType, listener) {
 	}
 	return false;
 }
-
-
-Listeners.prototype.AddListener = Listeners_AddListener;
-Listeners.prototype.Notify = Listeners_Notify;
-Listeners.prototype.RemoveListener = Listeners_RemoveListener;
 
 
 if (typeof module !== "undefined") {

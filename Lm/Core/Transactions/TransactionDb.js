@@ -17,38 +17,85 @@ if (typeof module !== "undefined") {
 var TransactionDb = function() {
 }
 
-TransactionDb.FindBlockTransactions = function(con, blockId) {
-	throw new Error('Not implemented');
-	/*
-	List<TransactionImpl> list = new ArrayList<>();
-	try (PreparedStatement pstmt = con.prepareStatement("SELECT * FROM transaction WHERE block_id = ? ORDER BY id")) {
-		pstmt.setLong(1, blockId);
-		ResultSet rs = pstmt.executeQuery();
-		while (rs.next()) {
-			list.add(loadTransaction(con, rs));
+TransactionDb.DeleteTransactions = function(transactions) {
+	for (var i in transactions) {
+		if (!transactions.hasOwnProperty(i) || i == "count") {
+			continue;
 		}
-		rs.close();
-		return list;
-	} catch (SQLException e) {
-		throw new RuntimeException(e.toString(), e);
-	} catch (NxtException.ValidationException e) {
-		throw new RuntimeException("Transaction already in database for block_id = " + Convert.toUnsignedLong(blockId)
-				+ " does not pass validation!", e);
+		var transaction = transactions[i];
+		var transactionTmp = transaction.GetData();
+		var trModel = Db.GetModel('transaction');
+		trModel.remove({id: transactionTmp.id}, {}, function(err, numRemoved) {});
 	}
-	*/
+}
+
+TransactionDb.FindBlockTransactions = function(blockId, callback) {
+	var trModel = Db.GetModel('transaction');
+	trModel.find({blockId: blockId}).sort({
+		timestamp: 1
+	}).exec(function(err, docs) {
+		if (err) {
+			Logger.warn("Find BlockTransactions ERROR!!!", err);
+			if (typeof callback === "function") {
+				callback(err);
+			}
+			return;
+		}
+		if (typeof callback === "function") {
+			var transactionsMap = {
+				count: 0
+			};
+			if (docs.length > 0) {
+				for (var i in docs) {
+					transactionsMap[docs[i].id] = new Transaction(docs[i]);
+					transactionsMap.count++;
+				}
+			}
+			callback(null, transactionsMap);
+		}
+	})
 }
 
 TransactionDb.FindTransaction = function(transactionId, callback) {
 	var trModel = Db.GetModel('transaction');
 	trModel.findOne({id:transactionId}).exec(function(err, data) {
 		if (err) {
-			if (callback) callback(err);
+			Logger.warn("Find transaction ERROR!!!", err);
+			if (typeof callback === "function") {
+				callback(err);
+			}
 			return;
 		}
-		var transaction = LoadTransaction(data);
-		if (callback) callback(null, transaction);
+		if (typeof callback === "function") {
+			var transaction = false;
+			//var transaction = LoadTransaction(data);
+			if (docs.length > 0) {
+				transaction = new Transaction(docs[0]);
+			}
+			callback(null, transaction);
+		}
 	});
 	return true;
+}
+
+TransactionDb.FindTransactionByRs = function(rs, callback) {
+	var trModel = Db.GetModel('transaction');
+	trModel.find(rs, function(err, docs) {
+		if (!err) {
+			Logger.warn("Find transaction ERROR!!!", err);
+			if (typeof callback === "function") {
+				callback(err);
+			}
+			return;
+		}
+		if (typeof callback === "function") {
+			var transaction = false;
+			if (docs.length > 0) {
+				transaction = new Transaction(docs[0])
+			}
+			callback(null, transaction);
+		}
+	});
 }
 
 TransactionDb.FindTransactionByFullHash = function(fullHash, callback) {
@@ -64,18 +111,158 @@ TransactionDb.FindTransactionByFullHash = function(fullHash, callback) {
 	return true;
 }
 
-TransactionDb.HasTransaction = function(transactionId) {
-	throw new Error('Not implemented');
-	/*
-	try (Connection con = Db.getConnection();
-		 PreparedStatement pstmt = con.prepareStatement("SELECT 1 FROM transaction WHERE id = ?")) {
-		pstmt.setLong(1, transactionId);
-		ResultSet rs = pstmt.executeQuery();
-		return rs.next();
-	} catch (SQLException e) {
-		throw new RuntimeException(e.toString(), e);
-	}
-	*/
+TransactionDb.GetAllTransactionsList = function(callback) {
+	return TransactionDb.GetTransactionsListByRs({}, callback);
+}
+
+TransactionDb.GetLastTransaction = function(callback) {
+	var trModel = Db.GetModel('transaction');
+	trModel.find({}).limit(1).sort({
+		timestamp: -1,
+		id: -1
+	}).exec(function(err, docs) {
+		if (err) {
+			Logger.warn("Find transaction ERROR!!!", err);
+			if (typeof callback === "function") {
+				callback(err);
+			}
+			return;
+		}
+		if (typeof callback === "function") {
+			var transaction = false;
+			if (docs.length > 0) {
+				transaction = new Transaction(docs[0]);
+			}
+			callback(null, transaction);
+		}
+	});
+}
+
+TransactionDb.GetLastTransactions = function(n, callback) {
+	var trModel = Db.GetModel('transaction');
+	trModel.find({}).limit(n).sort({
+		timestamp: -1,
+		id: -1
+	}).exec(function(err, docs) {
+		if (err) {
+			Logger.warn("Find transaction ERROR!!!", err);
+			if (typeof callback === "function") {
+				callback(err);
+			}
+			return;
+		}
+		if (typeof callback === "function") {
+			if (docs.length > 0) {
+				callback(null, docs);
+			} else {
+				callback(null, null);
+			}
+		}
+	});
+}
+
+TransactionDb.GetMyAllTransactions = function(accountId, callback) {
+	var trModel = Db.GetModel('transaction');
+	var q = {
+		$or: [{
+			recipientId: accountId
+		}, {
+			senderId: accountId
+		}],
+		type: Constants.TrTypePayment
+	};
+	trModel.find(q).sort({
+		timestamp: -1,
+		id: -1
+	}).exec(function(err, docs) {
+		if (err) {
+			Logger.warn("Find BlockTransactions ERROR!!!", err);
+			if (typeof callback === "function") {
+				callback(err);
+			}
+			return;
+		}
+		if (typeof callback === "function") {
+			callback(null, docs);
+		}
+	});
+}
+
+TransactionDb.GetMyTransactions = function(accountId, callback) {
+	var q = {
+		$or: [{
+			recipientId: accountId
+		}, {
+			senderId: accountId
+		}],
+		$not: {
+			blockId: null
+		},
+		type: Constants.TrTypePayment
+	};
+	return TransactionDb.GetTransactionsListByRs(q, callback);
+}
+
+TransactionDb.GetTransactionsListByRs = function(q, callback) {
+	var trModel = Db.GetModel('transaction');
+	trModel.find(q, function(err, docs) {
+		if (err) {
+			Logger.warn("Find BlockTransactions ERROR!!!", err);
+			if (typeof callback === "function") {
+				callback(err);
+			}
+			return;
+		}
+		if (typeof callback === "function") {
+			callback(null, docs);
+		}
+	});
+}
+
+TransactionDb.GetUnconfirmedTransactions = function(callback) {
+	var trModel = Db.GetModel('transaction');
+	trModel.find({blockId: null}).sort({timestamp: 1}).exec(function(err, docs) {
+		if (err) {
+			Logger.warn("Find BlockTransactions ERROR!!!", err);
+			if (typeof callback === "function") {
+				callback(err);
+			}
+			return;
+		}
+		if (typeof callback === "function") {
+			var transactionsMap = false;
+			if (docs.length > 0) {
+				transactionsMap = {
+					count: 0
+				};
+				for (var i in docs) {
+					transactionsMap[docs[i].id] = new Transaction(docs[i]);
+					transactionsMap.count++;
+				}
+			}
+			callback(null, transactionsMap);
+		}
+	});
+}
+
+TransactionDb.HasTransaction = function(transactionId, callback) {
+	var trModel = Db.GetModel('transaction');
+	trModel.find({id: transactionId}, function(err, docs) {
+		if (err) {
+			Logger.warn("Find transaction ERROR!!!", err);
+			if (typeof callback === "function") {
+				callback(err);
+			}
+			return;
+		}
+		if (typeof callback === "function") {
+			if (docs.length > 0) {
+				callback(null, true);
+			} else {
+				callback(null, false);
+			}
+		}
+	});
 }
 
 TransactionDb.HasTransactionByFullHash = function(fullHash) {
@@ -167,10 +354,10 @@ TransactionDb.LoadTransaction = function(tr) {
 }
 
 TransactionDb.SaveTransaction = function(transaction, callback) {
-	//console.log(transaction);
-	//console.log(transaction.id);
-
 	var trModel = Db.GetModel('transaction');
+	var transactionTmp = transaction.GetData();
+
+	/*
 	tr = new trModel();
 	tr.id = transaction.GetId();
 	console.log('SaveTransaction: tr.id='+tr.id+' saving...');
@@ -223,7 +410,7 @@ TransactionDb.SaveTransaction = function(transaction, callback) {
 	} else {
 		tr.ec_block_id = 0; //Types.BIGINT;
 	}
-
+	*/
 
 	//console.log('SaveTransaction: transaction.id='+tr.id);
 	/*
@@ -249,6 +436,20 @@ TransactionDb.SaveTransaction = function(transaction, callback) {
 	+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
 	*/
 
+	trModel.insert(transactionTmp, function(err, newDoc) {
+		if (err) {
+			Logger.warn("Transaction insert ERROR", err);
+			if (typeof callback === "function") {
+				callback(err);
+			}
+			return;
+		}
+		if (typeof callback === "function") {
+			callback(null, newDoc);
+		}
+	});
+
+	/*
 	tr.save(function(err) {
 		if (err) {
 			Logger.warn('SaveTransaction: non saved. err='+err);
@@ -259,7 +460,6 @@ TransactionDb.SaveTransaction = function(transaction, callback) {
 		trModel.findOne({id:tr.id}).exec(function(err, data) {
 			if (!err) {
 				if (data != null) {
-					//console.log('SaveTransaction: data='+data);
 					console.log('SaveTransaction: tr.id='+data.id+' saved');
 				} else {
 					console.log('SaveTransaction: non saved');
@@ -269,12 +469,15 @@ TransactionDb.SaveTransaction = function(transaction, callback) {
 				callback(err);
 		});
 	});
+	*/
 }
 
-// con, transactions
 TransactionDb.SaveTransactions = function(transactions) {
-	for (var transaction in transactions) {
-		SaveTransaction(transaction);
+	for (var i in transactions) {
+		if (!transactions.hasOwnProperty(i) || i == "count") {
+			continue;
+		}
+		SaveTransaction(transactions[i]);
 	}
 }
 

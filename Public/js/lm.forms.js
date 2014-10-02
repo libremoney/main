@@ -106,7 +106,7 @@ var Lm = (function(Lm, $, undefined) {
 				var options = {};
 
 				var encrypted = Lm.EncryptNote(data.note_to_self, {
-					"publicKey": converters.hexStringToByteArray(Lm.GeneratePublicKey(data.secretPhrase))
+					"publicKey": Convert.HexStringToByteArray(Lm.GeneratePublicKey(data.secretPhrase))
 				}, data.secretPhrase);
 
 				data.encryptToSelfMessageData = encrypted.message;

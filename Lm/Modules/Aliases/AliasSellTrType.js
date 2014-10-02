@@ -19,9 +19,9 @@ AliasSell.prototype = new Messaging();
 AliasSell.prototype.ApplyAttachment = function(transaction, senderAccount, recipientAccount) {
 	var attachment = transaction.GetAttachment();
 	var aliasName = attachment.GetAliasName();
-	var priceMilliLm = attachment.GetPriceMilliLm();
-	if (priceMilliLm > 0) {
-		Aliases.AddSellOffer(aliasName, priceMilliLm, recipientAccount);
+	var price = attachment.GetPrice();
+	if (price > 0) {
+		Aliases.AddSellOffer(aliasName, price, recipientAccount);
 	} else {
 		Aliases.ChangeOwner(recipientAccount, aliasName, transaction.getBlockTimestamp());
 	}
@@ -55,7 +55,7 @@ AliasSell.prototype.UndoAttachment = function(transaction, senderAccount, recipi
 }
 
 AliasSell.prototype.ValidateAttachment = function(transaction) {
-	if (transaction.GetAmountMilliLm() != 0) {
+	if (transaction.GetAmount() != 0) {
 		throw new Error("Invalid sell alias transaction: " + transaction.getJsonObject());
 	}
 	var attachment = transaction.GetAttachment();
@@ -63,11 +63,11 @@ AliasSell.prototype.ValidateAttachment = function(transaction) {
 	if (aliasName == null || aliasName.length() == 0) {
 		throw new Error("Missing alias name");
 	}
-	var priceMilliLm = attachment.GetPriceMilliLm();
-	if (priceMilliLm < 0 || priceMilliLm > Constants.MaxBalanceMilliLm) {
-		throw new Error("Invalid alias sell price: " + priceMilliLm);
+	var price = attachment.GetPrice();
+	if (price < 0 || price > Constants.MaxBalance) {
+		throw new Error("Invalid alias sell price: " + price);
 	}
-	if (priceMilliLm == 0) {
+	if (price == 0) {
 		if (Genesis.CREATOR_ID == transaction.GetRecipientId()) {
 			throw new Error("Transferring aliases to Genesis account not allowed");
 		} else if (transaction.GetRecipientId() == null) {

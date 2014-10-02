@@ -20,8 +20,9 @@ var Generators = function () {
 		StopForgin: 2 //STOP_FORGING: 2
 	}
 
-	var listeners = new Listeners();
 	var lastBlocks = []; //ConcurrentHashMap();
+	var lastTimestamp;
+	var listeners = new Listeners();
 	var hits = []; //ConcurrentHashMap();
 	var generators = []; //ConcurrentHashMap();
 
@@ -159,7 +160,7 @@ var Generators = function () {
 		BigInteger target = prevTarget.add(effectiveBaseTarget);
 
 		return hit.compareTo(target) < 0
-				&& (previousBlock.getHeight() < Constants.TRANSPARENT_FORGING_BLOCK_8
+				&& (previousBlock.getHeight() < Constants.TransparentForgingBlock
 				|| hit.compareTo(prevTarget) >= 0
 				|| (Constants.isTestnet ? elapsedTime > 300 : elapsedTime > 3600)
 				|| Constants.isOffline);

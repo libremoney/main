@@ -4,14 +4,9 @@
  * CC0 license
  */
 
-/*
-import nxt.Asset;
-import nxt.Constants;
-import nxt.crypto.Crypto;
-*/
-
 if (typeof module !== "undefined") {
 	var Accounts = require(__dirname + '/../Accounts');
+	var Constants = require(__dirname + '/../../Lib/Constants');
 	var Convert = require(__dirname + '/../../Lib/Util/Convert');
 	var JsonResponses = require(__dirname + '/JsonResponses');
 	var Logger = require(__dirname + '/../../Lib/Util/Logger').GetLogger(module);
@@ -32,7 +27,7 @@ var ParameterParser = function() {
 				continue;
 			}
 			try {
-				Account account = Account.getAccount(Convert.parseAccountId(accountValue));
+				Account account = Account.getAccount(ConvertAccount.ParseAccountId(accountValue));
 				if (account == null) {
 					throw new ParameterException(UNKNOWN_ACCOUNT);
 				}
@@ -70,7 +65,8 @@ var ParameterParser = function() {
 		*/
 	}
 
-	function GetAmountMilliLm(req) {
+	// MilliLm
+	function GetAmount(req) {
 		throw new Error('Not implementted');
 		/*
 		String amountValueNQT = Convert.emptyToNull(req.getParameter("amountNQT"));
@@ -83,7 +79,7 @@ var ParameterParser = function() {
 		} catch (RuntimeException e) {
 			throw new ParameterException(INCORRECT_AMOUNT);
 		}
-		if (amountNQT <= 0 || amountNQT >= Constants.MaxBalanceMilliLm) {
+		if (amountNQT <= 0 || amountNQT >= Constants.MaxBalance) {
 			throw new ParameterException(INCORRECT_AMOUNT);
 		}
 		return amountNQT;
@@ -116,7 +112,7 @@ var ParameterParser = function() {
 		/*
 		String buyerIdValue = Convert.emptyToNull(req.getParameter("buyer"));
 		try {
-			return Convert.parseAccountId(buyerIdValue);
+			return ConvertAccount.ParseAccountId(buyerIdValue);
 		} catch (RuntimeException e) {
 			throw new ParameterException(INCORRECT_RECIPIENT);
 		}
@@ -197,9 +193,10 @@ var ParameterParser = function() {
 		*/
 	}
 
-	function GetFeeMilliLm(req) {
-		var feeValueMilliLm = Convert.EmptyToNull(req.query.feeMilliLm);
-		return ParseFeeMilliLm(feeValueMilliLm);
+	// MilliLm
+	function GetFee(req) {
+		var feeValue = Convert.EmptyToNull(req.query.fee);
+		return ParseFee(feeValue);
 	}
 
 	function GetFirstIndex(req) {
@@ -297,8 +294,8 @@ var ParameterParser = function() {
 		*/
 	}
 
-	// GetPriceNQT
-	function GetPriceMilliLm(req) {
+	// MilliLm
+	function GetPrice(req) {
 		throw new Error('Not implementted');
 		/*
 		String priceValueNQT = Convert.emptyToNull(req.getParameter("priceNQT"));
@@ -311,7 +308,7 @@ var ParameterParser = function() {
 		} catch (RuntimeException e) {
 			throw new ParameterException(INCORRECT_PRICE);
 		}
-		if (priceNQT <= 0 || priceNQT > Constants.MaxBalanceMilliLm) {
+		if (priceNQT <= 0 || priceNQT > Constants.MaxBalance) {
 			throw new ParameterException(INCORRECT_PRICE);
 		}
 		return priceNQT;
@@ -337,8 +334,8 @@ var ParameterParser = function() {
 		*/
 	}
 
-	// GetQuantityQNT
-	function GetQuantityMilliLm(req) {
+	// MilliLm
+	function GetQuantity(req) {
 		throw new Error('Not implementted');
 		/*
 		String quantityValueQNT = Convert.emptyToNull(req.getParameter("quantityQNT"));
@@ -374,7 +371,7 @@ var ParameterParser = function() {
 		/*
 		String sellerIdValue = Convert.emptyToNull(req.getParameter("seller"));
 		try {
-			return Convert.parseAccountId(sellerIdValue);
+			return ConvertAccount.ParseAccountId(sellerIdValue);
 		} catch (RuntimeException e) {
 			throw new ParameterException(INCORRECT_RECIPIENT);
 		}
@@ -417,36 +414,37 @@ var ParameterParser = function() {
 		return timestamp;
 	}
 
-	function ParseFeeMilliLm(feeValueMilliLm) {
-		if (!feeValueMilliLm) {
+	// MilliLm
+	function ParseFee(feeValue) {
+		if (!feeValue) {
 			throw new Error(JsonResponses.MissingFee);
 		}
-		var feeMilliLm;
+		var fee;
 		try {
-			feeMilliLm = parseInt(feeValueMilliLm);
+			fee = parseInt(feeValue);
 		} catch (e) {
 			throw new Error(JsonResponses.IncorrectFee);
 		}
-		if (feeMilliLm <= 0 || feeMilliLm >= Constants.MaxBalanceMilliLm) {
+		if (fee <= 0 || fee >= Constants.MaxBalance) {
 			throw new Error(JsonResponses.IncorrectFee);
 		}
-		return feeMilliLm;
+		return fee;
 	}
 
 
 	return {
 		GetAccounts: GetAccounts,
 		GetAlias: GetAlias,
-		GetAmountMilliLm: GetAmountMilliLm,
+		GetAmount: GetAmount,
 		GetAsset: GetAsset,
-		GetFeeMilliLm: GetFeeMilliLm,
+		GetFee: GetFee,
 		GetNumberOfConfirmations: GetNumberOfConfirmations,
 		GetOrderId: GetOrderId,
-		GetPriceMilliLm: GetPriceMilliLm,
-		GetQuantityMilliLm: GetQuantityMilliLm,
+		GetPrice: GetPrice,
+		GetQuantity: GetQuantity,
 		GetSenderAccount: GetSenderAccount,
 		GetTimestamp: GetTimestamp,
-		ParseFeeMilliLm: ParseFeeMilliLm
+		ParseFee: ParseFee
 	}
 }();
 

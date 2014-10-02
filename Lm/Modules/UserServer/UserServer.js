@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.2
+ * LibreMoney UserServer 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -11,14 +11,16 @@ import nxt.util.Convert;
 import nxt.util.ThreadPool;
 */
 
-var Accounts = require(__dirname + '/../Accounts');
-var BlockchainProcessor = require(__dirname + '/../BlockchainProcessor');
-var Config = require(__dirname + '/../Config');
-var Generators = require(__dirname + '/../Generators');
-var Logger = require(__dirname + '/../Logger').GetLogger(module);
-var Peers = require(__dirname + '/../Peers');
-var TransactionProcessor = require(__dirname + '/../TransactionProcessor');
-var User = require(__dirname + '/User');
+if (typeof module !== "undefined") {
+	var Accounts = require(__dirname + '/../Accounts');
+	var BlockchainProcessor = require(__dirname + '/../BlockchainProcessor');
+	var Config = require(__dirname + '/../Config');
+	var Generators = require(__dirname + '/../Generators');
+	var Logger = require(__dirname + '/../Logger').GetLogger(module);
+	var Peers = require(__dirname + '/../Peers');
+	var TransactionProcessor = require(__dirname + '/../TransactionProcessor');
+	var User = require(__dirname + '/User');
+}
 
 
 //private static final int TESTNET_UI_PORT=6875;
@@ -470,7 +472,7 @@ function InitPeers() {
 }
 
 function InitTransactionProcessor() {
-	TransactionProcessor.AddListener(TransactionProcessor.Event.REMOVED_UNCONFIRMED_TRANSACTIONS, function(transactions) {
+	TransactionProcessor.AddListener(TransactionProcessor.Event.RemovedUnconfirmedTransactions, function(transactions) {
 		/*
 		JSONObject response = new JSONObject();
 		JSONArray removedUnconfirmedTransactions = new JSONArray();
@@ -484,7 +486,7 @@ function InitTransactionProcessor() {
 		*/
 	});
 
-	TransactionProcessor.AddListener(TransactionProcessor.Event.ADDED_UNCONFIRMED_TRANSACTIONS, function(transactions) {
+	TransactionProcessor.AddListener(TransactionProcessor.Event.AddedUnconfirmedTransactions, function(transactions) {
 		/*
 		JSONObject response = new JSONObject();
 		JSONArray addedUnconfirmedTransactions = new JSONArray();
@@ -505,7 +507,7 @@ function InitTransactionProcessor() {
 		*/
 	});
 
-	TransactionProcessor.AddListener(TransactionProcessor.Event.ADDED_CONFIRMED_TRANSACTIONS, function(transactions) {
+	TransactionProcessor.AddListener(TransactionProcessor.Event.AddedConfirmedTransactions, function(transactions) {
 		/*
 		JSONObject response = new JSONObject();
 		JSONArray addedConfirmedTransactions = new JSONArray();
@@ -526,7 +528,7 @@ function InitTransactionProcessor() {
 		*/
 	});
 
-	TransactionProcessor.AddListener(TransactionProcessor.Event.ADDED_DOUBLESPENDING_TRANSACTIONS, function(transactions) {
+	TransactionProcessor.AddListener(TransactionProcessor.Event.AddedDoubleSpendingTransactions, function(transactions) {
 		/*
 		JSONObject response = new JSONObject();
 		JSONArray newTransactions = new JSONArray();
@@ -678,6 +680,7 @@ function Shutdown() {
 }
 
 
+if (typeof module !== "undefined") {
 exports.AllowedUserHosts_Contains = AllowedUserHosts_Contains;
 exports.GetAllUsers = GetAllUsers;
 exports.GetEnforcePost = GetEnforcePost;
@@ -691,3 +694,4 @@ exports.Remove = Remove;
 exports.SendNewDataToAll = SendNewDataToAll;
 exports.SendToAll = SendToAll;
 exports.Shutdown = Shutdown;
+}

@@ -98,7 +98,7 @@ function CreateUserCreate() {
 		/*
 		Attachment.ColoredCoinsAssetIssuance attachment = (Attachment.ColoredCoinsAssetIssuance)transaction.getAttachment();
 		if (! Genesis.CREATOR_ID.equals(transaction.getRecipientId()) || transaction.getAmountNQT() != 0
-				|| transaction.getFeeNQT() < Constants.AssetIssuanceFeeMilliLm
+				|| transaction.getFeeNQT() < Constants.AssetIssuanceFee
 				|| attachment.getName().length() < Constants.MinAssetNameLength
 				|| attachment.getName().length() > Constants.MaxAssetNameLength
 				|| attachment.getDescription().length() > Constants.MaxAssetDescriptionLength

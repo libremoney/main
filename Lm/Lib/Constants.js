@@ -13,7 +13,7 @@ var Constants = {
 	MaxPayloadLength: this.MaxNumberOfTransactions * 176,
 	MaxBalanceLm: 1000000,
 	OneLm: 1000,
-	MaxBalanceMilliLm: this.MaxBalanceLm * this.OneLm,
+	MaxBalance: this.MaxBalanceLm * this.OneLm, // MilliLm
 
 	InitialBaseTarget: 153722867,
 	MaxBaseTarget: this.MaxBalanceLm * this.InitialBaseTarget,
@@ -28,7 +28,7 @@ var Constants = {
 	MaxAccountDescriptionLength: 1000,
 
 	MaxAssetQuantityQnt: 1000000 * 1000,
-	AssetIssuanceFeeMilliLm: 1000 * this.OneLm,
+	AssetIssuanceFee: 1000 * this.OneLm, // MilliLm
 	MinAssetNameLength: 3,
 	MaxAssetNameLength: 10,
 	MaxAssetDescriptionLength: 1000,
@@ -60,12 +60,12 @@ var Constants = {
 	IsTestnet: false, //Config.GetBooleanProperty("lm.isTestnet");
 	IsOffline: false, //Lm.GetBooleanProperty("nxt.isOffline");
 
-	UnconfirmedPoolDepositMilliLm: 100 * this.OneLm,
+	UnconfirmedPoolDeposit: 100 * this.OneLm, // MilliLm
 
 	EpochBeginning: 1400000000000, // 13.05.2014 16:53:20 UTC = Date.UTC(2014, 05, 13, 16, 53, 20, 0)
 	Alphabet: "0123456789abcdefghijklmnopqrstuvwxyz", //36
 
-	TRANSPARENT_FORGING_BLOCK: 3e4,
+	TransparentForgingBlock: 3e4,
 
 	StarPeers: ["node.libremoney.com:1400", "node.libremoney.net:1400"],
 
@@ -91,6 +91,14 @@ var Constants = {
 		VerifiedPeerResponse: "VerifiedPeerResponse",
 		Version: "Version",
 		UnconfirmedTransactions: "UnconfirmedTransactions"
+	},
+
+	NetStatuses: {
+		Active: "Active",
+		Check: "Check",
+		Disable: "Disable",
+		Pending: "Pending",
+		Synced: "Synced"
 	},
 
 	TrTypePayment: 0,

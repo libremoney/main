@@ -4,10 +4,9 @@
  * CC0 license
  */
 
-var Core = require(__dirname + '/../../Core');
-
 
 function GetVersion(req, res) {
+	var Core = require(__dirname + '/../../Core');
 	var response = {};
 	response.version = Core.GetVersion();
 	res.send(response);

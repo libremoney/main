@@ -1,5 +1,6 @@
 /**
  * @depends {lm.js}
+ * @depends {Lib/Crypto/Crypto.js}
  */
 var Lm = (function(Lm, $, undefined) {
 	var _password;
@@ -7,12 +8,6 @@ var Lm = (function(Lm, $, undefined) {
 	var _decryptedTransactions = {};
 	var _encryptedNote = null;
 	var _sharedKeys = {};
-
-	var _hash = {
-		init: SHA256_init,
-		update: SHA256_write,
-		getBytes: SHA256_finalize
-	};
 
 
 	function AddDecryptedTransaction(identifier, content) {
@@ -22,114 +17,15 @@ var Lm = (function(Lm, $, undefined) {
 	}
 
 	function AesDecrypt(ivCiphertext, options) {
-		if (ivCiphertext.length < 16 || ivCiphertext.length % 16 != 0) {
-			throw {
-				name: "invalid ciphertext"
-			};
-		}
-
-		var iv = converters.byteArrayToWordArray(ivCiphertext.slice(0, 16));
-		var ciphertext = converters.byteArrayToWordArray(ivCiphertext.slice(16));
-
-		if (!options.sharedKey) {
-			var sharedKey = GetSharedKey(options.privateKey, options.publicKey);
-		} else {
-			var sharedKey = options.sharedKey.slice(0); //clone
-		}
-
-		for (var i = 0; i < 32; i++) {
-			sharedKey[i] ^= options.nonce[i];
-		}
-
-		var key = CryptoJS.SHA256(converters.byteArrayToWordArray(sharedKey));
-
-		var encrypted = CryptoJS.lib.CipherParams.create({
-			ciphertext: ciphertext,
-			iv: iv,
-			key: key
-		});
-
-		var decrypted = CryptoJS.AES.decrypt(encrypted, key, {
-			iv: iv
-		});
-
-		var plaintext = converters.wordArrayToByteArray(decrypted);
-
-		return plaintext;
+		return Crypto.AesDecrypt(ivCiphertext, options);
 	}
 
 	function AesEncrypt(plaintext, options) {
-		if (!window.crypto && !window.msCrypto) {
-			throw {
-				"errorCode": -1,
-				"message": $.t("error_encryption_browser_support")
-			};
-		}
-
-		// CryptoJS likes WordArray parameters
-		var text = converters.byteArrayToWordArray(plaintext);
-
-		if (!options.sharedKey) {
-			var sharedKey = GetSharedKey(options.privateKey, options.publicKey);
-		} else {
-			var sharedKey = options.sharedKey.slice(0); //clone
-		}
-
-		for (var i = 0; i < 32; i++) {
-			sharedKey[i] ^= options.nonce[i];
-		}
-
-		var key = CryptoJS.SHA256(converters.byteArrayToWordArray(sharedKey));
-
-		var tmp = new Uint8Array(16);
-
-		if (window.crypto) {
-			window.crypto.getRandomValues(tmp);
-		} else {
-			window.msCrypto.getRandomValues(tmp);
-		}
-
-		var iv = converters.byteArrayToWordArray(tmp);
-		var encrypted = CryptoJS.AES.encrypt(text, key, {
-			iv: iv
-		});
-
-		var ivOut = converters.wordArrayToByteArray(encrypted.iv);
-
-		var ciphertextOut = converters.wordArrayToByteArray(encrypted.ciphertext);
-
-		return ivOut.concat(ciphertextOut);
+		return Crypto.AesEncrypt(plaintext, options);
 	}
 
 	function AreByteArraysEqual(bytes1, bytes2) {
-		if (bytes1.length !== bytes2.length)
-			return false;
-
-		for (var i = 0; i < bytes1.length; ++i) {
-			if (bytes1[i] !== bytes2[i])
-				return false;
-		}
-
-		return true;
-	}
-
-	function ByteArrayToBigInteger(byteArray, startIndex) {
-		var value = new BigInteger("0", 10);
-		var temp1, temp2;
-		for (var i = byteArray.length - 1; i >= 0; i--) {
-			temp1 = value.multiply(new BigInteger("256", 10));
-			temp2 = temp1.add(new BigInteger(byteArray[i].toString(10), 10));
-			value = temp2;
-		}
-
-		return value;
-	}
-
-	function Curve25519_clamp(curve) {
-		curve[0] &= 0xFFF8;
-		curve[15] &= 0x7FFF;
-		curve[15] |= 0x4000;
-		return curve;
+		return Crypto.AreByteArraysEqual(bytes1, bytes2);
 	}
 
 	function DecryptAllMessages(messages, password) {
@@ -184,32 +80,7 @@ var Lm = (function(Lm, $, undefined) {
 		}
 	}
 
-	function DecryptData(data, options, secretPhrase) {
-		try {
-			return Lm.DecryptNote(message, options, secretPhrase);
-		} catch (err) {
-			var mesage = String(err.message ? err.message : err);
-
-			if (err.errorCode && err.errorCode == 1) {
-				return false;
-			} else {
-				if (options.title) {
-					var translatedTitle = Lm.GetTranslatedFieldName(options.title).toLowerCase();
-					if (!translatedTitle) {
-						translatedTitle = String(options.title).escapeHTML().toLowerCase();
-					}
-
-					return $.t("error_could_not_decrypt_var", {
-						"var": translatedTitle
-					}).capitalize();
-				} else {
-					return $.t("error_could_not_decrypt");
-				}
-			}
-		}
-	}
-
-	function DecryptData1(data, options) {
+	function DecryptData(data, options) {
 		if (!options.sharedKey) {
 			options.sharedKey = GetSharedKey(options.privateKey, options.publicKey);
 		}
@@ -220,7 +91,7 @@ var Lm = (function(Lm, $, undefined) {
 
 		var data = pako.inflate(binData);
 
-		return converters.byteArrayToString(data);
+		return Convert.ByteArrayToString(data);
 	}
 
 	function DecryptNote(message, options, secretPhrase) {
@@ -240,7 +111,7 @@ var Lm = (function(Lm, $, undefined) {
 						}
 					}
 
-					options.privateKey = converters.hexStringToByteArray(Lm.GetPrivateKey(secretPhrase));
+					options.privateKey = Convert.HexStringToByteArray(Lm.GetPrivateKey(secretPhrase));
 				}
 
 				if (!options.publicKey) {
@@ -251,13 +122,13 @@ var Lm = (function(Lm, $, undefined) {
 						};
 					}
 
-					options.publicKey = converters.hexStringToByteArray(Lm.GetPublicKey(options.account, true));
+					options.publicKey = Convert.HexStringToByteArray(Lm.GetPublicKey(options.account, true));
 				}
 			}
 
-			options.nonce = converters.hexStringToByteArray(options.nonce);
+			options.nonce = Convert.HexStringToByteArray(options.nonce);
 
-			return DecryptData1(converters.hexStringToByteArray(message), options);
+			return DecryptData(Convert.HexStringToByteArray(message), options);
 		} catch (err) {
 			if (err.errorCode && err.errorCode < 3) {
 				throw err;
@@ -427,7 +298,7 @@ var Lm = (function(Lm, $, undefined) {
 						}
 					}
 
-					options.privateKey = converters.hexStringToByteArray(Lm.GetPrivateKey(secretPhrase));
+					options.privateKey = Convert.HexStringToByteArray(Lm.GetPrivateKey(secretPhrase));
 				}
 
 				if (!options.publicKey) {
@@ -439,7 +310,7 @@ var Lm = (function(Lm, $, undefined) {
 					}
 
 					try {
-						options.publicKey = converters.hexStringToByteArray(Lm.GetPublicKey(options.account, true));
+						options.publicKey = Convert.HexStringToByteArray(Lm.GetPublicKey(options.account, true));
 					} catch (err) {
 						var lmAddress = new LmAddress();
 
@@ -456,15 +327,15 @@ var Lm = (function(Lm, $, undefined) {
 						}
 					}
 				} else if (typeof options.publicKey == "string") {
-					options.publicKey = converters.hexStringToByteArray(options.publicKey);
+					options.publicKey = Convert.HexStringToByteArray(options.publicKey);
 				}
 			}
 
-			var encrypted = EncryptData(converters.stringToByteArray(message), options);
+			var encrypted = EncryptData(Convert.StringToByteArray(message), options);
 
 			return {
-				"message": converters.byteArrayToHexString(encrypted.data),
-				"nonce": converters.byteArrayToHexString(encrypted.nonce)
+				"message": Convert.ByteArrayToHexString(encrypted.data),
+				"nonce": Convert.ByteArrayToHexString(encrypted.nonce)
 			};
 		} catch (err) {
 			if (err.errorCode && err.errorCode < 5) {
@@ -487,68 +358,23 @@ var Lm = (function(Lm, $, undefined) {
 			}
 		}
 
-		return Lm.GetPublicKey(converters.stringToHexString(secretPhrase));
+		return Lm.GetPublicKey(Convert.StringToHexString(secretPhrase));
 	}
 
 	function GetAccountId(secretPhrase) {
-		return Lm.GetAccountIdFromPublicKey(Lm.GetPublicKey(converters.stringToHexString(secretPhrase)));
+		return Crypto.GetAccountId(secretPhrase);
 	}
 
-	function GetAccountIdFromPublicKey(publicKey, RSFormat) {
-		var hex = converters.hexStringToByteArray(publicKey);
-
-		_hash.init();
-		_hash.update(hex);
-
-		var account = _hash.getBytes();
-
-		account = converters.byteArrayToHexString(account);
-
-		var slice = (converters.hexStringToByteArray(account)).slice(0, 8);
-
-		var accountId = ByteArrayToBigInteger(slice).toString();
-
-		if (RSFormat) {
-			var address = new LmAddress();
-
-			if (address.set(accountId)) {
-				return address.toString();
-			} else {
-				return "";
-			}
-		} else {
-			return accountId;
-		}
+	function GetAccountIdFromPublicKey(publicKey, RsFormat) {
+		return Crypto.GetAccountIdFromPublicKey(publicKey, RsFormat);
 	}
 
 	function GetPrivateKey(secretPhrase) {
-		SHA256_init();
-		SHA256_write(converters.stringToByteArray(secretPhrase));
-		return converters.shortArrayToHexString(Curve25519_clamp(converters.byteArrayToShortArray(SHA256_finalize())));
+		return Crypto.GetPrivateKey(secretPhrase);
 	}
 
 	function GetPublicKey(secretPhrase, isAccountNumber) {
-		if (isAccountNumber) {
-			var accountNumber = secretPhrase;
-			var publicKey = "";
-
-			//synchronous!
-			Lm.SendRequest("getAccountPublicKey", {
-				"account": accountNumber
-			}, function(response) {
-				if (!response.publicKey) {
-					throw $.t("error_no_public_key");
-				} else {
-					publicKey = response.publicKey;
-				}
-			}, false);
-
-			return publicKey;
-		} else {
-			var secretPhraseBytes = converters.hexStringToByteArray(secretPhrase);
-			var digest = SimpleHash(secretPhraseBytes);
-			return converters.byteArrayToHexString(curve25519.keygen(digest).p);
-		}
+		return Crypto.GetPublicKey(secretPhrase, isAccountNumber);
 	}
 
 	function GetSharedKeyWithAccount(account) {
@@ -570,9 +396,9 @@ var Lm = (function(Lm, $, undefined) {
 				};
 			}
 
-			var privateKey = converters.hexStringToByteArray(Lm.GetPrivateKey(secretPhrase));
+			var privateKey = Convert.HexStringToByteArray(Lm.GetPrivateKey(secretPhrase));
 
-			var publicKey = converters.hexStringToByteArray(Lm.GetPublicKey(account, true));
+			var publicKey = Convert.HexStringToByteArray(Lm.GetPublicKey(account, true));
 
 			var sharedKey = GetSharedKey(privateKey, publicKey);
 
@@ -605,35 +431,11 @@ var Lm = (function(Lm, $, undefined) {
 	}
 
 	function SignBytes(message, secretPhrase) {
-		var messageBytes = converters.hexStringToByteArray(message);
-		var secretPhraseBytes = converters.hexStringToByteArray(secretPhrase);
-
-		var digest = SimpleHash(secretPhraseBytes);
-		var s = curve25519.keygen(digest).s;
-
-		var m = SimpleHash(messageBytes);
-
-		_hash.init();
-		_hash.update(m);
-		_hash.update(s);
-		var x = _hash.getBytes();
-
-		var y = curve25519.keygen(x).p;
-
-		_hash.init();
-		_hash.update(m);
-		_hash.update(y);
-		var h = _hash.getBytes();
-
-		var v = curve25519.sign(h, x, s);
-
-		return converters.byteArrayToHexString(v.concat(h));
+		return Crypto.SignBytes(message, secretPhrase);
 	}
 
 	function SimpleHash(message) {
-		_hash.init();
-		_hash.update(message);
-		return _hash.getBytes();
+		return Crypto.SimpleHash(message);
 	}
 
 	function TryToDecrypt(transaction, fields, account, options) {
@@ -772,21 +574,7 @@ var Lm = (function(Lm, $, undefined) {
 	}
 
 	function VerifyBytes(signature, message, publicKey) {
-		var signatureBytes = converters.hexStringToByteArray(signature);
-		var messageBytes = converters.hexStringToByteArray(message);
-		var publicKeyBytes = converters.hexStringToByteArray(publicKey);
-		var v = signatureBytes.slice(0, 32);
-		var h = signatureBytes.slice(32);
-		var y = curve25519.verify(v, h, publicKeyBytes);
-
-		var m = SimpleHash(messageBytes);
-
-		_hash.init();
-		_hash.update(m);
-		_hash.update(y);
-		var h2 = _hash.getBytes();
-
-		return AreByteArraysEqual(h, h2);
+		return Crypto.VerifyBytes(signature, message, publicKey);
 	}
 
 	$("#decrypt_note_form_container button.btn-primary").click(function() {
@@ -799,7 +587,7 @@ var Lm = (function(Lm, $, undefined) {
 	});
 
 	function GetSharedKey(key1, key2) {
-		return converters.shortArrayToByteArray(curve25519_(converters.byteArrayToShortArray(key1), converters.byteArrayToShortArray(key2), null));
+		return Convert.ShortArrayToByteArray(curve25519_(Convert.ByteArrayToShortArray(key1), Convert.ByteArrayToShortArray(key2), null));
 	}
 
 

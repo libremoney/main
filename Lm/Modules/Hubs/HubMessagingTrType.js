@@ -34,7 +34,7 @@ public static final TransactionType HUB_ANNOUNCEMENT = new Messaging() {
 	}
 
 	void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
-		if (Nxt.getBlockchain().getLastBlock().getHeight() < Constants.TRANSPARENT_FORGING_BLOCK_7) {
+		if (Blockchain.GetLastBlock().GetHeight() < Constants.TransparentForgingBlock) {
 			throw new NxtException.NotYetEnabledException("Hub terminal announcement not yet enabled at height " + Nxt.getBlockchain().getLastBlock().getHeight());
 		}
 		Attachment.MessagingHubAnnouncement attachment = (Attachment.MessagingHubAnnouncement) transaction.getAttachment();

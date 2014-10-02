@@ -33,14 +33,6 @@ var Peers = function() {
 		DISCONNECTED:2
 		}
 
-	var Statuses = {
-		Active: "active",
-		Check: "check",
-		Pending: "pending",
-		Synced: "synced",
-		Disable: "disable"
-	}
-
 
 	var peerServer;
 
@@ -759,7 +751,7 @@ var Peers = function() {
 	return {
 		Event: Event,
 		State: State,
-		Statuses: Statuses,
+		Statuses: Constants.NetStatuses,
 
 		AddListener: AddListener,
 		AddPeer1: AddPeer1,

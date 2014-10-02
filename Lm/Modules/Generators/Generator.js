@@ -4,30 +4,21 @@
  * CC0 license
  */
 
-/*
-import nxt.crypto.Crypto;
-import nxt.util.Convert;
-import nxt.util.Listener;
-import nxt.util.Listeners;
-import nxt.util.Logger;
-import nxt.util.ThreadPool;
-*/
-
-var BlockchainProcessor = require(__dirname + '/../BlockchainProcessor');
-
-
-var lastTimestamp;
+if (typeof module !== "undefined") {
+	var BlockchainProcessor = require(__dirname + '/../BlockchainProcessor');
+}
 
 
 function Generator(secretPhrase, publicKey, account) {
 	this.secretPhrase = secretPhrase;
 	this.publicKey = publicKey;
 	// need to store publicKey in addition to accountId, because the account may not have had its publicKey set yet
-	this.accountId = account.getId();
-	this.Forge(Convert.getEpochTime()); // initialize deadline
+	this.accountId = account.GetId();
+	this.Forge(Convert.GetEpochTime()); // initialize deadline
+	return this;
 }
 
-function Forge(timestamp) {
+Generator.prototype.Forge = function(timestamp) {
 	if (BlockchainProcessor.IsScanning()) {
 		return;
 	}
@@ -57,7 +48,7 @@ function Forge(timestamp) {
 	}
 
 	if (verifyHit(hits.get(accountId), effectiveBalance, lastBlock, timestamp)) {
-		while (! BlockchainProcessorImpl.getInstance().generateBlock(secretPhrase, timestamp)) {
+		while (!BlockchainProcessor.GenerateBlock(secretPhrase, timestamp)) {
 			if (Convert.getEpochTime() - timestamp > 10) {
 				break;
 			}
@@ -66,23 +57,19 @@ function Forge(timestamp) {
 	*/
 }
 
-function GetAccountId() {
+Generator.prototype.GetAccountId = function() {
 	return this.accountId;
 }
 
-function GetDeadline() {
+Generator.prototype.GetDeadline = function() {
 	return this.deadline;
 }
 
-function GetPublicKey() {
+Generator.prototype.GetPublicKey = function() {
 	return this.publicKey;
 }
 
 
-Generator.prototype.Clear = Clear;
-Generator.prototype.Forge = Forge;
-Generator.prototype.GetAccountId = GetAccountId;
-Generator.prototype.GetDeadline = GetDeadline;
-Generator.prototype.GetPublicKey = GetPublicKey;
-
-module.exports = Generator;
+if (typeof module !== "undefined") {
+	module.exports = Generator;
+}

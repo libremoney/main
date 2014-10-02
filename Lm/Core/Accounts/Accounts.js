@@ -6,8 +6,8 @@
 
 if (typeof module !== "undefined") {
 	var Api = require(__dirname + "/Api");
-	var Convert = require(__dirname + '/../../Lib/Util/Convert');
 	var BlockchainProcessor = require(__dirname + '/../BlockchainProcessor/BlockchainProcessor');
+	var Convert = require(__dirname + '/../../Lib/Util/Convert');
 	var Listeners = require(__dirname + '/../../Lib/Util/Listeners');
 	var Logger = require(__dirname + '/../../Lib/Util/Logger').GetLogger(module);
 }
@@ -92,52 +92,15 @@ var Accounts = function () {
 			Convert.ToHexString(account.GetPublicKey()) + " new key " + Convert.ToHexString(publicKey));
 	}
 
-	function GetAccounts(accountId, _callback) {
-		var nxtlAccount = {};
-		var dollarAccount = {};
-		var euroAccount = {};
-		var btcAccount = {};
-		var accountNums;
-		async.waterfall([
-			function(callback) {
-				NxtlAccount.init(accountId, function(res) {
-					nxtlAccount = res;
-					callback(null)
-				})
-			},
-			function(callback) {
-				DollarAccount.init(accountId, function(res) {
-					dollarAccount = res;
-					callback(null)
-				})
-			},
-			function(callback) {
-				EuroAccount.init(accountId, function(res) {
-					euroAccount = res;
-					callback(null)
-				})
-			},
-			function(callback) {
-				BtcAccount.init(accountId, function(res) {
-					btcAccount = res;
-					callback(null)
-				})
-			}
-		], function(err, result) {
-			if (err) {
-				console.log("Account.getAccounts Error", err)
-			}
-			accountNums = {
-				nxtlAccount: nxtlAccount.getSettings(),
-				dollarAccount: dollarAccount.getSettings(),
-				euroAccount: euroAccount.getSettings(),
-				btcAccount: btcAccount.getSettings()
-			};
-			if (typeof _callback === "function") {
-				_callback(accountNums)
-			}
-		})
+	/*
+	deprecated
+	function GetAccounts(accountId, callback) {
+		var account = Accounts.GetAccount(accountId.toString());
+		//self.SetAmount(Convert.RoundTo5Float(account.balance));
+		//self.SetUnconfirmedAmount(Convert.RoundTo5Float(account.unconfirmedBalance));
+		callback(null, account);
 	}
+	*/
 
 	/*
 	function GetAllAccounts() {

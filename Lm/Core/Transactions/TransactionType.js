@@ -10,25 +10,25 @@ function TransactionType() {
 }
 
 
-function Apply(transaction, senderAccount, recipientAccount) {
+TransactionType.prototype.Apply = function(transaction, senderAccount, recipientAccount) {
 	throw new Error('Not implementted');
 	/*
 	senderAccount.addToBalanceNQT(- (Convert.safeAdd(transaction.getAmountNQT(), transaction.getFeeNQT())));
 	if (transaction.getReferencedTransactionFullHash() != null) {
-		senderAccount.addToUnconfirmedBalanceNQT(Constants.UnconfirmedPoolDepositMilliLm);
+		senderAccount.addToUnconfirmedBalanceNQT(Constants.UnconfirmedPoolDeposit);
 	}
 	applyAttachment(transaction, senderAccount, recipientAccount);
 	*/
 }
 
-function ApplyAttachment(transaction, senderAccount, recipientAccount) {
+TransactionType.prototype.ApplyAttachment = function(transaction, senderAccount, recipientAccount) {
 }
 
-function ApplyAttachmentUnconfirmed(transaction, senderAccount) {
+TransactionType.prototype.ApplyAttachmentUnconfirmed = function(transaction, senderAccount) {
 }
 
 // return false iff double spending
-function ApplyUnconfirmed(transaction, senderAccount) {
+TransactionType.prototype.ApplyUnconfirmed = function(transaction, senderAccount) {
 	throw new Error('Not implementted');
 	/*
 	long totalAmountNQT = Convert.safeAdd(transaction.getAmountNQT(), transaction.getFeeNQT());
@@ -49,34 +49,34 @@ function ApplyUnconfirmed(transaction, senderAccount) {
 	*/
 }
 
-function GetName() {
+TransactionType.prototype.GetName = function() {
 	return '';
 }
 
-function GetSubtype() {}
+TransactionType.prototype.GetSubtype = function() {}
 
-function GetType() {}
+TransactionType.prototype.GetType = function() {}
 
-function HasRecipient() {
+TransactionType.prototype.HasRecipient = function() {
 }
 
-function IsDuplicate(transaction, duplicates) {
+TransactionType.prototype.IsDuplicate = function(transaction, duplicates) {
 	return false;
 }
 
-function ParseAttachment_Buf(buffer, transactionVersion) {
+TransactionType.prototype.ParseAttachment_Buf = function(buffer, transactionVersion) {
 	//validateAttachment(transaction);
 }
 
-function ParseAttachment_Json(attachmentData) {
+TransactionType.prototype.ParseAttachment_Json = function(attachmentData) {
 	//validateAttachment(transaction);
 }
 
-function ToString() {
+TransactionType.prototype.ToString = function() {
 	return "type: " + this.GetType() + ", subtype: " + this.GetSubtype();
 }
 
-function Undo(transaction, senderAccount, recipientAccount) {
+TransactionType.prototype.Undo = function(transaction, senderAccount, recipientAccount) {
 	throw new Error('Not implementted');
 	/*
 	senderAccount.addToBalanceNQT(Convert.safeAdd(transaction.getAmountNQT(), transaction.getFeeNQT()));
@@ -91,44 +91,25 @@ function Undo(transaction, senderAccount, recipientAccount) {
 	*/
 }
 
-function UndoAttachment(transaction, senderAccount, recipientAccount) {
+TransactionType.prototype.UndoAttachment = function(transaction, senderAccount, recipientAccount) {
 }
 
-function UndoAttachmentUnconfirmed(transaction, senderAccount) {
+TransactionType.prototype.UndoAttachmentUnconfirmed = function(transaction, senderAccount) {
 }
 
-function UndoUnconfirmed(transaction, senderAccount) {
+TransactionType.prototype.UndoUnconfirmed = function(transaction, senderAccount) {
 	throw new Error('Not implementted');
 	/*
 	senderAccount.addToUnconfirmedBalanceNQT(Convert.safeAdd(transaction.getAmountNQT(), transaction.getFeeNQT()));
 	if (transaction.getReferencedTransactionFullHash() != null) {
-		senderAccount.addToUnconfirmedBalanceNQT(Constants.UnconfirmedPoolDepositMilliLm);
+		senderAccount.addToUnconfirmedBalanceNQT(Constants.UnconfirmedPoolDeposit);
 	}
 	undoAttachmentUnconfirmed(transaction, senderAccount);
 	*/
 }
 
-function ValidateAttachment(transaction) {
+TransactionType.prototype.ValidateAttachment = function(transaction) {
 }
-
-
-TransactionType.prototype.Apply = Apply;
-TransactionType.prototype.ApplyAttachment = ApplyAttachment;
-TransactionType.prototype.ApplyAttachmentUnconfirmed = ApplyAttachmentUnconfirmed;
-TransactionType.prototype.ApplyUnconfirmed = ApplyUnconfirmed;
-TransactionType.prototype.GetName = GetName;
-TransactionType.prototype.GetSubtype = GetSubtype;
-TransactionType.prototype.GetType = GetType;
-TransactionType.prototype.HasRecipient = HasRecipient;
-TransactionType.prototype.IsDuplicate = IsDuplicate;
-TransactionType.prototype.ParseAttachment_Buf = ParseAttachment_Buf;
-TransactionType.prototype.ParseAttachment_Json = ParseAttachment_Json;
-TransactionType.prototype.ToString = ToString;
-TransactionType.prototype.Undo = Undo;
-TransactionType.prototype.UndoAttachment = UndoAttachment;
-TransactionType.prototype.UndoAttachmentUnconfirmed = UndoAttachmentUnconfirmed;
-TransactionType.prototype.UndoUnconfirmed = UndoUnconfirmed;
-TransactionType.prototype.ValidateAttachment = ValidateAttachment;
 
 
 if (typeof module !== "undefined") {

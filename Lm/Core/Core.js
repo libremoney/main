@@ -5,16 +5,15 @@
  */
 
 //var rootpath = process.cwd() + '/';
-//var path = require('path');
-//var fs = require('fs');
-//var events = require('events');
 
 if (typeof module !== "undefined") {
+	var events = require('events');
+	var util = require("util");
 	var Accounts = require(__dirname + '/Accounts');
 	var Blockchain = require(__dirname + '/Blockchain');
 	var BlockchainProcessor = require(__dirname + '/BlockchainProcessor');
 	var Blocks = require(__dirname + '/Blocks');
-	var Listeners = require(__dirname + '/../Lib/Util/Listeners');
+	var Constants = require(__dirname + '/../Lib/Constants');
 	var Logger = require(__dirname + '/../Lib/Util/Logger').GetLogger(module);
 	var Server = require(__dirname + '/Server');
 	var ThreadPool = require(__dirname + '/ThreadPool');
@@ -27,241 +26,272 @@ if (typeof module !== "undefined") {
 
 
 var Core = function() {
-	var defaultProperties;
-	var listeners = new Listeners();
-	var properties;
-	var version = "0.2.0";
-	var application = "Lm";
+	events.EventEmitter.call(this);
 
-
-	var Event = {
-		Clear:0,
-		Shutdown:1,
-		Start:2,
-		InitServer:3,
-		GetState:4
+	this.Event = {
+		Clear: "Clear",
+		GetState: "GetState",
+		InitServer: "InitServer",
+		InitComplete: "InitComplete",
+		Shutdown: "Shutdown",
+		Start: "Start",
+		StateChange: "StateChange"
 		};
 
+	this.defaultProperties;
+	this.properties;
+	this.version = "0.2.1";
+	this.application = "Lm";
 
-	function AddListener(eventType, listener) {
-		listeners.AddListener(eventType, listener);
+	this.state = null;
+	this.running = false;
+	this.synced = false;
+	/*if (typeof Core.instance === "undefined") {
+		Core.instance = this;
+	}*/
+	return this;
+}
+
+util.inherits(Core, events.EventEmitter);
+
+Core.prototype.AddListener = function(eventType, listener) {
+	return this.addListener(eventType, listener);
+}
+
+Core.prototype.Clear = function() {
+	Groups.Clear();
+	Projects.Clear();
+	//Users.Clear();
+	this.Notify(this.Event.Clear, null);
+}
+
+Core.prototype.DoGetState = function(response) {
+	this.Notify(this.Event.GetState, response);
+}
+
+Core.prototype.DoInitServer = function(app) {
+	this.Notify(this.Event.InitServer, app);
+}
+
+Core.prototype.GetAccount = function(accId, callback) {
+	try {
+		var accountValue = Convert.EmptyToNull(accId);
+		if (!accountValue) {
+			callback(JsonResponses.MissingAccount);
+			return;
+		}
+		var accId = ConvertAccount.ParseAccountId(accountValue);
+		Logger.info("GetAccount(): accId="+accId);
+		var account = Accounts.GetAccountById(accId);
+		if (!account) {
+			callback(JsonResponses.UnknownAccount);
+			return;
+		}
+		callback(null, account);
+	} catch (e) {
+		callback(JsonResponses.IncorrectAccount);
+		return;
 	}
+}
 
-	function Clear() {
-		Groups.Clear();
-		Projects.Clear();
-		//Users.Clear();
-		listeners.Notify(Event.Clear, null);
+Core.prototype.GetApplication = function() {
+	return this.application;
+}
+
+Core.prototype.GetRecipientId = function(recipientId, callback) {
+	var recipientValue = Convert.EmptyToNull(recipientId);
+	if (!recipientValue || recipientValue == 0) {
+		callback(JsonResponses.MissingRecipient);
+		return;
 	}
-
-	function DoGetState(response) {
-		listeners.Notify(Event.GetState, response);
+	var recipientId;
+	try {
+		recipientId = ConvertAccount.ParseAccountId(recipientValue);
+	} catch (e) {
+		callback(JsonResponses.IncorrectRecipient);
+		return;
 	}
-
-	function DoInitServer(app) {
-		listeners.Notify(Event.InitServer, app);
+	if (!recipientId) {
+		callback(JsonResponses.IncorrectRecipient);
+		return;
 	}
+	callback(null, recipientId);
+}
 
-	function GetAccount(accId, callback) {
-		try {
-			var accountValue = Convert.EmptyToNull(accId);
-			if (!accountValue) {
-				callback(JsonResponses.MissingAccount);
-				return;
+Core.prototype.GetVersion = function() {
+	return this.version;
+}
+
+Core.prototype.HandleStateChange = function(e) {
+	this.running = !!~["netConnect", "blockDownload", "default"].indexOf(e.newState);
+	switch (e.oldState) {}
+	switch (e.newState) {
+		case "init":
+			//self.emit("initComplete") - see BlockchainProcessor
+			break;
+		case "netConnect":
+			this.peerProcessor.run();
+			//this.startFrontendServer(Router.route, handle); - del
+			break;
+		case "blockDownload":
+			break;
+		case "synced":
+			break
+	}
+}
+
+Core.prototype.Init = function(callback) {
+	//long startTime = System.currentTimeMillis();
+
+	try {
+		this.AddListener(this.Event.StateChange, this.HandleStateChange);
+		this.AddListener(this.Event.InitComplete, function() {
+			if (this.state == "init") {
+				this.SetState("netConnect");
 			}
-			var accId = Convert.ParseAccountId(accountValue);
-			Logger.info("GetAccount(): accId="+accId);
-			var account = Accounts.GetAccountById(accId);
-			if (!account) {
-				callback(JsonResponses.UnknownAccount);
-				return;
-			}
-			callback(null, account);
-		} catch (e) {
-			callback(JsonResponses.IncorrectAccount);
-			return;
-		}
-	}
-
-	function GetApplication() {
-		return application;
-	}
-
-	function GetRecipientId(recipientId, callback) {
-		var recipientValue = Convert.EmptyToNull(recipientId);
-		if (!recipientValue || recipientValue == 0) {
-			callback(JsonResponses.MissingRecipient);
-			return;
-		}
-		var recipientId;
-		try {
-			recipientId = Convert.ParseAccountId(recipientValue);
-		} catch (e) {
-			callback(JsonResponses.IncorrectRecipient);
-			return;
-		}
-		if (!recipientId) {
-			callback(JsonResponses.IncorrectRecipient);
-			return;
-		}
-		callback(null, recipientId);
-	}
-
-	function GetVersion() {
-		return version;
-	}
-
-	function Init(callback) {
-		//long startTime = System.currentTimeMillis();
-
-		Accounts.Init();
-		Blocks.Init();
-		Blockchain.Init();
-		Transactions.Init();
-
-		TransactionProcessor.Init(function(err){
-			if (err) {
-				throw 'Error in TransactionProcessor.Init()';
-				return;
-			}
-			Logger.info('TransactionProcessor initialized');
-			//BlockchainProcessor.Init(function(err) {
-				//if (err) throw 'Error in BlockchainProcessor.Init()';
-				//Logger.info('BlockchainProcessor initialized');
-
-				if (callback)
-					callback(null);
-
-			//});
 		});
+	} catch (err) {
+		Logger.error("Initialization " + (err.stack ? err.stack : "error: " + err.toString()));
+	}
 
-		/*
-		try {
-			long startTime = System.currentTimeMillis();
-			Logger.init();
-			Db.init();
-			BlockchainProcessorImpl.getInstance();
-			TransactionProcessorImpl.getInstance();
-			Peers.init();
-			Generator.init();
-			API.init();
-			Users.init();
-			DebugTrace.init();
-			ThreadPool.start();
+	Accounts.Init();
+	Blocks.Init();
+	Blockchain.Init();
+	Transactions.Init();
 
-			long currentTime = System.currentTimeMillis();
-			Logger.logMessage("Initialization took " + (currentTime - startTime) / 1000 + " seconds");
-			Logger.logMessage("Lm server " + VERSION + " started successfully.");
-			if (Constants.isTestnet) {
-				Logger.logMessage("RUNNING ON TESTNET - DO NOT USE REAL ACCOUNTS!");
-			}
-		} catch (Exception e) {
-			Logger.logErrorMessage(e.getMessage(), e);
-			System.exit(1);
+	TransactionProcessor.Init(function(err){
+		if (err) {
+			throw 'Error in TransactionProcessor.Init()';
+			return;
 		}
-		*/
+		Logger.info('TransactionProcessor initialized');
+		//BlockchainProcessor.Init(function(err) {
+			//if (err) throw 'Error in BlockchainProcessor.Init()';
+			//Logger.info('BlockchainProcessor initialized');
 
-		/*
-		defaultProperties = new Properties();
-		console.log("Initializing Lm server version " + version);
-		try (InputStream is = ClassLoader.getSystemResourceAsStream("lm-default.properties")) {
-			if (is != null) {
-				Lm.defaultProperties.load(is);
-			} else {
-				String configFile = System.getProperty("lm-default.properties");
-				if (configFile != null) {
-					try (InputStream fis = new FileInputStream(configFile)) {
-						Lm.defaultProperties.load(fis);
-					} catch (IOException e) {
-						throw new RuntimeException("Error loading lm-default.properties from " + configFile);
-					}
-				} else {
-					throw new RuntimeException("lm-default.properties not in classpath and system property lm-default.properties not defined either");
+			if (callback)
+				callback(null);
+
+		//});
+	});
+
+	/*
+	try {
+		long startTime = System.currentTimeMillis();
+		Logger.init();
+		Db.init();
+		BlockchainProcessorImpl.getInstance();
+		TransactionProcessorImpl.getInstance();
+		Peers.init();
+		Generator.init();
+		API.init();
+		Users.init();
+		DebugTrace.init();
+		ThreadPool.start();
+
+		long currentTime = System.currentTimeMillis();
+		Logger.logMessage("Initialization took " + (currentTime - startTime) / 1000 + " seconds");
+		Logger.logMessage("Lm server " + VERSION + " started successfully.");
+		if (Constants.isTestnet) {
+			Logger.logMessage("RUNNING ON TESTNET - DO NOT USE REAL ACCOUNTS!");
+		}
+	} catch (Exception e) {
+		Logger.logErrorMessage(e.getMessage(), e);
+		System.exit(1);
+	}
+	*/
+
+	/*
+	defaultProperties = new Properties();
+	console.log("Initializing Lm server version " + version);
+	try (InputStream is = ClassLoader.getSystemResourceAsStream("lm-default.properties")) {
+		if (is != null) {
+			Lm.defaultProperties.load(is);
+		} else {
+			String configFile = System.getProperty("lm-default.properties");
+			if (configFile != null) {
+				try (InputStream fis = new FileInputStream(configFile)) {
+					Lm.defaultProperties.load(fis);
+				} catch (IOException e) {
+					throw new RuntimeException("Error loading lm-default.properties from " + configFile);
 				}
+			} else {
+				throw new RuntimeException("lm-default.properties not in classpath and system property lm-default.properties not defined either");
 			}
-		} catch (IOException e) {
-			throw new RuntimeException("Error loading lm-default.properties", e);
 		}
-		*/
+	} catch (IOException e) {
+		throw new RuntimeException("Error loading lm-default.properties", e);
+	}
+	*/
 
-		/*
-		properties = new Properties(defaultProperties);
-		try (InputStream is = ClassLoader.getSystemResourceAsStream("lm.properties")) {
-			if (is != null) {
-				Lm.properties.load(is);
-			} // ignore if missing
-		} catch (IOException e) {
-			throw new RuntimeException("Error loading lm.properties", e);
+	/*
+	properties = new Properties(defaultProperties);
+	try (InputStream is = ClassLoader.getSystemResourceAsStream("lm.properties")) {
+		if (is != null) {
+			Lm.properties.load(is);
+		} // ignore if missing
+	} catch (IOException e) {
+		throw new RuntimeException("Error loading lm.properties", e);
+	}
+	*/
+}
+
+
+Core.Main = function(args) {
+	throw new Error('Not implementted');
+	/*
+	Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+		public void run() {
+			Lm.shutdown();
 		}
-		*/
-	}
+	}));
+	init();
+	*/
+}
 
-	function Main(args) {
-		throw new Error('Not implementted');
-		/*
-		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-			public void run() {
-				Lm.shutdown();
-			}
-		}));
-		init();
-		*/
-	}
+Core.prototype.Notify = function(eventType, data) {
+	return this.emit(eventType, data);
+}
 
-	function RemoveListener(eventType, listener) {
-		listeners.RemoveListener(eventType, listener);
-	}
+Core.prototype.RemoveListener = function(eventType, listener) {
+	this.removeListener(eventType, listener);
+}
 
-	function Shutdown() {
-		Logger.info("Shutting down...");
-		ThreadPool.Shutdown();
-		Logger.info("LibreMoney server " + version + " stopped.");
-		listeners.Notify(Event.Shutdown, null);
+Core.prototype.SetState = function(newState) {
+	var oldState = this.state;
+	if (newState == "init" && oldState !== null) {
+		return;
 	}
+	this.state = newState;
+	this.Notify(this.Event.StateChange, {
+		oldState: oldState,
+		newState: newState
+	});
+}
 
-	function Start(app, port, pubDir, callback) {
-		Server.Init(app, port, pubDir, function(err) {
-			if (err) throw 'Error in Server.Init()';
-			Logger.info('Server started on port ' + port);
-			Logger.info('Starting...');
-			ThreadPool.Start();
-			listeners.Notify(Event.Start, null);
-			callback(null);
-		});
-	}
+Core.prototype.Shutdown = function() {
+	Logger.info("Shutting down...");
+	ThreadPool.Shutdown();
+	Logger.info("LibreMoney server " + version + " stopped.");
+	this.Notify(this.Event.Shutdown);
+}
 
-	return {
-		Event: Event,
+Core.prototype.Start = function(app, port, pubDir, callback) {
+	var self = this;
+	Server.Init(app, port, pubDir, function(err) {
+		if (err) throw 'Error in Server.Init()';
+		Logger.info('Starting...');
+		ThreadPool.Start();
+		self.Notify(self.Event.Start);
+		self.SetState("init");
+		callback(null);
+	});
+}
 
-		AddListener: AddListener,
-		Clear: Clear,
-		DoGetState: DoGetState,
-		DoInitServer: DoInitServer,
-		Init: Init,
-		GetAccount: GetAccount,
-		GetApplication: GetApplication,
-		GetRecipientId: GetRecipientId,
-		GetVersion: GetVersion,
-		RemoveListener: RemoveListener,
-		Shutdown: Shutdown,
-		Start: Start
-	}
-}();
+
+var Core = new Core();
 
 
 if (typeof module !== "undefined") {
-	exports.Event = Core.Event;
-
-	exports.AddListener = Core.AddListener;
-	exports.Clear = Core.Clear;
-	exports.DoGetState = Core.DoGetState;
-	exports.DoInitServer = Core.DoInitServer;
-	exports.Init = Core.Init;
-	exports.GetAccount = Core.GetAccount;
-	exports.GetApplication = Core.GetApplication;
-	exports.GetRecipientId = Core.GetRecipientId;
-	exports.GetVersion = Core.GetVersion;
-	exports.RemoveListener = Core.RemoveListener;
-	exports.Shutdown = Core.Shutdown;
-	exports.Start = Core.Start;
+	module.exports = Core;
 }

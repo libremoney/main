@@ -23,8 +23,8 @@ timestamp,
 deadline,
 senderPublicKey,
 recipientId,
-amountMilliLm,
-feeMilliLm,
+amount,
+fee,
 referencedTransactionFullHash,
 signature,
 blockId,
@@ -35,33 +35,71 @@ blockTimestamp,
 fullHash
 */
 function Transaction(data) {
+	if (typeof data !== "object") {
+		data = {}
+	}
 	if (data.senderPublicKey == null || typeof data.senderPublicKey != 'object' || typeof data.senderPublicKey.length == 'undefined')
 		throw new Error('Transaction: data.senderPublicKey mast be array');
 
-	this.timestamp = data.timestamp;
-	this.deadline = data.deadline;
-	this.senderPublicKey = data.senderPublicKey;
-	this.recipientId = data.recipientId;
-	this.amountMilliLm = data.amountMilliLm;
-	this.feeMilliLm = data.feeMilliLm;
-	this.referencedTransactionFullHash = data.referencedTransactionFullHash;
-	this.signature = data.signature;
-	this.type = data.type;
+	this.deadline = data.deadline || null;
+	this.senderPublicKey = data.senderPublicKey || null;
+	this.recipientId = data.recipientId || null;
+	this.amount = data.amount || 0;
+	this.fee = data.fee || null;
+	this.referencedTransactionId = data.referencedTransactionId || null;
+	this.type = typeof data.type !== "undefined" ? data.type : null;
+	this.height = data.height || null;
+	this.blockId = data.blockId || null;
+	//this.block = data.block || null;
+	this.signature = data.signature || null;
+	this.timestamp = data.timestamp || null;
+	//this.attachment = data.attachment || null;
+	this.id = data.id || null;
+	this.null = null;
+	this.senderId = data.senderId || null;
+	this.hash = data.hash || null;
+	this.confirmations = data.confirmations || 0;
+
 	this.version = data.version;
-	this.blockId = data.blockId;
-	this.height = data.height;
-	this.id = data.id;
-	this.senderId = data.senderId;
 	this.blockTimestamp = data.blockTimestamp;
 	this.fullHash = data.fullHash;
 	this.ecBlockHeight = data.ecBlockHeight;
 	this.ecBlockId = data.ecBlockId;
 
-	var list = new Array();
+	if (typeof this.senderPublicKey == "string") {
+		this.senderPublicKey = new Buffer(this.senderPublicKey, "hex")
+	}
+	if (typeof this.recipientId == "string") {
+		this.recipientId = Utils.stringToLong(this.recipientId)
+	}
+	if (typeof this.referencedTransactionId == "string") {
+		this.referencedTransactionId = Utils.stringToLong(this.referencedTransactionId)
+	}
+	if (typeof this.type == "string" || typeof this.type == "number") {
+		this.type = TransactionType.findTransactionType(this.type, 0)
+	}
+	if (typeof this.blockId == "string") {
+		this.blockId = Utils.stringToLong(this.blockId)
+	}
+	if (typeof this.signature == "string") {
+		this.signature = new Buffer(this.signature, "hex")
+	}
+	if (typeof this.id == "string") {
+		this.id = Utils.stringToLong(this.id)
+	}
+	if (typeof this.senderId == "string") {
+		this.senderId = Utils.stringToLong(this.senderId)
+	}
+	if (typeof this.hash == "string") {
+		this.hash = new Buffer(this.hash, "hex")
+	}
+
+
+	var list = {};
 	if ((this.attachment = data.attachment) != null) {
 		list.add(this.attachment);
 	}
-	if ((this.message  = data.message) != null) {
+	if ((this.message = data.message) != null) {
 		list.add(this.message);
 	}
 	if ((this.encryptedMessage = data.encryptedMessage) != null) {
@@ -79,23 +117,6 @@ function Transaction(data) {
 		appendagesSize += appendage.GetSize();
 	}
 	this.appendagesSize = appendagesSize;
-
-	/*
-	private final int ecBlockHeight;
-	private final Long ecBlockId;
-	private final byte version;
-	private final int timestamp;
-	private final Attachment.AbstractAttachment attachment;
-	private final Appendix.Message message;
-	private final Appendix.EncryptedMessage encryptedMessage;
-	private final Appendix.EncryptToSelfMessage encryptToSelfMessage;
-	private final Appendix.PublicKeyAnnouncement publicKeyAnnouncement;
-	private final List<? extends Appendix.AbstractAppendix> appendages;
-	private final int appendagesSize;
-	private volatile int height = Integer.MAX_VALUE;
-	private volatile Long blockId;
-	private volatile int blockTimestamp = -1;
-	*/
 
 	if (typeof data.height == 'undefined')
 		this.height = 2000000000 //Integer.MAX_VALUE
@@ -133,12 +154,13 @@ function Transaction(data) {
 	}
 
 	if (!this.type.HasRecipient()) {
-		if (this.recipientId != null || this.GetAmountMilliLm() != 0) {
+		if (this.recipientId != null || this.GetAmount() != 0) {
 			throw new Error("Transactions of this type must have recipient == Genesis, amount == 0");
 		}
 	}
 
-	for (var appendage in this.appendages) {
+	for (var i in this.appendages) {
+		var appendage = appendages[i];
 		if (!appendage.VerifyVersion(this.version)) {
 			throw new Error("Invalid attachment version " + appendage.GetVersion() +
 					" for transaction version " + this.version);
@@ -149,14 +171,14 @@ function Transaction(data) {
 }
 
 Transaction.prototype.Apply = function() {
-	throw new Error('Not implementted');
-	/*
-	Account senderAccount = Account.getAccount(getSenderId());
-	senderAccount.apply(senderPublicKey, this.getHeight());
-	Account recipientAccount = Account.getAccount(recipientId);
-	if (recipientAccount == null && recipientId != null) {
-		recipientAccount = Account.addOrGetAccount(recipientId);
+	var senderAccount = Accounts.GetAccount(this.GetSenderId());
+	senderAccount.Apply(this.senderPublicKey, this.height);
+	var recipientAccount = Accounts.GetAccount(this.recipientId);
+	if (recipientAccount == null) {
+		recipientAccount = Accounts.AddOrGetAccount(recipientId);
 	}
+	this.type.Apply(this, senderAccount, recipientAccount);
+	/*
 	for (Appendix.AbstractAppendix appendage : appendages) {
 		appendage.apply(this, senderAccount, recipientAccount);
 	}
@@ -165,48 +187,44 @@ Transaction.prototype.Apply = function() {
 
 // returns false iff double spending
 Transaction.prototype.ApplyUnconfirmed = function() {
-	throw new Error('Not implementted');
-	/*
-	Account senderAccount = Account.getAccount(getSenderId());
+	var senderAccount = Account.getAccount(this.getSenderId());
 	if (senderAccount == null) {
 		return false;
 	}
-	synchronized(senderAccount) {
-		return type.applyUnconfirmed(this, senderAccount);
-	}
-	*/
+	return this.type.applyUnconfirmed(this, senderAccount);
 }
 
 Transaction.prototype.CompareTo = function(o) {
-	throw new Error('Not implementted');
-	/*
-	if (height < o.getHeight()) {
+	if (this.height < o.height) {
 		return -1;
 	}
-	if (height > o.getHeight()) {
+	if (this.height > o.height) {
 		return 1;
 	}
-	// equivalent to: fee * 1048576L / getSize() > o.fee * 1048576L / o.getSize()
-	if (Convert.safeMultiply(feeNQT, ((TransactionImpl)o).getSize()) > Convert.safeMultiply(o.getFeeNQT(), getSize())) {
+	//if (Convert.safeMultiply(feeNQT, ((TransactionImpl)o).getSize()) > Convert.safeMultiply(o.getFeeNQT(), getSize())) {
+	if (Utils.NullToNumber(this.fee) * o.GetSize() > Utils.NullToNumber(o.fee) * this.GetSize() || this.fee === null && o.fee !== null) {
 		return -1;
 	}
-	if (Convert.safeMultiply(feeNQT, ((TransactionImpl)o).getSize()) < Convert.safeMultiply(o.getFeeNQT(), getSize())) {
+	//if (Convert.safeMultiply(feeNQT, ((TransactionImpl)o).getSize()) < Convert.safeMultiply(o.getFeeNQT(), getSize())) {
+	if (Utils.NullToNumber(this.fee) * o.GetSize() < Utils.NullToNumber(o.fee) * this.GetSize()) {
 		return 1;
 	}
-	if (timestamp < o.getTimestamp()) {
+	if (this.timestamp < o.timestamp) {
 		return -1;
 	}
-	if (timestamp > o.getTimestamp()) {
+	if (this.timestamp > o.timestamp) {
 		return 1;
 	}
-	if (getId() < o.getId()) {
+	if (this.GetId() < o.GetId()) {
 		return -1;
 	}
-	if (getId() > o.getId()) {
+	if (this.GetId() > o.GetId()) {
 		return 1;
 	}
 	return 0;
-	*/
+}
+
+Transaction.prototype.compareTo = function(o) {
 }
 
 Transaction.prototype.Equals = function(o) {
@@ -216,8 +234,9 @@ Transaction.prototype.Equals = function(o) {
 	*/
 }
 
-Transaction.prototype.GetAmountMilliLm = function() {
-	return this.amountMilliLm;
+// MilliLm
+Transaction.prototype.GetAmount = function() {
+	return this.amount;
 }
 
 Transaction.prototype.GetAppendages = function() {
@@ -229,18 +248,18 @@ Transaction.prototype.GetAttachment = function() {
 }
 
 Transaction.prototype.GetBlock = function(callback) {
-	var tr = this;
-	if (tr.block == null && tr.blockId != null) {
-		Blocks.FindBlock(this.blockId, function(err, block) {
+	var self = this;
+	if (self.block == null) {
+		BlockDb.FindBlock(self.blockId, function(err, block) {
 			if (err) {
 				callback(err);
 				return;
 			}
-			tr.block = block;
+			self.block = block;
 			callback(null, block);
 		});
 	} else {
-		callback(null, tr.block);
+		callback(null, self.block);
 	}
 }
 
@@ -253,6 +272,32 @@ Transaction.prototype.GetBlockTimestamp = function() {
 }
 
 Transaction.prototype.GetBytes = function() {
+	var self = this;
+
+	var attachment = [];
+	for (var i in this.appendages) {
+		appendage = this.appendages[i];
+		attachment.push(appendage.GetData());
+	}
+
+	var obj = {
+		type: self.GetType(),
+		subtype: self.GetSubtype(),
+		timestamp: self.timestamp,
+		deadline: self.deadline,
+		senderPublicKey: self.senderPublicKey,
+		recipientId: self.recipientId,
+		amount: self.amount,
+		fee: self.fee,
+		referencedTransactionFullHash: self.referencedTransactionFullHash, //referencedTransactionId: self.referencedTransactionId
+		signature: self.signature,
+		flags: self.GetFlags(),
+		ecBlockHeight: self.ecBlockHeight,
+		ecBlockId: self.ecBlockId,
+		attachment: attachment
+	};
+	return JSON.stringify(obj)
+	/*
 	var buffer = new ByteBuffer();
 	buffer.littleEndian();
 	buffer.byte(this.type.GetType());
@@ -262,8 +307,8 @@ Transaction.prototype.GetBytes = function() {
 	buffer.byteArray(this.senderPublicKey, this.senderPublicKey.length);
 	var aa = this.type.HasRecipient() ? Convert.NullToZero(this.recipientId) : Genesis.CREATOR_ID;
 	buffer.int64(aa);
-	buffer.int64(this.amountMilliLm);
-	buffer.int64(this.feeMilliLm);
+	buffer.int64(this.amount);
+	buffer.int64(this.fee);
 	if (this.referencedTransactionFullHash != null) {
 		var a = Convert.ParseHexString(this.referencedTransactionFullHash);
 		buffer.byteArray(a, a.length);
@@ -286,6 +331,47 @@ Transaction.prototype.GetBytes = function() {
 		buffer.byteArray(appendage);
 	}
 	return buffer.array();
+	*/
+}
+
+Transaction.prototype.GetData = function() {
+	var type = null;
+	if (this.type) {
+		type = this.type.GetType();
+	}
+
+	var attachment = {};
+	for (var i in this.appendages) {
+		appendage = this.appendages[i];
+		attachment.push(appendage.GetData());
+	}
+
+	return {
+		type: type,
+		subtype: this.GetSubtype(),
+		timestamp: this.timestamp,
+		deadline: this.deadline,
+		senderPublicKey: this.senderPublicKey.toString("hex"), // Convert.ToHexString(senderPublicKey)
+		recipientId: this.recipientId.toString(),
+		amount: this.amount,
+		fee: this.fee,
+		referencedTransactionFullHash: this.referencedTransactionFullHash,
+		//referencedTransactionId: this.referencedTransactionId ? this.referencedTransactionId.toString() : this.referencedTransactionId,
+		signature: this.signature ? this.signature.toString("hex") : null,
+		ecBlockHeight: ecBlockHeight,
+		ecBlockId: Convert.ToUnsignedLong(ecBlockId),
+		attachment: attachment,
+
+		version: this.version,
+		height: this.height,
+		blockId: this.blockId ? this.blockId.toString() : null,
+		//attachment: this.attachment,
+		id: this.GetId().toString(),
+		"null": null,
+		senderId: this.GetSenderId().toString(),
+		hash: this.hash.toString("hex"),
+		confirmations: this.confirmations
+	}
 }
 
 Transaction.prototype.GetDeadline = function() {
@@ -310,10 +396,11 @@ Transaction.prototype.GetEncryptToSelfMessage = function() {
 
 Transaction.prototype.GetExpiration = function() {
 	return this.timestamp + this.deadline * 60;
+	//return this.timestamp + this.deadline * 60 * 60 * 1e3
 }
 
-Transaction.prototype.GetFeeMilliLm = function() {
-	return this.feeMilliLm;
+Transaction.prototype.GetFee = function() {
+	return this.fee;
 }
 
 Transaction.prototype.GetFlags = function() {
@@ -344,6 +431,15 @@ Transaction.prototype.GetFullHash = function() {
 	return this.fullHash;
 }
 
+Transaction.prototype.GetHash = function() {
+	if (this.hash == null) {
+		var data = this.GetBytes();
+		var hash = curve.sha256(data);
+		this.hash = hash.toString("hex");
+	}
+	return this.hash;
+}
+
 Transaction.prototype.GetHeight = function() {
 	return this.height;
 }
@@ -354,6 +450,11 @@ Transaction.prototype.GetId = function() {
 			Logger.error("GetId: Transaction is not signed yet");
 			return false;
 		}
+		this.hash = curve.sha256(this.GetBytes());
+		this.id = Utils.BufferToLongBE(this.hash);
+		this.stringId = this.id.toString();
+		this.fullHash = Convert.ToHexString(hash);
+		/*
 		var hash;
 		var data = this.ZeroSignature(this.GetBytes());
 		var signatureHash = Crypto.Sha256().digest(this.signature);
@@ -365,40 +466,14 @@ Transaction.prototype.GetId = function() {
 		this.id = bigInteger.longValue();
 		this.stringId = bigInteger.toString();
 		this.fullHash = Convert.ToHexString(hash);
+		*/
 	}
 	return this.id;
 }
 
+// deprecated
 Transaction.prototype.GetJsonObject = function() {
-	throw new Error('Not implementted');
-	/*
-	JSONObject json = new JSONObject();
-	json.put("type", type.getType());
-	json.put("subtype", type.getSubtype());
-	json.put("timestamp", timestamp);
-	json.put("deadline", deadline);
-	json.put("senderPublicKey", Convert.toHexString(senderPublicKey));
-	if (type.hasRecipient()) {
-		json.put("recipient", Convert.toUnsignedLong(recipientId));
-	}
-	json.put("amountNQT", amountNQT);
-	json.put("feeNQT", feeNQT);
-	if (referencedTransactionFullHash != null) {
-		json.put("referencedTransactionFullHash", referencedTransactionFullHash);
-	}
-	json.put("ecBlockHeight", ecBlockHeight);
-	json.put("ecBlockId", Convert.toUnsignedLong(ecBlockId));
-	json.put("signature", Convert.toHexString(signature));
-	JSONObject attachmentJSON = new JSONObject();
-	for (Appendix appendage : appendages) {
-		attachmentJSON.putAll(appendage.getJSONObject());
-	}
-	if (! attachmentJSON.isEmpty()) {
-		json.put("attachment", attachmentJSON);
-	}
-	json.put("version", version);
-	return json;
-	*/
+	return this.GetData();
 }
 
 Transaction.prototype.GetMessage = function() {
@@ -419,7 +494,7 @@ Transaction.prototype.GetReferencedTransactionFullHash = function() {
 
 Transaction.prototype.GetSenderId = function() {
 	if (this.senderId == null) {
-		this.senderId = this.account.GetId(this.senderPublicKey);
+		this.senderId = Accounts.GetId(this.senderPublicKey);
 	}
 	return this.senderId;
 }
@@ -433,14 +508,16 @@ Transaction.prototype.GetSignature = function() {
 }
 
 Transaction.prototype.GetSize = function() {
-	return this.SignatureOffset() + 64  + (4 + 4 + 8) + this.appendagesSize;
+	//TRANSACTION_BYTES_LENGTH = 1 + 1 + 4 + 2 + 32 + 8 + 4 + 4 + 8 + 64;
+	return this.SignatureOffset() + 64 + (4 + 4 + 8) + this.appendagesSize;
+	//return this.TRANSACTION_BYTES_LENGTH + (this.attachment == null ? 0 : this.attachment.getSize())
 }
 
 Transaction.prototype.GetStringId = function() {
 	if (!this.stringId) {
 		this.GetId();
 		if (!this.stringId) {
-			this.stringId = Convert.ToUnsignedLong(this.id);
+			this.stringId = this.id.toString(); //Convert.ToUnsignedLong(this.id);
 		}
 	}
 	return this.stringId;
@@ -467,11 +544,13 @@ Transaction.prototype.GetVersion = function() {
 }
 
 Transaction.prototype.HashCode = function() {
-	return this.GetId().HashCode();
+	var id = this.GetId();
+	return id.toString("16");
+	//return this.GetId().HashCode();
 }
 
 Transaction.prototype.IsDuplicate = function(Duplicates) {
-	return this.Type.IsDuplicate(this, Duplicates);
+	return this.type.IsDuplicate(this, Duplicates);
 }
 
 Transaction.prototype.SetBlock = function(block) {
@@ -482,10 +561,22 @@ Transaction.prototype.SetBlock = function(block) {
 }
 
 Transaction.prototype.Sign = function(secretPhrase) {
-	if (signature != null) {
-		throw new Error("IllegalStateException: Transaction already signed");
+	if (this.signature != null) {
+		return this.signature;
 	}
-	signature = Crypto.Sign(GetBytes(), secretPhrase);
+	console.log("Transaction sign", curve.sha256(this.GetBytes()));
+	try {
+		var i = 0;
+		while (i < 100 && !this.Verify()) {
+			this.timestamp++;
+			i++;
+			this.signature = Crypto.Sign(curve.sha256(this.GetBytes()).toString("hex"), secretPhrase.toString("hex"))
+		}
+		return this.signature;
+	} catch (e) {
+		console.log("Error signing transaction", e);
+		return false;
+	}
 }
 
 Transaction.prototype.SignatureOffset = function() {
@@ -494,19 +585,15 @@ Transaction.prototype.SignatureOffset = function() {
 
 // NOTE: when undo is called, lastBlock has already been set to the previous block
 Transaction.prototype.Undo = function() {
-	throw new Error('Not implementted');
-	/*
-	Account senderAccount = Account.getAccount(senderId);
-	Account recipientAccount = Account.getAccount(recipientId);
-	*/
+	var senderAccount = Accounts.GetAccount(this.senderId);
+	senderAccount.undo(this.height);
+	var recipientAccount = Accounts.GetAccount(this.recipientId);
+	this.type.Undo(this, senderAccount, recipientAccount); // ???
 }
 
 Transaction.prototype.UndoUnconfirmed = function() {
-	throw new Error('Not implementted');
-	/*
-	Account senderAccount = Account.getAccount(getSenderId());
-	type.undoUnconfirmed(this, senderAccount);
-	*/
+	var senderAccount = Accounts.GetAccount(this.GetSenderId());
+	this.type.UndoUnconfirmed(this, senderAccount);
 }
 
 Transaction.prototype.UnsetBlock = function() {
@@ -515,6 +602,16 @@ Transaction.prototype.UnsetBlock = function() {
 	this.blockTimestamp = -1;
 	// must keep the height set, as transactions already having been included in a popped-off block before
 	// get priority when sorted for inclusion in a new block
+}
+
+Transaction.prototype.UpdateTotals = function(accumulatedAmounts, accumulatedAssetQuantities) {
+	var senderId = this.GetSenderId();
+	var accumulatedAmount = accumulatedAmounts === null || typeof accumulatedAmounts[senderId.toString()] === "undefined" ? null : accumulatedAmounts[senderId.toString()];
+	if (accumulatedAmount == null) {
+		accumulatedAmount = 0;
+	}
+	accumulatedAmounts[senderId.toString()] = Convert.RoundTo5Float(accumulatedAmount) + (Convert.RoundTo5Float(this.amount) + Convert.RoundTo5Float(this.fee));
+	this.type.UpdateTotals(this, accumulatedAmounts, accumulatedAssetQuantities, accumulatedAmount);
 }
 
 Transaction.prototype.Validate = function() {
@@ -527,6 +624,21 @@ Transaction.prototype.Validate = function() {
 	for (var appendage in appendages) {
 		appendage.Validate(this);
 	}
+}
+
+Transaction.prototype.ValidateAttachment = function() {
+	return this.type.ValidateAttachment(this);
+}
+
+Transaction.prototype.Verify = function() {
+	var account = Accounts.AddOrGetAccount(this.GetSenderId().toString());
+	if (account == null) {
+		return false;
+	}
+	var data = curve.sha256(this.GetBytes());
+	console.log("Transaction data virify", data);
+	var isSignVerified = Crypto.Verify(this.signature.toString("hex"), data.toString("hex"), this.senderPublicKey.toString("hex"));
+	return isSignVerified && account.SetOrVerify(this.senderPublicKey, this.height);
 }
 
 Transaction.prototype.VerifySignature = function() {

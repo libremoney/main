@@ -1,24 +1,24 @@
 /**
  * @depends {jquery.js}
  * @depends {bootstrap.js}
- * @depends {big.js}
- * @depends {jsbn.js}
- * @depends {jsbn2.js}
  * @depends {pako.js}
  * @depends {webdb.js}
  * @depends {ajaxmultiqueue.js}
  * @depends {growl.js}
- * @depends {crypto/curve25519.js}
- * @depends {crypto/curve25519_.js}
- * @depends {crypto/passphrasegenerator.js}
- * @depends {crypto/sha256worker.js}
- * @depends {crypto/aes.js}
- * @depends {crypto/sha256.js}
- * @depends {crypto/jssha256.js}
- * @depends {crypto/seedrandom.js}
- * @depends {util/converters.js}
- * @depends {util/extensions.js}
- * @depends {util/lmaddress.js}
+ * @depends {Lib/Crypto/curve25519.js}
+ * @depends {Lib/Crypto/curve25519_.js}
+ * @depends {Lib/Crypto/passphrasegenerator.js}
+ * @depends {Lib/Crypto/sha256worker.js}
+ * @depends {Lib/Crypto/aes.js}
+ * @depends {Lib/Crypto/sha256.js}
+ * @depends {Lib/Crypto/jssha256.js}
+ * @depends {Lib/Crypto/seedrandom.js}
+ * @depends {Lib/Util/big.js}
+ * @depends {Lib/Util/jsbn.js}
+ * @depends {Lib/Util/jsbn2.js}
+ * @depends {Lib/Util/Convert.js}
+ * @depends {Lib/Util/extensions.js}
+ * @depends {Lib/Util/lmaddress.js}
  */
 var Lm = (function(Lm, $, undefined) {
 	"use strict";

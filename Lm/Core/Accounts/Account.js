@@ -9,6 +9,7 @@ if (typeof module !== "undefined") {
 	var Collections = require(__dirname + '/../Collections');
 	var Constants = require(__dirname + '/../../Lib/Constants');
 	var Convert = require(__dirname + '/../../Lib/Util/Convert');
+	var ConvertAccount = require(__dirname + '/../../Lib/Util/ConvertAccount');
 	var Crypto = require(__dirname + '/../../Lib/Crypto/Crypto');
 	var EncryptedData = require(__dirname + '/../../Lib/Crypto/EncryptedData');
 	var GuaranteedBalance = require(__dirname + '/GuaranteedBalance');
@@ -21,7 +22,7 @@ var maxTrackedBalanceConfirmations = 2881;
 
 function Account(id) {
 	this.id = id; // BigInt
-	if (id != Crypto.RsDecode(Crypto.RsEncode(id))) {
+	if (id != ConvertAccount.RsDecode(Crypto.RsEncode(id))) {
 		Logger.LogMessage("CRITICAL ERROR: Reed-Solomon encoding fails for " + id);
 	}
 	this.height = Blockchain.GetLastBlock().GetHeight();

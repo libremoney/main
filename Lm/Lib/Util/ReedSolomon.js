@@ -7,8 +7,8 @@
  */
 
 if (typeof module !== "undefined") {
-	var BigInteger = require(__dirname + '/../Util/BigInteger');
-	var Convert = require(__dirname + '/../Util/Convert');
+	var BigInteger = require(__dirname + '/BigInteger');
+	var Convert = require(__dirname + '/Convert');
 }
 
 

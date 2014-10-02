@@ -292,7 +292,7 @@ var Lm = (function(Lm, $, undefined) {
 
 			if (secretPhrase && response.unsignedTransactionBytes && !response.errorCode && !response.error) {
 				var publicKey = Lm.GeneratePublicKey(secretPhrase);
-				var signature = Lm.SignBytes(response.unsignedTransactionBytes, converters.stringToHexString(secretPhrase));
+				var signature = Lm.SignBytes(response.unsignedTransactionBytes, Convert.StringToHexString(secretPhrase));
 
 				if (!Lm.VerifyBytes(signature, response.unsignedTransactionBytes, publicKey)) {
 					if (callback) {
@@ -405,33 +405,33 @@ var Lm = (function(Lm, $, undefined) {
 	function VerifyAndSignTransactionBytes(transactionBytes, signature, requestType, data) {
 		var transaction = {};
 
-		var byteArray = converters.hexStringToByteArray(transactionBytes);
+		var byteArray = Convert.HexStringToByteArray(transactionBytes);
 
 		transaction.type = byteArray[0];
 
 		transaction.version = (byteArray[1] & 0xF0) >> 4;
 		transaction.subtype = byteArray[1] & 0x0F;
 
-		transaction.timestamp = String(converters.byteArrayToSignedInt32(byteArray, 2));
-		transaction.deadline = String(converters.byteArrayToSignedShort(byteArray, 6));
-		transaction.publicKey = converters.byteArrayToHexString(byteArray.slice(8, 40));
-		transaction.recipient = String(converters.byteArrayToBigInteger(byteArray, 40));
-		transaction.amountMilliLm = String(converters.byteArrayToBigInteger(byteArray, 48));
-		transaction.feeMilliLm = String(converters.byteArrayToBigInteger(byteArray, 56));
+		transaction.timestamp = String(Convert.ByteArrayToSignedInt32(byteArray, 2));
+		transaction.deadline = String(Convert.ByteArrayToSignedShort(byteArray, 6));
+		transaction.publicKey = Convert.ByteArrayToHexString(byteArray.slice(8, 40));
+		transaction.recipient = String(Convert.ByteArrayToBigInteger(byteArray, 40));
+		transaction.amountMilliLm = String(Convert.ByteArrayToBigInteger(byteArray, 48));
+		transaction.feeMilliLm = String(Convert.ByteArrayToBigInteger(byteArray, 56));
 
 		var refHash = byteArray.slice(64, 96);
-		transaction.referencedTransactionFullHash = converters.byteArrayToHexString(refHash);
+		transaction.referencedTransactionFullHash = Convert.ByteArrayToHexString(refHash);
 		if (transaction.referencedTransactionFullHash == "0000000000000000000000000000000000000000000000000000000000000000") {
 			transaction.referencedTransactionFullHash = "";
 		}
-		//transaction.referencedTransactionId = converters.byteArrayToBigInteger([refHash[7], refHash[6], refHash[5], refHash[4], refHash[3], refHash[2], refHash[1], refHash[0]], 0);
+		//transaction.referencedTransactionId = Convert.ByteArrayToBigInteger([refHash[7], refHash[6], refHash[5], refHash[4], refHash[3], refHash[2], refHash[1], refHash[0]], 0);
 
 		transaction.flags = 0;
 
 		if (transaction.version > 0) {
-			transaction.flags = converters.byteArrayToSignedInt32(byteArray, 160);
-			transaction.ecBlockHeight = String(converters.byteArrayToSignedInt32(byteArray, 164));
-			transaction.ecBlockId = String(converters.byteArrayToBigInteger(byteArray, 168));
+			transaction.flags = Convert.ByteArrayToSignedInt32(byteArray, 160);
+			transaction.ecBlockHeight = String(Convert.ByteArrayToSignedInt32(byteArray, 164));
+			transaction.ecBlockId = String(Convert.ByteArrayToBigInteger(byteArray, 168));
 		}
 
 		if (!("amountMilliLm" in data)) {
@@ -503,15 +503,15 @@ var Lm = (function(Lm, $, undefined) {
 
 				pos++;
 
-				transaction.aliasName = converters.byteArrayToString(byteArray, pos, aliasLength);
+				transaction.aliasName = Convert.ByteArrayToString(byteArray, pos, aliasLength);
 
 				pos += aliasLength;
 
-				var uriLength = converters.byteArrayToSignedShort(byteArray, pos);
+				var uriLength = Convert.ByteArrayToSignedShort(byteArray, pos);
 
 				pos += 2;
 
-				transaction.aliasURI = converters.byteArrayToString(byteArray, pos, uriLength);
+				transaction.aliasURI = Convert.ByteArrayToString(byteArray, pos, uriLength);
 
 				pos += uriLength;
 
@@ -524,19 +524,19 @@ var Lm = (function(Lm, $, undefined) {
 					return false;
 				}
 
-				var nameLength = converters.byteArrayToSignedShort(byteArray, pos);
+				var nameLength = Convert.ByteArrayToSignedShort(byteArray, pos);
 
 				pos += 2;
 
-				transaction.name = converters.byteArrayToString(byteArray, pos, nameLength);
+				transaction.name = Convert.ByteArrayToString(byteArray, pos, nameLength);
 
 				pos += nameLength;
 
-				var descriptionLength = converters.byteArrayToSignedShort(byteArray, pos);
+				var descriptionLength = Convert.ByteArrayToSignedShort(byteArray, pos);
 
 				pos += 2;
 
-				transaction.description = converters.byteArrayToString(byteArray, pos, descriptionLength);
+				transaction.description = Convert.ByteArrayToString(byteArray, pos, descriptionLength);
 
 				pos += descriptionLength;
 
@@ -545,11 +545,11 @@ var Lm = (function(Lm, $, undefined) {
 				pos++;
 
 				for (var i = 0; i < nr_options; i++) {
-					var optionLength = converters.byteArrayToSignedShort(byteArray, pos);
+					var optionLength = Convert.ByteArrayToSignedShort(byteArray, pos);
 
 					pos += 2;
 
-					transaction["option" + i] = converters.byteArrayToString(byteArray, pos, optionLength);
+					transaction["option" + i] = Convert.ByteArrayToString(byteArray, pos, optionLength);
 
 					pos += optionLength;
 				}
@@ -586,7 +586,7 @@ var Lm = (function(Lm, $, undefined) {
 					return false;
 				}
 
-				transaction.poll = String(converters.byteArrayToBigInteger(byteArray, pos));
+				transaction.poll = String(Convert.ByteArrayToBigInteger(byteArray, pos));
 
 				pos += 8;
 
@@ -610,7 +610,7 @@ var Lm = (function(Lm, $, undefined) {
 					return false;
 				}
 
-				var minFeePerByte = String(converters.byteArrayToBigInteger(byteArray, pos));
+				var minFeePerByte = String(Convert.ByteArrayToBigInteger(byteArray, pos));
 
 				pos += 8;
 
@@ -625,7 +625,7 @@ var Lm = (function(Lm, $, undefined) {
 
 					pos++;
 
-					uris[i] = converters.byteArrayToString(byteArray, pos, uriLength);
+					uris[i] = Convert.ByteArrayToString(byteArray, pos, uriLength);
 
 					pos += uriLength;
 				}
@@ -644,15 +644,15 @@ var Lm = (function(Lm, $, undefined) {
 
 				pos++;
 
-				transaction.name = converters.byteArrayToString(byteArray, pos, nameLength);
+				transaction.name = Convert.ByteArrayToString(byteArray, pos, nameLength);
 
 				pos += nameLength;
 
-				var descriptionLength = converters.byteArrayToSignedShort(byteArray, pos);
+				var descriptionLength = Convert.ByteArrayToSignedShort(byteArray, pos);
 
 				pos += 2;
 
-				transaction.description = converters.byteArrayToString(byteArray, pos, descriptionLength);
+				transaction.description = Convert.ByteArrayToString(byteArray, pos, descriptionLength);
 
 				pos += descriptionLength;
 
@@ -670,11 +670,11 @@ var Lm = (function(Lm, $, undefined) {
 
 				pos++;
 
-				transaction.alias = converters.byteArrayToString(byteArray, pos, aliasLength);
+				transaction.alias = Convert.ByteArrayToString(byteArray, pos, aliasLength);
 
 				pos += aliasLength;
 
-				transaction.priceMilliLm = String(converters.byteArrayToBigInteger(byteArray, pos));
+				transaction.priceMilliLm = String(Convert.ByteArrayToBigInteger(byteArray, pos));
 
 				pos += 8;
 
@@ -692,7 +692,7 @@ var Lm = (function(Lm, $, undefined) {
 
 				pos++;
 
-				transaction.alias = converters.byteArrayToString(byteArray, pos, aliasLength);
+				transaction.alias = Convert.ByteArrayToString(byteArray, pos, aliasLength);
 
 				pos += aliasLength;
 
@@ -710,19 +710,19 @@ var Lm = (function(Lm, $, undefined) {
 
 				pos++;
 
-				transaction.name = converters.byteArrayToString(byteArray, pos, nameLength);
+				transaction.name = Convert.ByteArrayToString(byteArray, pos, nameLength);
 
 				pos += nameLength;
 
-				var descriptionLength = converters.byteArrayToSignedShort(byteArray, pos);
+				var descriptionLength = Convert.ByteArrayToSignedShort(byteArray, pos);
 
 				pos += 2;
 
-				transaction.description = converters.byteArrayToString(byteArray, pos, descriptionLength);
+				transaction.description = Convert.ByteArrayToString(byteArray, pos, descriptionLength);
 
 				pos += descriptionLength;
 
-				transaction.quantityQNT = String(converters.byteArrayToBigInteger(byteArray, pos));
+				transaction.quantityQNT = String(Convert.ByteArrayToBigInteger(byteArray, pos));
 
 				pos += 8;
 
@@ -740,11 +740,11 @@ var Lm = (function(Lm, $, undefined) {
 					return false;
 				}
 
-				transaction.asset = String(converters.byteArrayToBigInteger(byteArray, pos));
+				transaction.asset = String(Convert.ByteArrayToBigInteger(byteArray, pos));
 
 				pos += 8;
 
-				transaction.quantityQNT = String(converters.byteArrayToBigInteger(byteArray, pos));
+				transaction.quantityQNT = String(Convert.ByteArrayToBigInteger(byteArray, pos));
 
 				pos += 8;
 
@@ -762,15 +762,15 @@ var Lm = (function(Lm, $, undefined) {
 					return false;
 				}
 
-				transaction.asset = String(converters.byteArrayToBigInteger(byteArray, pos));
+				transaction.asset = String(Convert.ByteArrayToBigInteger(byteArray, pos));
 
 				pos += 8;
 
-				transaction.quantityQNT = String(converters.byteArrayToBigInteger(byteArray, pos));
+				transaction.quantityQNT = String(Convert.ByteArrayToBigInteger(byteArray, pos));
 
 				pos += 8;
 
-				transaction.priceMilliLm = String(converters.byteArrayToBigInteger(byteArray, pos));
+				transaction.priceMilliLm = String(Convert.ByteArrayToBigInteger(byteArray, pos));
 
 				pos += 8;
 
@@ -788,7 +788,7 @@ var Lm = (function(Lm, $, undefined) {
 					return false;
 				}
 
-				transaction.order = String(converters.byteArrayToBigInteger(byteArray, pos));
+				transaction.order = String(Convert.ByteArrayToBigInteger(byteArray, pos));
 
 				pos += 8;
 
@@ -802,35 +802,35 @@ var Lm = (function(Lm, $, undefined) {
 					return false;
 				}
 
-				var nameLength = converters.byteArrayToSignedShort(byteArray, pos);
+				var nameLength = Convert.ByteArrayToSignedShort(byteArray, pos);
 
 				pos += 2;
 
-				transaction.name = converters.byteArrayToString(byteArray, pos, nameLength);
+				transaction.name = Convert.ByteArrayToString(byteArray, pos, nameLength);
 
 				pos += nameLength;
 
-				var descriptionLength = converters.byteArrayToSignedShort(byteArray, pos);
+				var descriptionLength = Convert.ByteArrayToSignedShort(byteArray, pos);
 
 				pos += 2;
 
-				transaction.description = converters.byteArrayToString(byteArray, pos, descriptionLength);
+				transaction.description = Convert.ByteArrayToString(byteArray, pos, descriptionLength);
 
 				pos += descriptionLength;
 
-				var tagsLength = converters.byteArrayToSignedShort(byteArray, pos);
+				var tagsLength = Convert.ByteArrayToSignedShort(byteArray, pos);
 
 				pos += 2;
 
-				transaction.tags = converters.byteArrayToString(byteArray, pos, tagsLength);
+				transaction.tags = Convert.ByteArrayToString(byteArray, pos, tagsLength);
 
 				pos += tagsLength;
 
-				transaction.quantity = String(converters.byteArrayToSignedInt32(byteArray, pos));
+				transaction.quantity = String(Convert.ByteArrayToSignedInt32(byteArray, pos));
 
 				pos += 4;
 
-				transaction.priceMilliLm = String(converters.byteArrayToBigInteger(byteArray, pos));
+				transaction.priceMilliLm = String(Convert.ByteArrayToBigInteger(byteArray, pos));
 
 				pos += 8;
 
@@ -844,7 +844,7 @@ var Lm = (function(Lm, $, undefined) {
 					return false;
 				}
 
-				transaction.goods = String(converters.byteArrayToBigInteger(byteArray, pos));
+				transaction.goods = String(Convert.ByteArrayToBigInteger(byteArray, pos));
 
 				pos += 8;
 
@@ -858,11 +858,11 @@ var Lm = (function(Lm, $, undefined) {
 					return false;
 				}
 
-				transaction.goods = String(converters.byteArrayToBigInteger(byteArray, pos));
+				transaction.goods = String(Convert.ByteArrayToBigInteger(byteArray, pos));
 
 				pos += 8;
 
-				transaction.priceMilliLm = String(converters.byteArrayToBigInteger(byteArray, pos));
+				transaction.priceMilliLm = String(Convert.ByteArrayToBigInteger(byteArray, pos));
 
 				pos += 8;
 
@@ -876,11 +876,11 @@ var Lm = (function(Lm, $, undefined) {
 					return false;
 				}
 
-				transaction.goods = String(converters.byteArrayToBigInteger(byteArray, pos));
+				transaction.goods = String(Convert.ByteArrayToBigInteger(byteArray, pos));
 
 				pos += 8;
 
-				transaction.deltaQuantity = String(converters.byteArrayToSignedInt32(byteArray, pos));
+				transaction.deltaQuantity = String(Convert.ByteArrayToSignedInt32(byteArray, pos));
 
 				pos += 4;
 
@@ -894,19 +894,19 @@ var Lm = (function(Lm, $, undefined) {
 					return false;
 				}
 
-				transaction.goods = String(converters.byteArrayToBigInteger(byteArray, pos));
+				transaction.goods = String(Convert.ByteArrayToBigInteger(byteArray, pos));
 
 				pos += 8;
 
-				transaction.quantity = String(converters.byteArrayToSignedInt32(byteArray, pos));
+				transaction.quantity = String(Convert.ByteArrayToSignedInt32(byteArray, pos));
 
 				pos += 4;
 
-				transaction.priceMilliLm = String(converters.byteArrayToBigInteger(byteArray, pos));
+				transaction.priceMilliLm = String(Convert.ByteArrayToBigInteger(byteArray, pos));
 
 				pos += 8;
 
-				transaction.deliveryDeadlineTimestamp = String(converters.byteArrayToSignedInt32(byteArray, pos));
+				transaction.deliveryDeadlineTimestamp = String(Convert.ByteArrayToSignedInt32(byteArray, pos));
 
 				pos += 4;
 
@@ -920,13 +920,13 @@ var Lm = (function(Lm, $, undefined) {
 					return false;
 				}
 
-				transaction.purchase = String(converters.byteArrayToBigInteger(byteArray, pos));
+				transaction.purchase = String(Convert.ByteArrayToBigInteger(byteArray, pos));
 
 				pos += 8;
 
-				var encryptedGoodsLength = converters.byteArrayToSignedShort(byteArray, pos);
+				var encryptedGoodsLength = Convert.ByteArrayToSignedShort(byteArray, pos);
 
-				var goodsLength = converters.byteArrayToSignedInt32(byteArray, pos);
+				var goodsLength = Convert.ByteArrayToSignedInt32(byteArray, pos);
 
 				transaction.goodsIsText = goodsLength < 0; // ugly hack??
 
@@ -936,15 +936,15 @@ var Lm = (function(Lm, $, undefined) {
 
 				pos += 4;
 
-				transaction.goodsData = converters.byteArrayToHexString(byteArray.slice(pos, pos + encryptedGoodsLength));
+				transaction.goodsData = Convert.ByteArrayToHexString(byteArray.slice(pos, pos + encryptedGoodsLength));
 
 				pos += encryptedGoodsLength;
 
-				transaction.goodsNonce = converters.byteArrayToHexString(byteArray.slice(pos, pos + 32));
+				transaction.goodsNonce = Convert.ByteArrayToHexString(byteArray.slice(pos, pos + 32));
 
 				pos += 32;
 
-				transaction.discountMilliLm = String(converters.byteArrayToBigInteger(byteArray, pos));
+				transaction.discountMilliLm = String(Convert.ByteArrayToBigInteger(byteArray, pos));
 
 				pos += 8;
 
@@ -964,7 +964,7 @@ var Lm = (function(Lm, $, undefined) {
 					return false;
 				}
 
-				transaction.purchase = String(converters.byteArrayToBigInteger(byteArray, pos));
+				transaction.purchase = String(Convert.ByteArrayToBigInteger(byteArray, pos));
 
 				pos += 8;
 
@@ -978,11 +978,11 @@ var Lm = (function(Lm, $, undefined) {
 					return false;
 				}
 
-				transaction.purchase = String(converters.byteArrayToBigInteger(byteArray, pos));
+				transaction.purchase = String(Convert.ByteArrayToBigInteger(byteArray, pos));
 
 				pos += 8;
 
-				transaction.refundMilliLm = String(converters.byteArrayToBigInteger(byteArray, pos));
+				transaction.refundMilliLm = String(Convert.ByteArrayToBigInteger(byteArray, pos));
 
 				pos += 8;
 
@@ -996,7 +996,7 @@ var Lm = (function(Lm, $, undefined) {
 					return false;
 				}
 
-				transaction.period = String(converters.byteArrayToSignedShort(byteArray, pos));
+				transaction.period = String(Convert.ByteArrayToSignedShort(byteArray, pos));
 
 				pos += 2;
 
@@ -1018,7 +1018,7 @@ var Lm = (function(Lm, $, undefined) {
 
 			pos++;
 
-			var messageLength = converters.byteArrayToSignedInt32(byteArray, pos);
+			var messageLength = Convert.ByteArrayToSignedInt32(byteArray, pos);
 
 			transaction.messageIsText = messageLength < 0; // ugly hack??
 
@@ -1029,10 +1029,10 @@ var Lm = (function(Lm, $, undefined) {
 			pos += 4;
 
 			if (transaction.messageIsText) {
-				transaction.message = converters.byteArrayToString(byteArray, pos, messageLength);
+				transaction.message = Convert.ByteArrayToString(byteArray, pos, messageLength);
 			} else {
 				var slice = byteArray.slice(pos, pos + messageLength);
-				transaction.message = converters.byteArrayToHexString(slice);
+				transaction.message = Convert.ByteArrayToHexString(slice);
 			}
 
 			pos += messageLength;
@@ -1058,7 +1058,7 @@ var Lm = (function(Lm, $, undefined) {
 
 			pos++;
 
-			var encryptedMessageLength = converters.byteArrayToSignedInt32(byteArray, pos);
+			var encryptedMessageLength = Convert.ByteArrayToSignedInt32(byteArray, pos);
 
 			transaction.messageToEncryptIsText = encryptedMessageLength < 0;
 
@@ -1068,11 +1068,11 @@ var Lm = (function(Lm, $, undefined) {
 
 			pos += 4;
 
-			transaction.encryptedMessageData = converters.byteArrayToHexString(byteArray.slice(pos, pos + encryptedMessageLength));
+			transaction.encryptedMessageData = Convert.ByteArrayToHexString(byteArray.slice(pos, pos + encryptedMessageLength));
 
 			pos += encryptedMessageLength;
 
-			transaction.encryptedMessageNonce = converters.byteArrayToHexString(byteArray.slice(pos, pos + 32));
+			transaction.encryptedMessageNonce = Convert.ByteArrayToHexString(byteArray.slice(pos, pos + 32));
 
 			pos += 32;
 
@@ -1096,7 +1096,7 @@ var Lm = (function(Lm, $, undefined) {
 
 			pos++;
 
-			var recipientPublicKey = converters.byteArrayToHexString(byteArray.slice(pos, pos + 32));
+			var recipientPublicKey = Convert.ByteArrayToHexString(byteArray.slice(pos, pos + 32));
 
 			if (recipientPublicKey != data.recipientPublicKey) {
 				return false;
@@ -1113,7 +1113,7 @@ var Lm = (function(Lm, $, undefined) {
 
 			pos++;
 
-			var encryptedToSelfMessageLength = converters.byteArrayToSignedInt32(byteArray, pos);
+			var encryptedToSelfMessageLength = Convert.ByteArrayToSignedInt32(byteArray, pos);
 
 			transaction.messageToEncryptToSelfIsText = encryptedToSelfMessageLength < 0;
 
@@ -1123,11 +1123,11 @@ var Lm = (function(Lm, $, undefined) {
 
 			pos += 4;
 
-			transaction.encryptToSelfMessageData = converters.byteArrayToHexString(byteArray.slice(pos, pos + encryptedToSelfMessageLength));
+			transaction.encryptToSelfMessageData = Convert.ByteArrayToHexString(byteArray.slice(pos, pos + encryptedToSelfMessageLength));
 
 			pos += encryptedToSelfMessageLength;
 
-			transaction.encryptToSelfMessageNonce = converters.byteArrayToHexString(byteArray.slice(pos, pos + 32));
+			transaction.encryptToSelfMessageNonce = Convert.ByteArrayToHexString(byteArray.slice(pos, pos + 32));
 
 			pos += 32;
 

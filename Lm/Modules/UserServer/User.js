@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.2
+ * LibreMoney User 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -16,61 +16,73 @@ import org.json.simple.JSONStreamAware;
 */
 
 
-function User(userId) {
-	this.userId = userId;
+function User(_userId) {
+	this.userId;
+	this.secretPhrase;
+	this.publicKey;
+	this.isInactive = false;
+	this.userId = _userId;
 	/*
-	var secretPhrase;
-	var publicKey;
-	var isInactive;
 	private final ConcurrentLinkedQueue<JSONStreamAware> pendingResponses = new ConcurrentLinkedQueue<>();
 	private AsyncContext asyncContext;
 	*/
 	return this;
 }
 
-function GetUserId() {
+User.prototype.GetUserId = function() {
 	return this.userId;
 }
 
-function GetPublicKey() {
+User.prototype.GetPublicKey = function() {
 	return this.publicKey;
 }
 
-function GetSecretPhrase() {
+User.prototype.GetSecretPhrase = function() {
 	return this.secretPhrase;
 }
 
-function IsInactive() {
+User.prototype.IsInactive = function() {
 	return this.isInactive;
 }
 
-function SetInactive(inactive) {
-	this.isInactive = inactive;
+User.prototype.SetInactive = function(inactive) {
+	if (typeof inactive === "boolean")
+		this.isInactive = inactive;
 }
 
-function Enqueue(response) {
+User.prototype.Enqueue = function(response) {
 	/*
 	pendingResponses.offer(response);
 	*/
 }
 
-function LockAccount() {
+User.prototype.LockAccount = function() {
 	/*
-	Generator.stopForging(secretPhrase);
-	secretPhrase = null;
+	Generator.StopForging(this.secretPhrase);
 	*/
+	this.secretPhrase = null;
 }
 
-function UnlockAccount(secretPhrase) {
+User.prototype.LoginAccount = function(_secretPhrase) {
+	this.secretPhrase = _secretPhrase; //curve.sha256(_secretPhrase);
+	var publicKeyHex = Crypto.GetPublicKey(this.secretPhrase.toString("hex"));
+	console.log("Crypto publicKeyHex=", publicKeyHex);
+	this.publicKey = new Buffer(publicKeyHex, "hex");
 	/*
-	this.publicKey = Crypto.getPublicKey(secretPhrase);
-	this.secretPhrase = secretPhrase;
-	Generator.startForging(secretPhrase, publicKey);
-	return Account.getId(publicKey);
+	Generator.StartForging(this.secretPhrase, this.publicKey);
 	*/
+	return Accounts.GetId(this.publicKey);
 }
 
-function ProcessPendingResponses(req, resp) {
+User.prototype.LogoutAccount = function() {
+	return this.LockAccount();
+}
+
+User.prototype.UnlockAccount = function(secretPhrase) {
+	return LoginAccount(secretPhrase);
+}
+
+User.prototype.ProcessPendingResponses = function(req, resp) {
 	/*
 	JSONArray responses = new JSONArray();
 	JSONStreamAware pendingResponse;
@@ -110,7 +122,7 @@ function ProcessPendingResponses(req, resp) {
 	*/
 }
 
-function Send(response) {
+User.prototype.Send = function(response) {
 	/*
 	if (asyncContext == null) {
 
@@ -194,16 +206,6 @@ private final class UserAsyncListener implements AsyncListener {
 */
 
 
-User.prototype.GetUserId = GetUserId;
-User.prototype.GetPublicKey = GetPublicKey;
-User.prototype.GetSecretPhrase = GetSecretPhrase;
-User.prototype.IsInactive = IsInactive;
-User.prototype.SetInactive = SetInactive;
-User.prototype.Enqueue = Enqueue;
-User.prototype.LockAccount = LockAccount;
-User.prototype.UnlockAccount = UnlockAccount;
-User.prototype.ProcessPendingResponses = ProcessPendingResponses;
-User.prototype.Send = Send;
-
-
-module.exports = User;
+if (typeof module !== "undefined") {
+	module.exports = User;
+}

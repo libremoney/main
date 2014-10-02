@@ -4,20 +4,45 @@
  * CC0 license
  */
 
-var Logger = require(__dirname + '/../Lib/Util/Logger').GetLogger(module);
-
-
-var scheduledThreadPool;
-var backgroundJobs = new Array();
-var beforeStartJobs = new Array();
-var lastBeforeStartJobs = new Array();
+if (typeof module !== "undefined") {
+	var Logger = require(__dirname + '/../Lib/Util/Logger').GetLogger(module);
+}
 
 
 // ----
 
-function RunAll(jobs) {
+function Sheduler(job) {
+	this.job = job;
+	this.NewInterval();
+	return this;
+}
+
+Sheduler.prototype.NewInterval = function() {
+	var s = this;
+	this.interval = new setInterval(function() {
+		s.job.runnable();
+		s.interval = this.NewInterval;
+	}, this.job.delay);
+	return this;
+}
+
+Sheduler.prototype.Shutdown = function() {
+	clearInterval(this.interval);
+}
+
+// ----
+
+var ThreadPool = function() {
+	this.scheduledThreadPool;
+	this.backgroundJobs = new Array();
+	this.beforeStartJobs = new Array();
+	this.lastBeforeStartJobs = new Array();
+	return this;
+}();
+
+ThreadPool.RunAll = function(jobs) {
 	for (var i = 0; jobs.length > i; i++) {
-		jobs[i]();
+		jobs[i].runnable();
 	}
 	// TODO
 	/*
@@ -52,93 +77,46 @@ function RunAll(jobs) {
 	*/
 }
 
-function Sheduler(job) {
-	this.job = job;
-	this.NewInterval();
-	return this;
-}
-
-function Sheduler_NewInterval() {
-	var s = this;
-	this.interval = new setInterval(function() {
-		s.job.runnable();
-		s.interval = Sheduler_NewInterval;
-	}, this.job.delay);
-	return this;
-}
-
-function Sheduler_Shutdown() {
-	clearInterval(this.interval);
-}
-
-Sheduler.prototype.NewInterval = Sheduler_NewInterval;
-Sheduler.prototype.Shutdown = Sheduler_Shutdown;
-
-// ----
-
-function RunBeforeStart(runnable, runLast) {
+ThreadPool.RunBeforeStart = function(runnable, runLast) {
 	if (scheduledThreadPool) {
 		throw new Error("IllegalStateException: Executor service already started");
 	}
 	if (runLast) {
-		lastBeforeStartJobs.push(runnable);
+		this.lastBeforeStartJobs.push({
+			runnable: runnable,
+			delay: 100
+		});
 	} else {
-		beforeStartJobs.push(runnable);
+		this.beforeStartJobs.push({
+			runnable: runnable,
+			dalay: 100
+		});
 	}
 }
 
-function ScheduleThread(runnable, delay, name) {
-	if (scheduledThreadPool) {
+ThreadPool.ScheduleThread = function(runnable, delay, name) {
+	if (this.scheduledThreadPool) {
 		throw new Error("Executor service already started, no new jobs accepted");
 	}
-	backgroundJobs.push({
+	this.backgroundJobs.push({
 		runnable: runnable,
 		delay: delay,
 		name: name
 	});
 }
 
-function Start() {
-	if (scheduledThreadPool) {
-		throw new Error("Executor service already started");
-	}
-
-	Logger.debug("Running " + beforeStartJobs.length + " final tasks...");
-	RunAll(beforeStartJobs);
-	beforeStartJobs.length = 0;
-
-	Logger.debug("Running " + lastBeforeStartJobs.length + " final tasks...");
-	RunAll(lastBeforeStartJobs);
-	lastBeforeStartJobs.length = 0;
-
-	Logger.debug("Starting " + backgroundJobs.length + " background jobs");
-	scheduledThreadPool = [];
-	for (var i = 0; backgroundJobs.length > i; i++) {
-		var sheduler = new Sheduler(backgroundJobs[i]);
-		scheduledThreadPool.push(sheduler);
-	}
-	// TODO
-	/*
-	scheduledThreadPool = Executors.newScheduledThreadPool(backgroundJobs.size());
-	for (Map.Entry<Runnable,Integer> entry : backgroundJobs.entrySet()) {
-		scheduledThreadPool.scheduleWithFixedDelay(entry.getKey(), 0, entry.getValue(), TimeUnit.MILLISECONDS);
-	}
-	*/
-	backgroundJobs.length = 0;
-}
-
-function Shutdown() {
-	if (scheduledThreadPool != null) {
+ThreadPool.Shutdown = function() {
+	if (this.scheduledThreadPool != null) {
 		Logger.debug("Stopping background jobs...");
-		ShutdownExecutor(scheduledThreadPool);
-		scheduledThreadPool.length = 0;
+		this.ShutdownExecutor(scheduledThreadPool);
+		this.scheduledThreadPool.length = 0;
 		Logger.debug("...Done");
 	}
 }
 
-function ShutdownExecutor(executor) {
-	for (exec in executor) {
-		exec.Shutdown();
+ThreadPool.ShutdownExecutor = function(executor) {
+	for (var i in executor) {
+		executor[i].Shutdown();
 	}
 	/*
 	executor.shutdown();
@@ -154,10 +132,36 @@ function ShutdownExecutor(executor) {
 	*/
 }
 
+ThreadPool.Start = function() {
+	if (this.scheduledThreadPool) {
+		throw new Error("Executor service already started");
+	}
 
-exports.RunAll = RunAll;
-exports.RunBeforeStart = RunBeforeStart;
-exports.ScheduleThread = ScheduleThread;
-exports.Shutdown = Shutdown;
-exports.ShutdownExecutor = ShutdownExecutor;
-exports.Start = Start;
+	Logger.debug("Running " + this.beforeStartJobs.length + " final tasks...");
+	this.RunAll(this.beforeStartJobs);
+	this.beforeStartJobs.length = 0;
+
+	Logger.debug("Running " + this.lastBeforeStartJobs.length + " final tasks...");
+	this.RunAll(this.lastBeforeStartJobs);
+	this.lastBeforeStartJobs.length = 0;
+
+	Logger.debug("Starting " + this.backgroundJobs.length + " background jobs");
+	this.scheduledThreadPool = [];
+	for (var i = 0; this.backgroundJobs.length > i; i++) {
+		var sheduler = new Sheduler(this.backgroundJobs[i]);
+		this.scheduledThreadPool.push(sheduler);
+	}
+	// TODO
+	/*
+	scheduledThreadPool = Executors.newScheduledThreadPool(backgroundJobs.size());
+	for (Map.Entry<Runnable,Integer> entry : backgroundJobs.entrySet()) {
+		scheduledThreadPool.scheduleWithFixedDelay(entry.getKey(), 0, entry.getValue(), TimeUnit.MILLISECONDS);
+	}
+	*/
+	this.backgroundJobs.length = 0;
+}
+
+
+if (typeof module !== "undefined") {
+	module.exports = ThreadPool;
+}

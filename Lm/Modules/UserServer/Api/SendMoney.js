@@ -1,5 +1,5 @@
 /**!
- * LibreMoney 0.2
+ * LibreMoney SendMoney 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
@@ -20,22 +20,22 @@ function SendMoney(req, res, user) {
 	}
 
 	var recipientValue = req.query.recipient;
-	var amountValue = req.query.amountMilliLm;
-	var feeValue = req.query.feeMilliLm;
+	var amountValue = req.query.amount; // MilliLm
+	var feeValue = req.query.fee; // MilliLm
 	var deadlineValue = req.query.deadline;
 	var secretPhrase = req.query.secretPhrase;
 
 	var recipient;
-	var amountMilliLm = 0;
-	var feeMilliLm = 0;
+	var amount = 0;
+	var fee = 0;
 	var deadline = 0;
 
 	//try {
 		recipient = Convert.ParseUnsignedLong(recipientValue);
 		if (!recipient)
 			throw new Error("IllegalArgument: invalid recipient");
-		amountMilliLm = Convert.ParseLm(amountValue.trim());
-		feeMilliLm = Convert.ParseLm(feeValue.trim());
+		amount = Convert.ParseLm(amountValue.trim());
+		fee = Convert.ParseLm(feeValue.trim());
 		deadline = parseInt(Double.ParseDouble(deadlineValue) * 60);
 	/*
 	} catch (RuntimeException e) {
@@ -55,26 +55,26 @@ function SendMoney(req, res, user) {
 		response.response = "notifyOfIncorrectTransaction";
 		response.message = "Wrong secret phrase!";
 		response.recipient = recipientValue;
-		response.amountMilliLm = amountValue;
-		response.feeMilliLm = feeValue;
+		response.amount = amountValue;
+		response.fee = feeValue;
 		response.deadline = deadlineValue;
 		return response;
-	} else if (amountMilliLm <= 0 || amountMilliLm > Constants.MaxBalanceMilliLm) {
+	} else if (amount <= 0 || amount > Constants.MaxBalance) {
 		var response = {};
 		response.response = "notifyOfIncorrectTransaction";
 		response.message = "\"Amount\" must be greater than 0!";
 		response.recipient = recipientValue;
-		response.amountMilliLm = amountValue;
-		response.feeMilliLm = feeValue;
+		response.amount = amountValue;
+		response.fee = feeValue;
 		response.deadline = deadlineValue;
 		return response;
-	} else if (feeMilliLm < Constants.OneLm || feeMilliLm > Constants.MaxBalanceMilliLm) {
+	} else if (fee < Constants.OneLm || fee > Constants.MaxBalance) {
 		var response = {};
 		response.response = "notifyOfIncorrectTransaction";
 		response.message = "\"Fee\" must be at least 1 NXT!";
 		response.recipient = recipientValue;
-		response.amountMilliLm = amountValue;
-		response.feeMilliLm = feeValue;
+		response.amount = amountValue;
+		response.fee = feeValue;
 		response.deadline = deadlineValue;
 		return response;
 	} else if (deadline < 1 || deadline > 1440) {
@@ -82,20 +82,20 @@ function SendMoney(req, res, user) {
 		response.response = "notifyOfIncorrectTransaction";
 		response.message = "\"Deadline\" must be greater or equal to 1 minute and less than 24 hours!";
 		response.recipient = recipientValue;
-		response.amountMilliLm = amountValue;
-		response.feeMilliLm = feeValue;
+		response.amount = amountValue;
+		response.fee = feeValue;
 		response.deadline = deadlineValue;
 		return response;
 	}
 
 	var account = Accounts.GetAccount(user.GetPublicKey());
-	if (!account || Convert.SafeAdd(amountMilliLm, feeMilliLm) > account.GetUnconfirmedBalanceMilliLm()) {
+	if (!account || Convert.SafeAdd(amount, fee) > account.GetUnconfirmedBalance()) {
 		var response = {};
 		response.response = "notifyOfIncorrectTransaction";
 		response.message = "Not enough funds!";
 		response.recipient = recipientValue;
-		response.amountMilliLm = amountValue;
-		response.feeMilliLm = feeValue;
+		response.amount = amountValue;
+		response.fee = feeValue;
 		response.deadline = deadlineValue;
 		return response;
 	} else {
@@ -103,8 +103,8 @@ function SendMoney(req, res, user) {
 			deadline: deadline,
 			senderPublicKey: user.GetPublicKey(),
 			recipientId: recipient,
-			amountMilliLm: amountMilliLm,
-			feeMilliLm: feeMilliLm
+			amount: amount,
+			fee: fee
 		});
 		transaction.Validate();
 		transaction.Sign(user.GetSecretPhrase());

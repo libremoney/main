@@ -4,14 +4,16 @@
  * CC0 license
  */
 
-var Blockchain = require(__dirname + '/../../Blockchain');
-var BlockchainProcessor = require(__dirname + '/../../BlockchainProcessor');
-var Convert = require(__dirname + '/../../../Lib/Util/Convert');
-var Core = require(__dirname + '/../../Core');
+if (typeof module !== "undefined") {
+	var Blockchain = require(__dirname + '/../../Blockchain');
+	var BlockchainProcessor = require(__dirname + '/../../BlockchainProcessor');
+	var Convert = require(__dirname + '/../../../Lib/Util/Convert');
+}
 
 
 //super(new APITag[] {APITag.BLOCKS, APITag.INFO});
 function GetBlockchainStatus(req, res) {
+	var Core = require(__dirname + '/../../Core');
 	var lastBlock = Blockchain.GetLastBlock();
 	var lastBlockchainFeeder = BlockchainProcessor.GetLastBlockchainFeeder();
 	response = {
@@ -33,4 +35,6 @@ function GetBlockchainStatus(req, res) {
 }
 
 
-module.exports = GetBlockchainStatus;
+if (typeof module !== "undefined") {
+	module.exports = GetBlockchainStatus;
+}

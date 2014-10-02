@@ -11,7 +11,7 @@ Install
 
 Updates are available how (Ubuntu)
 
-	sudo apt-get install nodejs npm
+	sudo apt-get install nodejs npm mongodb
 	git clone https://github.com/libremoney/main.git libremoney
 	cd libremoney
 	npm install

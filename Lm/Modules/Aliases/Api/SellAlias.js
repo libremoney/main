@@ -43,7 +43,7 @@ function SellAlias() {
 	Long recipientId = null;
 	if (recipientValue != null) {
 		try {
-			recipientId = Convert.parseAccountId(recipientValue);
+			recipientId = ConvertAccount.ParseAccountId(recipientValue);
 		} catch (RuntimeException e) {
 			return INCORRECT_RECIPIENT;
 		}

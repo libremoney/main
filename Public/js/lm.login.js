@@ -85,7 +85,7 @@ var Lm = (function(Lm, $, undefined) {
 		if (!response.errorCode) {
 			Lm.Account = String(response.account).escapeHTML();
 			Lm.AccountRS = String(response.accountRS).escapeHTML();
-			Lm.PublicKey = Lm.GetPublicKey(converters.stringToHexString(password));
+			Lm.PublicKey = Lm.GetPublicKey(Convert.StringToHexString(password));
 		}
 
 		if (!Lm.Account) {

@@ -98,7 +98,7 @@ var Lm = (function(Lm, $, undefined) {
 						if (transaction.attachment.message) {
 							if (!transaction.attachment["version.Message"]) {
 								try {
-									message = converters.hexStringToString(transaction.attachment.message);
+									message = Convert.HexStringToString(transaction.attachment.message);
 								} catch (err) {
 									//legacy
 									if (transaction.attachment.message.indexOf("feff") === 0) {
@@ -774,7 +774,7 @@ var Lm = (function(Lm, $, undefined) {
 				if (transaction.attachment.message) {
 					if (!transaction.attachment["version.Message"]) {
 						try {
-							message = converters.hexStringToString(transaction.attachment.message);
+							message = Convert.HexStringToString(transaction.attachment.message);
 						} catch (err) {
 							//legacy
 							if (transaction.attachment.message.indexOf("feff") === 0) {
