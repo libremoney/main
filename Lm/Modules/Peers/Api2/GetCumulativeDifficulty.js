@@ -1,19 +1,23 @@
 /**!
- * LibreMoney 0.2
+ * LibreMoney GetCumulativeDifficulty api 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-
-function GetCumulativeDifficulty(request, peer) {
-	/*
-	JSONObject response = new JSONObject();
-	Block lastBlock = Nxt.getBlockchain().getLastBlock();
-	response.put("cumulativeDifficulty", lastBlock.getCumulativeDifficulty().toString());
-	response.put("blockchainHeight", lastBlock.getHeight());
-	return response;
-	*/
+if (typeof module !== "undefined") {
+	var Blockchain = require(__dirname + "/../../../Core/Blockchain");
 }
 
 
-module.exports = GetCumulativeDifficulty;
+function GetCumulativeDifficulty(req, res) {
+	var lastBlock = Blockchain.GetLastBlock();
+	res.json({
+		cumulativeDifficulty: lastBlock.GetCumulativeDifficulty().toString(),
+		blockchainHeight: lastBlock.GetHeight()
+	});
+}
+
+
+if (typeof module !== "undefined") {
+	module.exports = GetCumulativeDifficulty;
+}

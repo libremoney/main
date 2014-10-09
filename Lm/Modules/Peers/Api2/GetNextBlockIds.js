@@ -1,27 +1,27 @@
 /**!
- * LibreMoney 0.2
+ * LibreMoney GetNextBlockIds api 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-
-function GetNextBlockIds(request, peer) {
-	/*
-    JSONObject response = new JSONObject();
-
-    JSONArray nextBlockIds = new JSONArray();
-    Long blockId = Convert.parseUnsignedLong((String) request.get("blockId"));
-    List<Long> ids = Nxt.getBlockchain().getBlockIdsAfter(blockId, 1440);
-
-    for (Long id : ids) {
-        nextBlockIds.add(Convert.toUnsignedLong(id));
-    }
-
-    response.put("nextBlockIds", nextBlockIds);
-	*/
-
-    return response;
+if (typeof module !== "undefined") {
+	var Blockchain = require(__dirname + "/../../../Core/Blockchain");
+	var Convert = require(__dirname + "/../../../Lib/Util/Convert");
 }
 
 
-module.exports = GetNextBlockIds;
+function GetNextBlockIds(req, res) {
+	var response = {};
+	var nextBlockIds = [];
+	var blockId = Convert.ParseUnsignedLong(req.query.blockId);
+	var ids = Blockchain.GetBlockIdsAfter(blockId, 1440);
+	for (var i in ids) {
+		nextBlockIds.push(Convert.ToUnsignedLong(ids[i]));
+	}
+	res.json({nextBlockIds: nextBlockIds});
+}
+
+
+if (typeof module !== "undefined") {
+	module.exports = GetNextBlockIds;
+}

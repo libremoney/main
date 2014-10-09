@@ -4,18 +4,24 @@
  * CC0 license
  */
 
-var Convert = require(__dirname + '/../../../Lib/Util/Convert');
-var JsonResponses = require(__dirname + '/../JsonResponses');
-var Logger = require(__dirname + '/../../../Lib/Util/Logger').GetLogger(module);
-var TransactionProcessor = require(__dirname + '/../../TransactionProcessor');
+if (typeof module !== "undefined") {
+	var Convert = require(__dirname + '/../../../Lib/Util/Convert');
+	var JsonResponses = require(__dirname + '/../JsonResponses');
+	var Logger = require(__dirname + '/../../../Lib/Util/Logger').GetLogger(module);
+	var TransactionProcessor = require(__dirname + '/../../TransactionProcessor');
+}
 
 
 //super(new APITag[] {APITag.TRANSACTIONS}, "transactionBytes", "transactionJSON");
 function BroadcastTransaction(req, res) {
+	res.writeHead(200, {
+		"Content-Type": "application/json" //"text/plain"
+	});
 	var transactionBytes = Convert.EmptyToNull(req.query.transactionBytes);
 	var transactionJson = Convert.EmptyToNull(req.query.transactionJson);
 	if (!transactionBytes && !transactionJson) {
-		res.send(JsonResponses.MissingTransactionBytesOrJson);
+		res.write(JsonResponses.MissingTransactionBytesOrJson);
+		res.end();
 		return;
 	}
 	try {
@@ -36,10 +42,13 @@ function BroadcastTransaction(req, res) {
 		} catch (e) {
 			response.error = e;
 		}
-		res.send(response);
+		res.write(response);
+		res.end();
 	} catch (e) {
-		res.send(JsonResponses.IncorrectTransactionBytes);
+		res.write(JsonResponses.IncorrectTransactionBytes);
+		res.end();
 	}
 }
+
 
 module.exports = BroadcastTransaction;

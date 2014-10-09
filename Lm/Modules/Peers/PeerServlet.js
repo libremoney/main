@@ -14,23 +14,6 @@ private static final Map<String,PeerRequestHandler> peerRequestHandlers;
 */
 
 /*
-static {
-	Map<String,PeerRequestHandler> map = new HashMap<>();
-	map.put("addPeers", AddPeers.instance);
-	map.put("getCumulativeDifficulty", GetCumulativeDifficulty.instance);
-	map.put("getInfo", GetInfo.instance);
-	map.put("getMilestoneBlockIds", GetMilestoneBlockIds.instance);
-	map.put("getNextBlockIds", GetNextBlockIds.instance);
-	map.put("getNextBlocks", GetNextBlocks.instance);
-	map.put("getPeers", GetPeers.instance);
-	map.put("getUnconfirmedTransactions", GetUnconfirmedTransactions.instance);
-	map.put("processBlock", ProcessBlock.instance);
-	map.put("processTransactions", ProcessTransactions.instance);
-	peerRequestHandlers = Collections.unmodifiableMap(map);
-}
-*/
-
-/*
 private boolean isGzipEnabled;
 
 public void init(ServletConfig config) throws ServletException {

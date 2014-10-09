@@ -417,7 +417,6 @@ var bigInt = (function () {
 		return parse(strHex.toLocaleUpperCase(), 16)
 	}
 
-
 	var fnReturn = function (a, b) {
 		if (typeof a === "undefined") return ZERO;
 		if (typeof b !== "undefined") return parseBase(a, b);

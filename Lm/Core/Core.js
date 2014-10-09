@@ -40,7 +40,7 @@ var Core = function() {
 
 	this.defaultProperties;
 	this.properties;
-	this.version = "0.2.1";
+	this.version = "0.2.2";
 	this.application = "Lm";
 
 	this.state = null;
@@ -116,6 +116,10 @@ Core.prototype.GetRecipientId = function(recipientId, callback) {
 		return;
 	}
 	callback(null, recipientId);
+}
+
+Core.prototype.GetSynced = function() {
+	return this.synced;
 }
 
 Core.prototype.GetVersion = function() {

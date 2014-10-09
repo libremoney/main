@@ -4,24 +4,30 @@
  * CC0 license
  */
 
-/*
-import nxt.peer.Peer;
-import nxt.peer.Peers;
-*/
-
-//super(new APITag[] {APITag.INFO}, "active");
-function GetPeers(req, res) {
-	res.send('This is not implemented');
-	/*
-	JSONArray peers = new JSONArray();
-	for (Peer peer : active ? Peers.getActivePeers() : Peers.getAllPeers()) {
-		peers.add(peer.getPeerAddress());
-	}
-	JSONObject response = new JSONObject();
-	response.put("peers", peers);
-	return response;
-	*/
+if (typeof module !== "undefined") {
+	var Peers = require(__dirname + "/../Peers");
 }
 
 
-module.exports = GetPeers;
+//super(new APITag[] {APITag.INFO}, "active");
+function GetPeers(req, res) {
+	var active = req.query.active;
+	var peers = [];
+	var ps;
+	if (active == "true" || active == 1) {
+		ps = Peers.GetActivePeers();
+	} else {
+		ps = Peers.GetAllPeers();
+	}
+	for (var i in ps) {
+		peers.push(ps[i].GetPeerAddress());
+	}
+	res.json({
+		peers: peers
+	});
+}
+
+
+if (typeof module !== "undefined") {
+	module.exports = GetPeers;
+}

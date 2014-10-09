@@ -6,11 +6,13 @@
 
 // deprecated
 
-var Crypto = require(__dirname + '/../../../Lib/Crypto/Crypto');
-var Convert = require(__dirname + '/../../../Lib/Util/Convert');
-var JsonResponses = require(__dirname + '/../JsonResponses');
-var Logger = require(__dirname + '/../../../Lib/Util/Logger').GetLogger(module);
-var TransactionProcessor = require(__dirname + '/../../TransactionProcessor');
+if (typeof module !== "undefined") {
+	var Crypto = require(__dirname + '/../../../Lib/Crypto/Crypto');
+	var Convert = require(__dirname + '/../../../Lib/Util/Convert');
+	var JsonResponses = require(__dirname + '/../JsonResponses');
+	var Logger = require(__dirname + '/../../../Lib/Util/Logger').GetLogger(module);
+	var TransactionProcessor = require(__dirname + '/../../TransactionProcessor');
+}
 
 
 //super(new APITag[] {APITag.TRANSACTIONS}, "unsignedTransactionBytes", "unsignedTransactionJSON", "secretPhrase");
@@ -60,4 +62,6 @@ function SignTransaction(req, res) {
 }
 
 
-module.exports = SignTransaction;
+if (typeof module !== "undefined") {
+	module.exports = SignTransaction;
+}

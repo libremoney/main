@@ -17,4 +17,9 @@ Updates are available how (Ubuntu)
 	npm install
 	node web
 
+Install as Service
+
+	sudo npm -g install forever
+	forever start web.js
+
 After that, go to your browser: http://localhost:1400/

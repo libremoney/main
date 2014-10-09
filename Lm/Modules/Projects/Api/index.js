@@ -4,5 +4,6 @@
  * CC0 license
  */
 
+exports.GetProject = require(__dirname + '/GetProject');
 exports.GetProjectList = require(__dirname + '/GetProjectList');
 exports.GetProjectListHtml = require(__dirname + '/GetProjectListHtml');

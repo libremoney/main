@@ -4,57 +4,61 @@
  * CC0 license
  */
 
-/*
-import nxt.Constants;
-import nxt.peer.Hallmark;
-*/
+// deprecated - SecretPhrase->Signature
+
+if (typeof module !== "undefined") {
+	var Constants = require(__dirname + "/../../../Lib/Constants");
+	var JsonResponses = require(__dirname + "/../../../Core/Server/JsonResponses");
+	var Hallmark = require(__dirname + "/../Hallmark");
+}
 
 
 //super(new APITag[] {APITag.TOKENS}, "secretPhrase", "host", "weight", "date");
 function MarkHost(req, res) {
-	res.send('This is not implemented');
-	/*
-	String secretPhrase = req.getParameter("secretPhrase");
-	String host = req.getParameter("host");
-	String weightValue = req.getParameter("weight");
-	String dateValue = req.getParameter("date");
-	if (secretPhrase == null) {
-		return MISSING_SECRET_PHRASE;
-	} else if (host == null) {
-		return MISSING_HOST;
-	} else if (weightValue == null) {
-		return MISSING_WEIGHT;
-	} else if (dateValue == null) {
-		return MISSING_DATE;
+	var secretPhrase = req.query.secretPhrase;
+	var host = req.query.host;
+	var weightValue = req.query.weight;
+	var dateValue = req.query.date;
+	if (!secretPhrase) {
+		res.json(JsonResponses.Missing("secretPhrase"));
+		return;
+	} else if (!host) {
+		res.json(JsonResponses.Missing("host"));
+		return;
+	} else if (!weightValue) {
+		res.json(JsonResponses.Missing("weight"));
+		return;
+	} else if (!dateValue) {
+		res.json(JsonResponses.Missing("date"));
+		return;
 	}
 
-	if (host.length() > 100) {
-		return INCORRECT_HOST;
+	if (host.length > 100) {
+		res.json(JsonResponses.Incorrect("host", "(the length exceeds 100 chars limit)"));
+		return;
 	}
 
-	int weight;
+	var weight;
 	try {
-		weight = Integer.parseInt(weightValue);
+		weight = parseInt(weightValue);
 		if (weight <= 0 || weight > Constants.MaxBalanceLm) {
-			return INCORRECT_WEIGHT;
+			res.json(JsonResponses.Incorrect("weight"));
+			return;
 		}
-	} catch (NumberFormatException e) {
-		return INCORRECT_WEIGHT;
+	} catch (e) {
+		res.json(JsonResponses.Incorrect("weight"));
+		return;
 	}
 
 	try {
-
-		String hallmark = Hallmark.generateHallmark(secretPhrase, host, weight, Hallmark.parseDate(dateValue));
-
-		JSONObject response = new JSONObject();
-		response.put("hallmark", hallmark);
-		return response;
-
-	} catch (RuntimeException e) {
-		return INCORRECT_DATE;
+		var hallmark = Hallmark.GenerateHallmark(secretPhrase, host, weight, Hallmark.ParseDate(dateValue));
+		res.json({hallmark: hallmark});
+	} catch (e) {
+		res.json(JsonResponses.Incorrect("date"));
 	}
-	*/
 }
 
 
-module.exports = MarkHost;
+if (typeof module !== "undefined") {
+	module.exports = MarkHost;
+}

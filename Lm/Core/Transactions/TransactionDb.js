@@ -112,7 +112,7 @@ TransactionDb.FindTransactionByFullHash = function(fullHash, callback) {
 }
 
 TransactionDb.GetAllTransactionsList = function(callback) {
-	return TransactionDb.GetTransactionsListByRs({}, callback);
+	return TransactionDb.GetTransactions({}, callback);
 }
 
 TransactionDb.GetLastTransaction = function(callback) {
@@ -200,10 +200,10 @@ TransactionDb.GetMyTransactions = function(accountId, callback) {
 		},
 		type: Constants.TrTypePayment
 	};
-	return TransactionDb.GetTransactionsListByRs(q, callback);
+	return TransactionDb.GetTransactions(q, callback);
 }
 
-TransactionDb.GetTransactionsListByRs = function(q, callback) {
+TransactionDb.GetTransactions = function(q, callback) {
 	var trModel = Db.GetModel('transaction');
 	trModel.find(q, function(err, docs) {
 		if (err) {
@@ -217,6 +217,10 @@ TransactionDb.GetTransactionsListByRs = function(q, callback) {
 			callback(null, docs);
 		}
 	});
+}
+
+TransactionDb.GetTransactionsListByRs = function(q, callback) {
+	return TransactionDb.GetTransactions(q, callback);
 }
 
 TransactionDb.GetUnconfirmedTransactions = function(callback) {

@@ -4,24 +4,29 @@
  * CC0 license
  */
 
-var JsonResponses = require(__dirname + '/../JsonResponses');
-var Hallmark = require(__dirname + '/../Hallmark');
+if (typeof module !== "undefined") {
+	var JsonResponses = require(__dirname + '/../JsonResponses');
+	var Hallmark = require(__dirname + '/../Hallmark');
+	var PeerJsonData = require(__dirname + '/../PeerJsonData');
+}
 
 
 //super(new APITag[] {APITag.TOKENS}, "hallmark");
 function DecodeHallmark(req, res) {
 	var hallmarkValue = req.query.hallmark;
 	if (!hallmarkValue) {
-		res.send(JsonResponses.MissingHallmark);
+		res.json(JsonResponses.Missing("hallmark"));
 		return;
 	}
 	try {
 		var hallmark = Hallmark.ParseHallmark(hallmarkValue);
-		res.send(JsonData.Hallmark(hallmark));
+		res.json(PeerJsonData.Hallmark(hallmark));
 	} catch (e) {
-		res.send(JsonResponses.IncorrectHallmark);
+		res.json(JsonResponses.Incorrect("hallmark"));
 	}
 }
 
 
-module.exports = DecodeHallmark;
+if (typeof module !== "undefined") {
+	module.exports = DecodeHallmark;
+}

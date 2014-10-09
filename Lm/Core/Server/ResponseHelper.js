@@ -15,6 +15,22 @@ if (typeof module !== "undefined") {
 
 var ResponseHelper = function() {};
 
+ResponseHelper.End200Json = function(res, data) {
+	res.writeHead(200, {
+		"Content-Type": "application/json"
+	});
+	res.write(JSON.stringify(data));
+	res.end();
+}
+
+ResponseHelper.End200Text = function(res, data) {
+	res.writeHead(200, {
+		"Content-Type": "text/plain"
+	});
+	res.write(data);
+	res.end();
+}
+
 // 400 Bad Request
 ResponseHelper.End400 = function(err, req, res, next) {
 	if (err.name == "ValidationError") {
@@ -51,15 +67,6 @@ ResponseHelper.End500 = function(err, req, res, next) {
 	//res.status(err.status || 500);
 	Logger.error('Internal Server Error(%d): %s', res.statusCode, err.message);
 	res.write(500, err);
-	res.end();
-}
-
-// response, data
-ResponseHelper.End200Text = function(err, req, res, next) {
-	res.writeHead(200, {
-		"Content-Type": "text/plain"
-	});
-	res.write(data);
 	res.end();
 }
 

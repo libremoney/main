@@ -561,6 +561,19 @@ var Peers = function() {
 		app.get("/api/getPeer", Api.GetPeer);
 		app.get("/api/getPeers", Api.GetPeers);
 		app.get("/api/markHost", Api.MarkHost); // post
+
+		/*
+		app.get("/api/addPeers", Api.AddPeers);
+		app.get("/api/getCumulativeDifficulty", Api.GetCumulativeDifficulty);
+		app.get("/api/getInfo", Api.GetInfo);
+		app.get("/api/getMilestoneBlockIds", Api.GetMilestoneBlockIds);
+		app.get("/api/getNextBlockIds", Api.GetNextBlockIds);
+		app.get("/api/getNextBlocks", Api.GetNextBlocks);
+		app.get("/api/getPeers", Api.GetPeers);
+		app.get("/api/getUnconfirmedTransactions", Api.GetUnconfirmedTransactions);
+		app.get("/api/processBlock", Api.ProcessBlock);
+		app.get("/api/processTransactions", Api.ProcessTransactions);
+		*/
 	}
 
 	function PeerConnectingThread() {

@@ -1,48 +1,53 @@
 /**!
- * LibreMoney 0.2
+ * LibreMoney GetInfo api 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
+if (typeof module !== "undefined") {
+	var Convert = require(__dirname + '/../../../Util/Convert');
+	var Peers = require(__dirname + '/../Peers');
+}
 
-function GetInfo(request, peer) {
-	/*
-	PeerImpl peerImpl = (PeerImpl)peer;
-	String announcedAddress = (String)request.get("announcedAddress");
+
+function GetInfo(req, res, peer) {
+	var peerImpl = peer;
+	var announcedAddress = req.query.announcedAddress;
 	if (announcedAddress != null && (announcedAddress = announcedAddress.trim()).length() > 0) {
-		if (peerImpl.getAnnouncedAddress() != null && ! announcedAddress.equals(peerImpl.getAnnouncedAddress())) {
+		if (peerImpl.GetAnnouncedAddress() != null && announcedAddress != peerImpl.GetAnnouncedAddress()) {
 			// force verification of changed announced address
-			peerImpl.setState(Peer.State.NON_CONNECTED);
+			peerImpl.SetState(Peers.State.NON_CONNECTED);
 		}
-		peerImpl.setAnnouncedAddress(announcedAddress);
+		peerImpl.SetAnnouncedAddress(announcedAddress);
 	}
-	String application = (String)request.get("application");
-	if (application == null) {
+	var application = req.query.application;
+	if (!application) {
 		application = "?";
 	}
-	peerImpl.setApplication(application.trim());
+	peerImpl.SetApplication(application.trim());
 
-	String version = (String)request.get("version");
-	if (version == null) {
+	var version = req.query.version;
+	if (!version) {
 		version = "?";
 	}
-	peerImpl.setVersion(version.trim());
+	peerImpl.SetVersion(version.trim());
 
-	String platform = (String)request.get("platform");
-	if (platform == null) {
+	var platform = req.query.platform;
+	if (!platform) {
 		platform = "?";
 	}
-	peerImpl.setPlatform(platform.trim());
+	peerImpl.SetPlatform(platform.trim());
 
-	peerImpl.setShareAddress(Boolean.TRUE.equals(request.get("shareAddress")));
-	peerImpl.setLastUpdated(Convert.getEpochTime());
+	peerImpl.SetShareAddress(req.query.shareAddress == true));
+	peerImpl.SetLastUpdated(Convert.GetEpochTime());
 
 	//peerImpl.setState(Peer.State.CONNECTED);
 	Peers.NotifyListeners(Peers.Event.ADDED_ACTIVE_PEER, peerImpl);
 
-	return Peers.myPeerInfoResponse;
-	*/
+	res.json(Peers.myPeerInfoResponse);
 }
 
 
-module.exports = GetInfo;
+if (typeof module !== "undefined") {
+	module.exports = GetInfo;
+}

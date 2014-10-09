@@ -4,28 +4,29 @@
  * CC0 license
  */
 
-/*
-import nxt.peer.Peer;
-import nxt.peer.Peers;
-import static nxt.http.JSONResponses.MISSING_PEER;
-import static nxt.http.JSONResponses.UNKNOWN_PEER;
-*/
-
-//super(new APITag[] {APITag.INFO}, "peer");
-function GetPeer(req, res) {
-	res.send('This is not implemented');
-	/*
-	String peerAddress = req.getParameter("peer");
-	if (peerAddress == null) {
-		return MISSING_PEER;
-	}
-	Peer peer = Peers.getPeer(peerAddress);
-	if (peer == null) {
-		return UNKNOWN_PEER;
-	}
-	return JSONData.peer(peer);
-	*/
+if (typeof module !== "undefined") {
+	var JsonResponses = require(__dirname + "/../../../Core/Server/JsonResponses");
+	var PeerJsonData = require(__dirname + "/../PeerJsonData");
+	var Peers = require(__dirname + "/../Peers");
 }
 
 
-module.exports = GetPeer;
+//super(new APITag[] {APITag.INFO}, "peer");
+function GetPeer(req, res) {
+	var peerAddress = req.query.peer;
+	if (!peerAddress) {
+		res.json(JsonResponses.Missing("peer"));
+		return;
+	}
+	var peer = Peers.GetPeer(peerAddress);
+	if (!peer) {
+		res.json(JsonResponses.Unknown("peer"));
+		return;
+	}
+	res.json(PeerJsonData.Peer(peer));
+}
+
+
+if (typeof module !== "undefined") {
+	module.exports = GetPeer;
+}

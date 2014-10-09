@@ -1,21 +1,26 @@
 /**!
- * LibreMoney 0.2
+ * LibreMoney AddPeers api 0.2
  * Copyright (c) LibreMoney Team <libremoney@yandex.com>
  * CC0 license
  */
 
-
-function AddPeers(request, peer) {
-	/*
-	JSONArray peers = (JSONArray)request.get("peers");
-	if (peers != null && Peers.getMorePeers) {
-		for (Object announcedAddress : peers) {
-			Peers.addPeer((String) announcedAddress);
-		}
-	}
-	return JSON.emptyJSON;
-	*/
+if (typeof module !== "undefined") {
+	var Peers = require(__dirname + "/../Peers");
 }
 
 
-module.exports = AddPeers;
+function AddPeers(req, res) {
+	var peers = req.query.peers;
+	if (peers != null && Peers.getMorePeers) {
+		for (var i in peers) {
+			var announcedAddress = peers[i];
+			Peers.AddPeer(announcedAddress);
+		}
+	}
+	res.json({});
+}
+
+
+if (typeof module !== "undefined") {
+	module.exports = AddPeers;
+}

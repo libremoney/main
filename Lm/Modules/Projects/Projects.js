@@ -4,51 +4,68 @@
  * CC0 license
  */
 
-var Core = require(__dirname + '/../../Core');
-var Project = require(__dirname + '/Project');
+if (typeof module !== "undefined") {
+	var Core = require(__dirname + '/../../Core');
+	var Project = require(__dirname + '/Project');
+}
 
 
-var projects = new Array();
+var Projects = function() {
+	this.projects = [];
+	return this;
+}();
 
-
-function AddNewProject(userGroup, projGroup, name, description, author, state, sum1, sum2, announceTime, startTime, beginTime, endTime) {
+Projects.AddNewProject = function(userGroup, projGroup, name, description, author, state, sum1, sum2, announceTime, startTime, beginTime, endTime) {
 	var proj = new Project(userGroup, projGroup, name, description, author, state, sum1, sum2, announceTime, startTime, beginTime, endTime);
-	projects.push(proj);
+	this.projects.push(proj);
 	return proj;
 }
 
-function GetAllProjects() {
-	return projects;
+Projects.GetAllProjects = function() {
+	return this.projects;
 }
 
-function GetLength() {
-	return projects.length;
+Projects.GetLength = function() {
+	return this.projects.length;
 }
 
-function GetProjectByIndex(index) {
-	return projects[index];
+Projects.GetProjectById = function(projectId, callback) {
+	if (typeof callback !== "function") {
+		return false;
+	}
+	var p = this.projects[projectId];
+	if (!p) {
+		callback({
+			errorCode: 100,
+			errorDescription: "Unknown project projectId=" + projectId
+		});
+		return true;
+	}
+	callback(null, p);
+	return true;
 }
 
-function Init() {
+Projects.Init = function() {
 	Core.AddListener(Core.Event.InitServer, OnInitServer);
 }
 
-function OnInitServer(app) {
+Projects.OnInitServer = function(app) {
 	var Api = require(__dirname + "/Api");
 	app.get("/api/getProjectList", Api.GetProjectList);
 	app.get("/api/getProjectListHtml", Api.GetProjectListHtml);
+	app.get("/project/:id", Api.GetProject);
 	app.get('/projects', Api.GetProjectList);
 	app.get("/projectList/:id", Api.GetProjectList);
 }
 
-
-exports.AddNewProject = AddNewProject;
-exports.GetAllProjects = GetAllProjects;
-exports.GetLength = GetLength;
-exports.GetProjectByIndex = GetProjectByIndex;
-exports.Init = Init;
-
+/*
 exports.SUBTYPE_PROJECT_CREATE = 0;
 exports.SUBTYPE_PROJECT_ANNOUNCE = 1;
 exports.SUBTYPE_PROJECT_EDIT = 2;
 exports.SUBTYPE_PROJECT_BEGIN = 3;
+*/
+
+
+if (typeof module !== "undefined") {
+	module.exports = Projects;
+}
