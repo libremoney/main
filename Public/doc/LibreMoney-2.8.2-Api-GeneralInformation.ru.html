@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ru" dir="ltr" class="client-nojs">
+<head>
+<link href='style.css' rel='stylesheet' type='text/css'/>
+<meta charset="UTF-8" />
+<title>LibreMoney API</title>
+<style>a:lang(ar),a:lang(ckb),a:lang(kk-arab),a:lang(mzn),a:lang(ps),a:lang(ur){text-decoration:none}</style>
+<body class="mediawiki ltr sitedir-ltr ns-0 ns-subject page-Nxt_API_ru skin-vector action-view vector-animateLayout">
+
+<h2>LibreMoney</h2>
+<h3>2. Основная часть</h3>
+<h4>2.8. API (RestAPI)</h4>
+
+
+<h5><span class="mw-headline" id=".D0.9E.D0.B1.D1.89.D0.B8.D0.B5_.D1.81.D0.B2.D0.B5.D0.B4.D0.B5.D0.BD.D0.B8.D1.8F"><b>Общие сведения</b></span></h5>
+<p>Все http API запросы которые создают новую транзакцию, работают с publicKey параметром (подпись осуществоляется на стороне клиента, в браузере). publicKey параметр в виде закодированного байтового массива, то операция будет подготовлена сервером и возвращена в JSON ответе как transactionBytes. Этот байтовый массив может теперь быть подписан клиентом, и затем передан обратно на сервер для широковещательной передачи используя API broadcastTransaction.
+</p>
+<p>У всех вызовов API, которые требуют номер аккаунта, могут принимать номер аккаунта как в виде идентификатор учетной записи (цифровой номер аккаунта) или как адрес в формате Reed-Solomon
+</p>
+
+
+</body>
+</html>

@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="ru" dir="ltr" class="client-nojs">
+<head>
+<link href='style.css' rel='stylesheet' type='text/css'/>
+<meta charset="UTF-8" />
+<title>LibreMoney API</title>
+<style>a:lang(ar),a:lang(ckb),a:lang(kk-arab),a:lang(mzn),a:lang(ps),a:lang(ur){text-decoration:none}</style>
+<body class="mediawiki ltr sitedir-ltr ns-0 ns-subject page-Nxt_API_ru skin-vector action-view vector-animateLayout">
+
+<h2>LibreMoney</h2>
+<h3>2. Основная часть</h3>
+<h4>2.8. API (RestAPI)</h4>
+
+
+<h2><span class="mw-headline" id=".D0.9E.D0.BF.D0.B5.D1.80.D0.B0.D1.86.D0.B8.D0.B8_.D0.B4.D0.BB.D1.8F_.D1.80.D0.B0.D0.B1.D0.BE.D1.82.D1.8B_.D1.81_.D1.81.D0.B5.D1.80.D0.B2.D0.B5.D1.80.D0.BD.D0.BE.D0.B9_.D1.87.D0.B0.D1.81.D1.82.D1.8C.D1.8E"><b>Операции для работы с серверной частью</b></span></h2>
+<h3><span class="mw-headline" id="Get_Constants"><b>Get Constants</b></span></h3>
+<p>Запрос на получение списка всех констант, используемых сервером, и их текущих значений.
+</p>
+<h4><span class="mw-headline" id="Request_3"><b>Request</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=getConstants
+</pre>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_40"><b>Запрос</b></span></h4>
+<pre>
+{
+     &quot;maxBlockPayloadLength&quot;:40800,
+     &quot;genesisAccountId&quot;:&quot;GENESISACC&quot;,
+     &quot;genesisBlockId&quot;:&quot;GENESISBLK&quot;,
+     &quot;transactionTypes&quot;:
+     [
+          {
+               &quot;description&quot;:&quot;Payment&quot;,&quot;value&quot;:0,&quot;subtypes&quot;:
+               [
+                    {&quot;description&quot;:&quot;Ordinary payment&quot;,&quot;value&quot;:0}
+               ]
+          },
+          {
+               &quot;description&quot;:&quot;Messaging&quot;,&quot;value&quot;:1,&quot;subtypes&quot;:
+               [
+                    {&quot;description&quot;:&quot;Arbitrary message&quot;,&quot;value&quot;:0},
+                    {&quot;description&quot;:&quot;Alias assignment&quot;,&quot;value&quot;:1},
+                    {&quot;description&quot;:&quot;Poll creation&quot;,&quot;value&quot;:2},
+                    {&quot;description&quot;:&quot;Vote casting&quot;,&quot;value&quot;:3},
+                    {&quot;description&quot;:&quot;Hub terminal announcement&quot;,&quot;value&quot;:4},
+                    {&quot;description&quot;:&quot;Account info&quot;,&quot;value&quot;:5}
+               ]
+          },
+          {
+               &quot;description&quot;:&quot;Colored coins&quot;,&quot;value&quot;:2,&quot;subtypes&quot;:
+               [
+                    {&quot;description&quot;:&quot;Asset issuance&quot;,&quot;value&quot;:0},
+                    {&quot;description&quot;:&quot;Asset transfer&quot;,&quot;value&quot;:1},
+                    {&quot;description&quot;:&quot;Ask order placement&quot;,&quot;value&quot;:2},
+                    {&quot;description&quot;:&quot;Bid order placement&quot;,&quot;value&quot;:3},
+                    {&quot;description&quot;:&quot;Ask order cancellation&quot;,&quot;value&quot;:4},
+                    {&quot;description&quot;:&quot;Bid order cancellation&quot;,&quot;value&quot;:5}
+               ]
+          },
+          {
+               &quot;description&quot;:&quot;Digital goods&quot;,&quot;value&quot;:3,&quot;subtypes&quot;:
+               [
+                    {&quot;description&quot;:&quot;Listing&quot;,&quot;value&quot;:0},
+                    {&quot;description&quot;:&quot;Delisting&quot;,&quot;value&quot;:1},
+                    {&quot;description&quot;:&quot;Price change&quot;,&quot;value&quot;:2},
+                    {&quot;description&quot;:&quot;Quantity change&quot;,&quot;value&quot;:3},
+                    {&quot;description&quot;:&quot;Purchase&quot;,&quot;value&quot;:4},
+                    {&quot;description&quot;:&quot;Delivery&quot;,&quot;value&quot;:5},
+                    {&quot;description&quot;:&quot;Feedback&quot;,&quot;value&quot;:6},
+                    {&quot;description&quot;:&quot;Refund&quot;,&quot;value&quot;:7}
+               ]
+          },
+          {
+               &quot;description&quot;:&quot;Account Control&quot;,&quot;value&quot;:4,&quot;subtypes&quot;:
+               [
+                    {&quot;description&quot;:&quot;Effective balance leasing&quot;,&quot;value&quot;:0}
+               ]
+          }
+     ],
+     &quot;peerStates&quot;:
+          [
+               {&quot;description&quot;:&quot;Non-connected&quot;,&quot;value&quot;:0},
+               {&quot;description&quot;:&quot;Connected&quot;,&quot;value&quot;:1},
+               {&quot;description&quot;:&quot;Disconnected&quot;,&quot;value&quot;:2}
+          ]
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>GENESISACC генезис аккаунт
+</li>
+<li>GENESISBLK генезис блок
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_38"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getConstants
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;maxBlockPayloadLength&quot;:40800,
+     &quot;genesisAccountId&quot;:&quot;1739068987193023818&quot;,
+     &quot;genesisBlockId&quot;:&quot;2680262203532249785&quot;,
+     &quot;transactionTypes&quot;:
+     [
+          {
+               &quot;description&quot;:&quot;Payment&quot;,&quot;value&quot;:0,&quot;subtypes&quot;:
+               [
+                    {&quot;description&quot;:&quot;Ordinary payment&quot;,&quot;value&quot;:0}
+               ]
+          },
+          {
+               &quot;description&quot;:&quot;Messaging&quot;,&quot;value&quot;:1,&quot;subtypes&quot;:
+               [
+                    {&quot;description&quot;:&quot;Arbitrary message&quot;,&quot;value&quot;:0},
+                    {&quot;description&quot;:&quot;Alias assignment&quot;,&quot;value&quot;:1},
+                    {&quot;description&quot;:&quot;Poll creation&quot;,&quot;value&quot;:2},
+                    {&quot;description&quot;:&quot;Vote casting&quot;,&quot;value&quot;:3},
+                    {&quot;description&quot;:&quot;Hub terminal announcement&quot;,&quot;value&quot;:4},
+                    {&quot;description&quot;:&quot;Account info&quot;,&quot;value&quot;:5}
+               ]
+          },
+          {
+               &quot;description&quot;:&quot;Colored coins&quot;,&quot;value&quot;:2,&quot;subtypes&quot;:
+               [
+                    {&quot;description&quot;:&quot;Asset issuance&quot;,&quot;value&quot;:0},
+                    {&quot;description&quot;:&quot;Asset transfer&quot;,&quot;value&quot;:1},
+                    {&quot;description&quot;:&quot;Ask order placement&quot;,&quot;value&quot;:2},
+                    {&quot;description&quot;:&quot;Bid order placement&quot;,&quot;value&quot;:3},
+                    {&quot;description&quot;:&quot;Ask order cancellation&quot;,&quot;value&quot;:4},
+                    {&quot;description&quot;:&quot;Bid order cancellation&quot;,&quot;value&quot;:5}
+               ]
+          },
+          {
+               &quot;description&quot;:&quot;Digital goods&quot;,&quot;value&quot;:3,&quot;subtypes&quot;:
+               [
+                    {&quot;description&quot;:&quot;Listing&quot;,&quot;value&quot;:0},
+                    {&quot;description&quot;:&quot;Delisting&quot;,&quot;value&quot;:1},
+                    {&quot;description&quot;:&quot;Price change&quot;,&quot;value&quot;:2},
+                    {&quot;description&quot;:&quot;Quantity change&quot;,&quot;value&quot;:3},
+                    {&quot;description&quot;:&quot;Purchase&quot;,&quot;value&quot;:4},
+                    {&quot;description&quot;:&quot;Delivery&quot;,&quot;value&quot;:5},
+                    {&quot;description&quot;:&quot;Feedback&quot;,&quot;value&quot;:6},
+                    {&quot;description&quot;:&quot;Refund&quot;,&quot;value&quot;:7}
+               ]
+          },
+          {
+               &quot;description&quot;:&quot;Account Control&quot;,&quot;value&quot;:4,&quot;subtypes&quot;:
+               [
+                    {&quot;description&quot;:&quot;Effective balance leasing&quot;,&quot;value&quot;:0}
+               ]
+          }
+     ],
+     &quot;peerStates&quot;:
+     [
+          {&quot;description&quot;:&quot;Non-connected&quot;,&quot;value&quot;:0},
+          {&quot;description&quot;:&quot;Connected&quot;,&quot;value&quot;:1},
+          {&quot;description&quot;:&quot;Disconnected&quot;,&quot;value&quot;:2}
+     ],
+     &quot;maxArbitraryMessageLength&quot;:1000
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_My_Info"><b>Get My Info</b></span></h3>
+<p>возвращает данные сервера - хост и адрес.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_41"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=getMyInfo
+</pre>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_31"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;host&quot;:       &quot;HOSTNAME&quot;,
+     &quot;address&quot;:       &quot;ADDRESS&quot;
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>HOSTNAME - имя хоста сервера
+</li>
+<li>ADDRESS - адрес сервера
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_39"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getMyInfo
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;host&quot;:       &quot;127.0.0.1&quot;,
+     &quot;address&quot;:    &quot;127.0.0.1&quot;
+}
+</pre>
+<p><small><i>Проверено 18/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_Peer"><b>Get Peer</b></span></h3>
+<p>получает данные о заданном узле (peer)
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_42"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=getPeer&amp;
+     peer=PEERNAME
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>PEERNAME - имя узла (peer) о котором вы желаете запросить информацию.
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82:">Ответ:</span></h4>
+<p>Информация возвращается в том виде и объеме, который хранится на сервере узла в файле web.xml file&#160;!
+</p>
+<pre>
+{
+     &quot;platform&quot;:          &quot;PLATFORM&quot;,
+     &quot;blacklisted&quot;:       BLACKLIST,
+     &quot;shareAddress&quot;:      SHAREADD
+     &quot;application&quot;:       &quot;LIBREMONEY&quot;,
+     &quot;weight&quot;:            WEIGHT,
+     &quot;hallmark&quot;:          &quot;HALLMARK&quot;,
+     &quot;state&quot;:             1,
+     &quot;announcedAddress&quot;:  &quot;ANNOUNCED&quot;,
+     &quot;downloadedVolume&quot;:  DLBYTES,
+     &quot;version&quot;:           &quot;VERSION&quot;,
+     &quot;uploadedVolume&quot;:    ULBYTES
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>PLATFORM строка описывающая платформу указанного сервера
+</li>
+<li>WEIGHT вес узла
+</li>
+<li>BLACKLIST указывает включен узел в blacklisted или нет
+</li>
+<li>SHAREADD указывает является ли узел общедоступным (shared)
+</li>
+<li>HALLMARK строка в формате hex, описывающая hallmark узла (если он установлен)
+</li>
+<li>STATE определяет состояние узла. 1 - активный узел; 0 - известный узел.
+</li>
+<li>ANNOUNCED имя, которое узел сообщает сети (может быть имя DNS, IP-адрес или любая другая строка)
+</li>
+<li>VERSION версия программного обеспечения, работающего на узле
+</li>
+<li>DLBYTES and ULBYTES количество байтов, загруженных и выгруженных узлом
+</li>
+</ul>
+<p><small>Проверено 18/05/14</small>
+</p>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_40"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getPeer&amp;
+     peer=23.88.104.217
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     hallmark&quot;:           &quot;ea53f569819ad8c40d62dd7e4c1f4895b2a3...&quot;,
+     &quot;downloadedVolume&quot;:  115001,
+     &quot;blacklisted&quot;:       false,
+     &quot;announcedAddress&quot;:  &quot;mode.libremoney.org&quot;,
+     &quot;application&quot;:       &quot;LIBREMONEY&quot;,
+     &quot;weight&quot;:            911527,
+     &quot;uploadedVolume&quot;:    4707,
+     &quot;state&quot;:             1,
+     &quot;version&quot;:           &quot;0.9.9&quot;,
+     &quot;platform&quot;:          &quot;lm.now.im&quot;,
+     &quot;shareAddress&quot;:      true
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_Peers"><b>Get Peers</b></span></h3>
+<p>Возвращает все известные вашему клиенту узлы (peers), не зависимо от их состояния на данный момент.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_43"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=getPeers
+</pre>
+<h4><span class="mw-headline" id=".D0.A0.D0.B5.D0.B7.D1.83.D0.BB.D1.8C.D1.82.D0.B0.D1.82:">Результат:</span></h4>
+<p>Массив имен/адресов узлов:
+</p>
+<pre>
+{
+     &quot;peers&quot;:
+          [
+               &quot;PEER&quot;,
+               &quot;PEER&quot;,
+               &quot;PEER&quot;...
+          ]
+}
+</pre>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_41"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getPeers
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;peers&quot;:
+     [
+          &quot;188.226.176.151&quot;,
+          &quot;88.202.37.38&quot;,
+          &quot;87.211.164.253&quot;...
+     ]
+}
+</pre>
+<p><small><i>Проверено 18/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_State"><b>Get State</b></span></h3>
+<p>Возвращает информацию о статусе/состоянии запрашиваемого сервера
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_44"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=getState
+</pre>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_32"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;numberOfPolls&quot;:             NUMPOLLS,
+     &quot;numberOfVotes&quot;:             NUMVOTES,
+     &quot;numberOfTrades&quot;:            NUMTRADES,
+     &quot;lastBlock&quot;:                 &quot;LASTBLOCKID&quot;,
+     &quot;numberOfAliases&quot;:           NUMALIASES,
+     &quot;lastBlockchainFeeder&quot;:      &quot;FEEDERPEER&quot;,
+     &quot;numberOfBlocks&quot;:            HEIGHT,
+     &quot;numberOfPeers&quot;:             NUMPEERS
+     &quot;totalMemory&quot;:               CURMEMORY,
+     &quot;freeMemory&quot;:                FREEMEMORY,
+     &quot;maxMemory&quot;:                 MAXMEMORY,
+     &quot;numberOfTransactions&quot;:      NUMTRANS,
+     &quot;numberOfUnlockedAccounts&quot;:  NUMUSERS,
+     &quot;version&quot;:                   &quot;VERSION&quot;,
+     &quot;numberOfOrders&quot;:            NUMORDERS,
+     &quot;totalEffectiveBalance&quot;:  EFFECTIVEBALANCE
+     &quot;time&quot;:                      TIME,
+     &quot;availableProcessors&quot;:       NUMPROCESSORS,
+     &quot;numberOfAssets&quot;:            NUMASSETS,
+     &quot;cumulativeDifficulty&quot;:      &quot;CUMEDIFF&quot;
+     &quot;numberOfAccounts&quot;:          NUMACCOUNTS
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li> LASTBLOCKID идентификатор (ID) последнего полученного блока
+</li>
+<li> NUMALIASES количество известных алиасов в сети
+</li>
+<li> FEEDERPEER опубликованное имя узла фидера в последнем блоке
+</li>
+<li> HEIGHT высота блока
+</li>
+<li> NUMPEERS количество узлов в сети
+</li>
+<li> CURMEMORY общий объем памяти используемой узлом (в Байтах)
+</li>
+<li> FREEMEMORY общий объем свободной памяти на узле (в Байтах)
+</li>
+<li> MAXMEMORY максимальный объем памяти, доступной для использования на узле (в Байтах)
+</li>
+<li> NUMTRANS число транзакций в blockchain
+</li>
+<li> NUMUSERS число разблокированных аккаунтов на этом узле
+</li>
+<li> NUMPOLLS количество опросов на этом узле
+</li>
+<li> NUMTRADES количество сделок на этом узле
+</li>
+<li> NUMVOTES количество голосов (для опросов) на этом узле
+</li>
+<li> NUMORDERS количество ордеров на узле
+</li>
+<li> EFFECTIVEBALANCE эффективный баланс, актуальный для сети, указанный в LibreMoney-узлах
+</li>
+<li> NUMPROCESSORS количество процессоров на данном узле
+</li>
+<li> NUMASSETS число счетов на узле 
+</li>
+<li> CUMEDIFF текущий, накопительный уровень сложности форжинга
+</li>
+<li> NUMACCOUNTS количество аккаунтов в blockchain
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_42"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getState</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;numberOfPeers&quot;:868,
+     &quot;numberOfPolls&quot;:0,
+     &quot;numberOfVotes&quot;:0,
+     &quot;availableProcessors&quot;:4,
+     &quot;totalEffectiveBalance&quot;:991634266,
+     &quot;numberOfAccounts&quot;:33172,
+     &quot;numberOfUnlockedAccounts&quot;:0,
+     &quot;numberOfBlocks&quot;:126493,
+     &quot;numberOfOrders&quot;:0,
+     &quot;numberOfTransactions&quot;:182379,
+     &quot;version&quot;:&quot;1.0.0&quot;,
+     &quot;maxMemory&quot;:477626368,
+     &quot;lastBlock&quot;:&quot;4329081735143326181&quot;,
+     &quot;totalMemory&quot;:466092032,
+     &quot;numberOfAliases&quot;:85657,
+     &quot;cumulativeDifficulty&quot;:&quot;3936422822105943&quot;,
+     &quot;numberOfTrades&quot;:0,
+     &quot;time&quot;:13671770,
+     &quot;numberOfAssets&quot;:0,
+     &quot;lastBlockchainFeeder&quot;:&quot;cubie-solar.mjke.de&quot;,
+     &quot;freeMemory&quot;:135007384
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_Time"><b>Get Time</b></span></h3>
+<p>Получает текущее время в системе. Внимание&#160;! В LibreMoney время исчисляется в секундах с момента генерации генезисного блока, т.е. с момента зарождения LibreMoney 
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_45"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=getTime
+</pre>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_33"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;time&quot;:       TIME
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>TIME количество секунд прошедших с момента генерации генезисного блока.
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_43"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getTime
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;time&quot;:       417
+}
+</pre>
+<p><small><i>Проверено 21/06/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_Blockchain_Status"><i>Get Blockchain Status</i></span></h3>
+<p>Получить текущий статус blockchain
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_46"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=getBlockchainStatus
+</pre>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_34"><b>Ответ</b></span></h4>
+<pre>
+{
+    &quot;lastBlock&quot;: &quot;LASTBLK&quot;,
+    &quot;lastBlockchainFeederHeight&quot;: LASTHEIGHT,
+    &quot;time&quot;: TIME,
+    &quot;lastBlockchainFeeder&quot;: &quot;FEEDERPEER&quot;,
+    &quot;numberOfBlocks&quot;: NUMBLKS,
+    &quot;isScanning&quot;: SCAN,
+    &quot;cumulativeDifficulty&quot;: &quot;CUMDIF&quot;,
+    &quot;version&quot;: &quot;VER&quot;
+}
+</pre>
+<p>Where:
+</p>
+<ul>
+<li>LASTBLK последний блок в blockchain
+</li>
+<li>LASTHEIGHT высота последнего блока
+</li>
+<li>TIME число секунд начиная с момента генерации генезисного блока.
+</li>
+<li>FEEDERPEER опубликованное имя хоста фидера последнего блока
+</li>
+<li>NUMBLKS общее количество блоков
+</li>
+<li>SCAN возвращает статус blockchain - происходит сейчас сканирование или нет.
+</li>
+<li>CUMDIF текущая сложность форжинга
+</li>
+<li>VER версия LibreMoneyNode который сейчас выполняется
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_44"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getBlockchainStatus
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+    &quot;lastBlock&quot;: &quot;3153685344875873318&quot;,
+    &quot;lastBlockchainFeederHeight&quot;: 95337,
+    &quot;time&quot;: 14604616,
+    &quot;lastBlockchainFeeder&quot;: &quot;192.241.223.132&quot;,
+    &quot;numberOfBlocks&quot;: 95339,
+    &quot;isScanning&quot;: false,
+    &quot;cumulativeDifficulty&quot;: &quot;2406110597084752&quot;,
+    &quot;version&quot;: &quot;1.1.0&quot;
+}
+</pre>
+<p><small><i>Проверено 18/05/14</i></small>
+</p>
+
+
+</body>
+</html>

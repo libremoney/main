@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ru" dir="ltr" class="client-nojs">
+<head>
+<link href='style.css' rel='stylesheet' type='text/css'/>
+<meta charset="UTF-8" />
+<title>LibreMoney API</title>
+<style>a:lang(ar),a:lang(ckb),a:lang(kk-arab),a:lang(mzn),a:lang(ps),a:lang(ur){text-decoration:none}</style>
+<body class="mediawiki ltr sitedir-ltr ns-0 ns-subject page-Nxt_API_ru skin-vector action-view vector-animateLayout">
+
+<h2>LibreMoney</h2>
+<h3>2. Основная часть</h3>
+<h4>2.8. API (RestAPI)</h4>
+
+
+<h2><span class="mw-headline" id=".D0.94.D0.B5.D0.B9.D1.81.D1.82.D0.B2.D0.B8.D1.8F_.D1.81_.D0.90.D0.BB.D1.8C.D1.8F.D1.81.D0.B0.D0.BC.D0.B8"><b>Действия с Альясами</b></span></h2>
+<h3><span class="mw-headline" id=".D0.A1.D0.BE.D0.B7.D0.B4.D0.B0.D0.BD.D0.B8.D0.B5.2F.D0.BF.D1.80.D0.B8.D1.81.D0.B2.D0.BE.D0.B5.D0.BD.D0.B8.D0.B5_.D0.B0.D0.BB.D1.8C.D1.8F.D1.81.D0.B0"><b>Создание/присвоение альяса</b></span></h3>
+<p>Позволяет вам создать альяс в один запрос.  Если данный альяс уже существует , этот запрос присвоит новый URI псевдониму.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_10"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=assignAlias&amp;
+     secretPhrase=SECRET&amp;
+     alias=ALIAS&amp;
+     uri=URI&amp;
+     fee=FEE&amp;
+     deadline=DEADLINE&amp;
+     publicKey=PUBKEY&amp;
+     referencedTransactionFullHash=TRANSFULLHASH&amp;
+     broadcast=BROAD
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>SECRET секретная фраза аккаунта 
+</li>
+<li>ALIAS альяс, который вы хотите создать
+</li>
+<li>URI текст альяса (на пример <a rel="nofollow" class="external free" href="http://www.google.com/">http://www.google.com/</a>)
+</li>
+<li>FEE комиссия (в MilliLm) за транзакцию
+</li>
+<li>DEADLINE дедлайн для транзакции, задается в минутах
+</li>
+<li>PUBKEY 64-битный публичный ключ ассоциированный с данным аккаунтом. (опционально)
+</li>
+<li>TRANSFULLHASH Если Вы хотите сослаться на другую транзакцию(опционально)
+</li>
+<li>BROAD true или false если это должно быть опубликовано широковещательно (опционально)
+</li>
+</ul>
+<h4><span class="mw-headline" id=".27.D0.9E.D1.82.D0.B2.D0.B5.D1.82.27">'<b>Ответ'</b></span></h4>
+<pre>
+{
+     &quot;transactionId&quot;:       &quot;TXID&quot;
+}
+{ 
+     &quot;fullHash&quot;:                 &quot;FULLHASH&quot;, 
+     &quot;signatureHash&quot;:            &quot;SIGHASH&quot;, 
+     &quot;transactionBytes&quot;:         &quot;TXBYTES&quot;, 
+     &quot;hash&quot;:                     &quot;HASH&quot;, 
+     &quot;transaction&quot;:              &quot;TX&quot;, 
+     &quot;broadcasted&quot;:              BROAD, 
+     &quot;unsignedTransactionBytes&quot;: &quot;UNTXBYTES&quot; 
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_11"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=setAlias&amp;
+     secretPhrase=123&amp;
+     aliasName=Google&amp;
+     aliasURI=http://google.com&amp;
+     fee=100000000&amp;
+     deadline=1440
+</pre>
+<p>Результат:
+</p>
+<pre>
+{ 
+     &quot;fullHash&quot;:                 &quot;645853ddc55daa2c948f46520b0630d964ce0f40c0ee03515faffce6259d0bae&quot;, 
+     &quot;signatureHash&quot;:            &quot;1e622a64292f8b1fcb1ccf155a42a37a99b89cbcaa725f1200ab55b5ec5f1ca8&quot;, 
+     &quot;transactionBytes&quot;:         &quot;0101fe21d700a005668683e673274c671802492d6f54cdc33d247aa426e7ce...&quot;, 
+     &quot;hash&quot;:                     &quot;580c1bb70d7bcb1eb967c4e86c6c9bfc481641dcce84300a579caf35840e662a&quot;, 
+     &quot;transaction&quot;:              &quot;3218487988112808036&quot;, 
+     &quot;broadcasted&quot;:              true, 
+     &quot;unsignedTransactionBytes&quot;: &quot;0101fe21d700a005668683e673274c671802492d6f54cdc33d247a...&quot; 
+}
+</pre>
+<p><small><i>Исправлено 22/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_alias"><b>Get alias</b></span></h3>
+<p>Возвращает информацию о заданном альясе
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_11"><b>Запрос</b></span></h4>
+<pre>https://localhost:1400/api?
+     requestType=getAlias&amp;
+     alias=ALIAS_ID
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ALIAS_ID альяс который вас интересует
+</li>
+<li>ALIAS_NAME имя альяса который вас интересует
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_11"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;timestamp&quot;:  TIMESTAMP, 
+     &quot;aliasName&quot;:      &quot;ALIAS&quot;, 
+     &quot;account&quot;:    &quot;ACCOUNT&quot;,
+     &quot;accountRS&quot;:  &quot;ACCOUNTRS&quot;,
+     &quot;aliasURI&quot;:        &quot;URI&quot;,
+     &quot;alias&quot;:      &quot;ALIAS_ID&quot;
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>TIMESTAMP метка времени, когда был создан альяс. Задается в секундах, от даты создания генезисного блока
+</li>
+<li>ALIAS название альяса
+</li>
+<li>ACCOUNT аккаунт, который владеет альсом
+</li>
+<li>ACCOUNTRS адрес аккаунта в кодировке Reed-Solomon
+</li>
+<li>URI адрес, на который указывает псевдоним
+</li>
+<li>ALIAS_ID идентификатор альяса (id)
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_12"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>https://localhost:1400/api?
+     requestType=getAlias&amp;
+     alias=15515279700680480368
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;timestamp&quot;: 2409343, 
+     &quot;alias&quot;:     &quot;google&quot;, 
+     &quot;account&quot;:   &quot;5629477397208681336&quot;,
+     &quot;accountRS&quot;: &quot;LMA-FLVS-VRBV-LDPD-6DZ9W&quot;,
+     &quot;uri&quot;:       &quot;http://google.com&quot;
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p><p><br />
+</p>
+<h3><span class="mw-headline" id="Get_aliases"><b>Get aliases</b></span></h3>
+<p>Возвращает информацию о всех альясах для указанного аккаунта (начиная с указанной метки времени, если задано)
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_12"><b>Запрос</b></span></h4>
+<pre>https://localhost:1400/api?
+     requestType=getAliases&amp;
+     account=ACCOUNT&amp;
+     timestamp=TIMESTAMP
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ACCOUNT аккаунт, список альясов которого вас интересует
+</li>
+<li>TIMESTAMP время начиная с которого были созданы альясы. Задается в секундах начиная с времени создания генезисного блока.
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_12"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;aliases&quot;: [
+     {
+          &quot;timestamp&quot;:  TIMESTAMP, 
+          &quot;aliasName&quot;:      &quot;ALIAS&quot;, 
+          &quot;account&quot;:    &quot;ACCOUNT&quot;,
+          &quot;accountRS&quot;:  &quot;ACCOUNTRS&quot;,
+          &quot;aliasURI&quot;:        &quot;URI&quot;,
+          &quot;alias&quot;:      &quot;ALIAS_ID&quot;
+     },
+     {
+          ...
+     }]
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>TIMESTAMP метка времени, когда был создан альяс. Задается в секундах, от даты создания генезисного блока
+</li>
+<li>ALIAS название альяса
+</li>
+<li>ACCOUNT аккаунт, который владеет альсом
+</li>
+<li>ACCOUNTRS адрес аккаунта в кодировке Reed-Solomon
+</li>
+<li>URI адрес, на который указывает псевдоним
+</li>
+<li>ALIAS_ID идентификатор альяса (id)
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_13"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>https://localhost:1400/api?
+     requestType=getAliases&amp;
+     account=5629477397208681336
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+    &quot;aliases&quot;: [
+        {
+            &quot;timestamp&quot;: 2409602,
+            &quot;aliasName&quot;: &quot;promotion&quot;,
+            &quot;alias&quot;: &quot;11086300057073013586&quot;,
+            &quot;aliasURI&quot;: &quot;&quot;,
+            &quot;accountRS&quot;: &quot;LMA-FLVS-VRBV-LDPD-6DZ9W&quot;,
+            &quot;account&quot;: &quot;5629477397208681336&quot;
+        },
+        {
+            ...
+        }
+               ]
+}
+</pre>
+<p><small><i>Проверено 26/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_alias_ID_.28.D0.9D.D0.B5_.D0.B8.D1.81.D0.BF.D0.BE.D0.BB.D1.8C.D0.B7.D1.83.D0.B5.D1.82.D1.81.D1.8F.29"><b>Get alias ID (Не используется)</b></span></h3>
+<p>Возвращает ID определенного алиаса. Реализовано начиная с версии 0.5.4e. Функция не используется с версии клиента 1.1.4.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_13"><b>Запрос</b></span></h4>
+<pre>https://localhost:1400/api?
+     requestType=getAliasId&amp;
+     alias=ALIAS
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ALIAS — альяс, ID которого вы хотите получить
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_13"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;id&quot;:       &quot;ALIAS_ID&quot;
+}
+</pre>
+<h4><span class="mw-headline" id=".27.D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80.27">'<b>Пример'</b></span></h4>
+<p>Запрос:
+</p>
+<pre>https://localhost:1400/api?
+     requestType=getAliasId&amp;
+     alias=google
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;id&quot;:       &quot;15515279700680480368&quot;
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_alias_IDs_.28.D0.9D.D0.B5_.D0.B8.D1.81.D0.BF.D0.BE.D0.BB.D1.8C.D0.B7.D1.83.D0.B5.D1.82.D1.81.D1.8F.29"><b>Get alias IDs (Не используется)</b></span></h3>
+<p>Возвращает все ID транзакций алиасов после определенного времени в блокчейне. Функция не используется, начиная с клиента версии 1.1.4
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_14"><b>Запрос</b></span></h4>
+<pre>https://localhost:1400/api?
+     requestType=getAliasIds&amp;
+     timestamp=TIMESTAMP
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>TIMESTAMP — время, начиная с которого вы хотели бы видеть определенные алиасы. Выражается в секундах начиная с времени генезис блока
+</li>
+</ul>
+<h4><span class="mw-headline" id=".27.D0.9E.D1.82.D0.B2.D0.B5.D1.82.27_2">'<b>Ответ'</b></span></h4>
+<pre>
+{
+     &quot;aliasIds&quot;:       [ARRAY_OF_ALIAS_IDs]
+}
+</pre>
+<p><small><i>Проверено 14/05/14</i></small>
+</p>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_14"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>https://localhost:1400/api?
+     requestType=getAliasIds&amp;
+     timestamp=30000
+</pre>
+<p>Результат:
+</p>
+<pre>
+{
+     &quot;aliasIds&quot;:
+               [&quot;12219820415480193342&quot;,
+               &quot;2284413548488744428&quot;,
+               &quot;6882945328050210195&quot;...]
+}
+</pre>
+<p><small><i>Исправлено 22/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_alias_URI_.28.D0.9D.D0.B5_.D0.B8.D1.81.D0.BF.D0.BE.D0.BB.D1.8C.D0.B7.D1.83.D0.B5.D0.BC.D1.8B.D0.B9.29"><b>Get alias URI (Не используемый)</b></span></h3>
+<p>Возвращает целевой URI альяса. Функция не используется, начиная с клиента версии 1.1.4
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_15"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=getAliasURI&amp;
+     alias=ALIAS
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ALIAS альяс, целевой URI которого Вы хотели бы видеть
+</li>
+</ul>
+<h4><span class="mw-headline" id=".27.D0.9E.D1.82.D0.B2.D0.B5.D1.82.27_3">'<b>Ответ'</b></span></h4>
+<pre>
+{
+     &quot;uri&quot;:       &quot;URI_ASSIGNED_TO_ALIAS&quot;
+}
+</pre>
+<p>Внимание:  Возвращенный URI будет ограничен! 
+<small><i>Проверено 14/05/14</i></small>
+</p>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_15"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getAliasURI&amp;
+     alias=Google
+</pre>
+<p>Ответ:
+</p>
+<pre>{
+     &quot;uri&quot;:       &quot;http:\/\/google.com&quot;
+}
+</pre>
+<p><small><i>Исправлено 22/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="List_Aliases_.28.D0.9D.D0.B5_.D0.B8.D1.81.D0.BF.D0.BE.D0.BB.D1.8C.D1.83.D0.B7.D0.B5.D1.82.D1.81.D1.8F.29"><b>List Aliases (Не испольузется)</b></span></h3>
+<p>Возвращает список алиасов, принадлежащих аккаунту. Функция не используется начиная с клиента версии 1.1.4
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_16"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=listAccountAliases&amp;
+     account=ACCOUNT
+</pre>
+<p>Где:
+</p>
+<ul>
+<li> ACCOUNT — номер аккаунта
+</li>
+</ul>
+<h4><span class="mw-headline" id=".27.D0.9E.D1.82.D0.B2.D0.B5.D1.82.27_4">'<b>Ответ'</b></span></h4>
+<pre>
+{
+     &quot;aliases&quot;: 
+          [ 
+               { 
+                    &quot;alias&quot;:        &quot;ALIAS&quot;,  
+                    &quot;uri&quot;:          &quot;URI&quot;,
+                    &quot;account&quot;:      &quot;ACCOUNT&quot;,
+                    &quot;timestamp&quot;:    &quot;TIMESTAMP&quot;
+               } 
+          ] 
+}
+</pre>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_16"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=listAccountAliases&amp;
+     account=17157779854388545959</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;aliases&quot;:
+          [
+               {
+                    &quot;alias&quot;:     &quot;testalias&quot;,
+                    &quot;uri&quot;:       &quot;1337&quot;,
+                    &quot;account&quot;:   &quot;17157779854388545959&quot;,
+                    &quot;timestamp&quot;:  2920016
+               }
+          ]
+}
+</pre>
+<p><small><i>Проверено 14/05/14</i></small>
+</p>
+
+
+</body>
+</html>

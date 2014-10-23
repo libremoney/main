@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru" dir="ltr" class="client-nojs">
+<head>
+<link href='style.css' rel='stylesheet' type='text/css'/>
+<meta charset="UTF-8" />
+<title>LibreMoney API</title>
+<style>a:lang(ar),a:lang(ckb),a:lang(kk-arab),a:lang(mzn),a:lang(ps),a:lang(ur){text-decoration:none}</style>
+<body class="mediawiki ltr sitedir-ltr ns-0 ns-subject page-Nxt_API_ru skin-vector action-view vector-animateLayout">
+
+<h2>LibreMoney</h2>
+<h3>2. Основная часть</h3>
+<h4>2.8. API (RestAPI)</h4>
+
+
+<h2><span class="mw-headline" id=".D0.9E.D0.BF.D0.B5.D1.80.D0.B0.D1.86.D0.B8.D0.B8_.D0.B4.D0.BB.D1.8F_.D1.80.D0.B0.D0.B1.D0.BE.D1.82.D1.8B_.D1.81_.D0.B1.D0.BB.D0.BE.D0.BA.D0.B0.D0.BC.D0.B8"><b>Операции для работы с блоками</b></span></h2>
+<h3><span class="mw-headline" id="Get_Block"><b>Get Block</b></span></h3>
+<p>Получить данные блока.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_18"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=getBlock&amp;
+     block=BLOCKADDRESS
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>BLOCKADDRESS адрес блока LibreMoney
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_15"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;generatorRS&quot;: &quot;ACCOUNTRS&quot;,
+     &quot;previousBlockHash&quot;:&quot;32BytesRepresentedInHexadecimalForm&quot;,
+     &quot;payloadLength&quot;:PAYLOADLEN,
+     &quot;totalAmount&quot;:TOTAL,
+     &quot;generationSignature&quot;:&quot;64BytesRepresentedInHexadecimalForm&quot;,
+     &quot;generator&quot;:&quot;ACCOUNT&quot;,
+     &quot;baseTarget&quot;:&quot;BASETARGET&quot;,
+     &quot;payloadHash&quot;:&quot;32BytesRepresentedInHexadecimalForm&quot;,
+     &quot;nextBlock&quot;:&quot;NEXTBLOCK&quot;,
+     &quot;numberOfTransactions&quot;:NUMTX,
+     &quot;blockSignature&quot;:&quot;64BytesRepresentedInHexadecimalForm&quot;,
+     &quot;transactions&quot;:
+          [
+               &quot;TRANSACTION1&quot;,
+               &quot;TRANSACTION2&quot;
+          ],
+     &quot;version&quot;:VERSION,
+     &quot;totalFee&quot;:&quot;FEE&quot;,
+     &quot;previousBlock&quot;:&quot;PREVBLOCK&quot;,
+     &quot;height&quot;:HEIGHT,
+     &quot;timestamp&quot;:TIME
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li> HEIGHT высота блока 
+</li>
+<li> ACCOUNTRS адрес аккаунта в кодировке Reed-Solomon
+</li>
+<li> "generator" аккаунт который сгенерировал блок.
+</li>
+<li> ACCOUNT номер аккаунта.
+</li>
+<li> TIME время в секундах когда блок был сгенерирован; 0 время создания генезисного блока.
+</li>
+<li> NUMTX количество транзакций в этом блоке
+</li>
+<li> TOTAL общее количество MilliLm в данном блоке
+</li>
+<li> FEE комиссия MilliLm для данного блока
+</li>
+<li> VERSION версия блока
+</li>
+<li> BASETARGET целевой hash для генерации блока
+</li>
+<li> Payload length = "numberOfTransactions" * 128 Bytes.
+</li>
+<li> "previousBlock" адрес предыдущего блока. Параметр будет пустым для генезисного блока.
+</li>
+<li> PREVBLOCK адрес предыдущего блока
+</li>
+<li> "nextBlock" адрес следующего блока за текущим. Параметр будет пустым для последнего блока в blockchain.
+</li>
+<li> NEXTBLOCK адрес следующего блока, за указанным
+</li>
+<li> "transactions" список/массив идентификаторов (ID) транзакций представленных в этом блоке.
+</li>
+<li> TRANSACTIONX  идентификаторы (ID) транзакций в блоке
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_18"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getBlock&amp;
+     block=3081264592726137683
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;generatorRS&quot;: &quot;LMA-25TQ-G377-8TJ9-EVPAD&quot;,
+     &quot;previousBlockHash&quot;:&quot;d2df42de82c3fbc808715ce9738630b31bece282864fafd164b0d4cf5b0e9e3e&quot;,
+     &quot;payloadLength&quot;:256,
+     &quot;totalAmount&quot;:&quot;16400300000000&quot;,
+     &quot;generationSignature&quot;:&quot;5beac191d5a20b443b9fdd83cfeb3abddfb31294c1999a85c75955a4c99b3f3c&quot;,
+     &quot;generator&quot;:&quot;14241151062656421686&quot;,
+     &quot;baseTarget&quot;:&quot;191236740&quot;,
+     &quot;payloadHash&quot;:&quot;fc153c1f3d18af9e5a60be42bee896b19089a4b1e391179c98c2a9d2d383275f&quot;,
+     &quot;nextBlock&quot;:&quot;5728643978405745233&quot;,
+     &quot;numberOfTransactions&quot;:2,
+     &quot;blockSignature&quot;:&quot;5bf8d6f39c6303815dbf591667d613175e916520052f21ffaddec818e2e4ab0cca07f17b0dea8352e837aa89e774cd95dbeb5a2bdab1f1f50f5955d1a3718375&quot;,
+     &quot;transactions&quot;:
+          [
+               &quot;10431005438877942947&quot;,
+               &quot;16244324356084723003&quot;
+          ],
+     &quot;version&quot;:2,
+     &quot;totalFee&quot;:&quot;200000000&quot;,
+     &quot;previousBlock&quot;:&quot;14482383993582051282&quot;,
+     &quot;height&quot;:115147,
+     &quot;timestamp&quot;:12439666
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+
+
+</body>
+</html>

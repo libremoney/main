@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru" dir="ltr" class="client-nojs">
+<head>
+<link href='style.css' rel='stylesheet' type='text/css'/>
+<meta charset="UTF-8" />
+<title>LibreMoney API</title>
+<style>a:lang(ar),a:lang(ckb),a:lang(kk-arab),a:lang(mzn),a:lang(ps),a:lang(ur){text-decoration:none}</style>
+<body class="mediawiki ltr sitedir-ltr ns-0 ns-subject page-Nxt_API_ru skin-vector action-view vector-animateLayout">
+
+<h2>LibreMoney</h2>
+<h3>2. Основная часть</h3>
+<h4>2.8. API (RestAPI)</h4>
+
+
+<h2><span class="mw-headline" id=".D0.9E.D0.BF.D0.B5.D1.80.D0.B0.D1.86.D0.B8.D0.B8_.D1.81_.D1.82.D0.BE.D0.BA.D0.B5.D0.BD.D0.B0.D0.BC.D0.B8"><b>Операции с токенами</b></span></h2>
+<h3><span class="mw-headline" id="Decode_Token"><b>Decode Token</b></span></h3>
+<p>Декодирует токен авторизации. Используется для авторизации аккаунта на указанном веб-сайте, без необходимости передачи секретной фразы.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_49"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=decodeToken&amp;
+     website=WEBSITE&amp;
+     token=AUTHSTRING
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>WEBSITE — URL веб-сайта, где необходима авторизация по токену. По принятому соглашению не содержит часть "http://" URL'а.
+</li>
+<li>AUTHSTRING — закодированная строка авторизации
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_37"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;account&quot;:       &quot;ACCOUNT&quot;, 
+     &quot;timestamp&quot;:     TIME, 
+     &quot;valid&quot;:         BOOLEAN
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ACCOUNT — номер аккаунта LibreMoney, ассоциированный с токеном
+</li>
+<li>TIME — время в секундах начиная с о времени создания блока генезиса, определяющее время создания токена
+</li>
+<li>BOOLEAN — либо "true" (истина), либо "false" (ложь), показывает валиден ли токен
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_47"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=decodeToken&amp;
+     website=www.domain.com&amp;
+     token=StringOf160Chars
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;account&quot;:       &quot;398532577100249608&quot;, 
+     &quot;timestamp&quot;:     622, 
+     &quot;valid&quot;:         true 
+}
+</pre>
+<p><small><i>Проверено 18/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Generate_Token"><b>Generate Token</b></span></h3>
+<p>Создаёт токен (ключ) авторизации. Используется для авторизации аккаунта на определенном веб-сайте без необходимости передачи секретной фразы.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_50"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=generateToken&amp;
+     secretPhrase=SECRET&amp;
+     website=WEBSITE
+
+</pre> 
+<p>Где: 
+</p>
+<ul>
+<li>SECRET - ключевая фраза (private key) аккаунта, который создаёт токен.
+</li>
+<li>WEBSITE - URL веб-сайта, на котором проходит авторизация. По соглашению не содержит часть "http://" URL'а.
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_38"><b>Ответ</b></span></h4>
+<pre> 
+{ 
+  &quot;token&quot;: StringOf160Chars 
+} 
+</pre> 
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_48"><b>Пример</b></span></h4>
+<p>Запрос: 
+</p>
+<pre>http://localhost:1400/api?
+     requestType=generateToken&amp;
+     secretPhrase=ItWasABrightColdDayInAprilAndTheClocksWereStrikingThirteen&amp;
+     website=www.genesisblock.com
+</pre>
+<p>Ответ: 
+</p>
+<pre>
+{
+     &quot;token&quot;:       &quot;7dstcbs4fnbq614faea405ga3dj...etb0n9f0k6uvlku4d751kftqlb128t4&quot;
+}
+</pre>
+<p><small><i>Проверено 18/05/14</i></small>
+</p>
+
+
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru" dir="ltr" class="client-nojs">
+<head>
+<link href='style.css' rel='stylesheet' type='text/css'/>
+<meta charset="UTF-8" />
+<title>LibreMoney API</title>
+<style>a:lang(ar),a:lang(ckb),a:lang(kk-arab),a:lang(mzn),a:lang(ps),a:lang(ur){text-decoration:none}</style>
+<body class="mediawiki ltr sitedir-ltr ns-0 ns-subject page-Nxt_API_ru skin-vector action-view vector-animateLayout">
+
+<h2>LibreMoney</h2>
+<h3>2. Основная часть</h3>
+<h4>2.8. API (RestAPI)</h4>
+
+
+<h2><span class="mw-headline" id=".D0.A1.D0.B8.D1.81.D1.82.D0.B5.D0.BC.D0.BD.D1.8B.D0.B5_.D1.84.D1.83.D0.BD.D0.BA.D1.86.D0.B8.D0.B8_.D0.B4.D0.BB.D1.8F_.D1.80.D0.B0.D0.B1.D0.BE.D1.82.D1.8B_.D1.81_.D0.BF.D1.80.D0.BE.D0.B8.D0.B7.D0.B2.D0.BE.D0.BB.D1.8C.D0.BD.D1.8B.D0.BC.D0.B8_.D1.81.D0.BE.D0.BE.D0.B1.D1.89.D0.B5.D0.BD.D0.B8.D1.8F.D0.BC.D0.B8"><b>Системные функции для работы с произвольными сообщениями</b></span></h2>
+<h3><span class="mw-headline" id="Send_Message"><b>Send Message</b></span></h3>
+<p>Создает транзакцию с исходящим произвольным сообщением.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_17"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=sendMessage&amp;
+     secretPhrase=SECRET&amp;
+     recipient=RECIP_ACCOUNT&amp;
+     fee=FEE&amp;
+     message=HEX_STRING&amp;
+     deadline=DEADLINE&amp;
+     referencedTransaction=REFTXID&amp;
+     broadcast=BROAD
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>SECRET секретная фраза аккаунта, который отправляет сообщение
+</li>
+<li>RECIP_ACCOUNT номер аккаунта, которому отправляется сообщение (получателя)
+</li>
+<li>HEX_STRING сообщение в hex кодировке.  Механизмы шифрования сообщения не предусмотрены, оставлено для разработчиков.  Длинна сообщения ограниченна 1000 байтами.
+</li>
+<li>FEE комиссия (в MilliLm) за транзакцию
+</li>
+<li>DEADLINE дедлайн транзакции, указывается в минутах
+</li>
+<li>REFTXID ID предыдущей транзакции на которую вы ссылаетесь. Это создает зависимые транзакции (цепочка транзакций), означая, что текущая транзакция не может быть подтверждена, пока транзакция на которую вы ссылаетесь, не будет подтверждена. (опционально)
+</li>
+<li>BROAD если вы хотите чтобы транзакция широковещательно передавалась или нет (опционально) 
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_14"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;fullHash&quot;:                 &quot;FULLHASH&quot;, 
+     &quot;signatureHash&quot;:            &quot;SIGHASH&quot;, 
+     &quot;transactionBytes&quot;:         &quot;TXBYTES&quot;, 
+     &quot;hash&quot;:                     &quot;HASH&quot;, 
+     &quot;transaction&quot;:              &quot;TX&quot;, 
+     &quot;broadcasted&quot;:              BROAD, 
+     &quot;unsignedTransactionBytes&quot;: &quot;UNTXBYTES&quot; 
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>FULLHASH полный хэш транзакции 
+</li>
+<li>SIGHASH sha256 хэш подписи транзакции. Используется для транзакций условного депонирования
+</li>
+<li>TXBYTES байткод транзакции 
+</li>
+<li>HASH хэш всех полей транзакции, за исключение подписи
+</li>
+<li>TX ID транзакции
+</li>
+<li>BROAD указывает была транзакция передана или нет
+</li>
+<li>UNTXBYTES байты транзакции c подписью, частично замененной нулями
+</li>
+</ul>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_17"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=sendMessage&amp;
+     secretPhrase=MySuperSecretPasswordThatYouDoNotKnow&amp;
+     recipient=501860284368&amp;
+     message= 6602b1611f921092bdf2a89fc97148ec9684066776b83fd3&amp;
+     deadline=720&amp;
+     referencedTransaction=8815617645011985536
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{ 
+     &quot;fullHash&quot;:                 &quot;d56ade2c322083d76ebcdb9f9ef18d7d52c6d105f67be040cc423c7a41a47aea&quot;, 
+     &quot;signatureHash&quot;:            &quot;458514e72f4272c789f99201c27cff611460de10fe484b474166c1199c23e754&quot;, 
+     &quot;transactionBytes&quot;:         &quot;0100471ddb00a005668683e673274c671802492d6f54cdc33d247aa426e7cef...&quot;, 
+     &quot;hash&quot;:                     &quot;36a0dc90736d95ad5302f078d5db6fc48e5c087b76da65944f7fe2836b73abcd&quot;, 
+     &quot;transaction&quot;:              &quot;15529291339976829653&quot;, 
+     &quot;broadcasted&quot;:              true, 
+     &quot;unsignedTransactionBytes&quot;: &quot;0100471ddb00a005668683e673274c671802492d6f54cdc33d247aa4...&quot; 
+}
+</pre>
+<p><small><i>Проверено 13/05/14</i></small>
+</p>
+
+
+</body>
+</html>

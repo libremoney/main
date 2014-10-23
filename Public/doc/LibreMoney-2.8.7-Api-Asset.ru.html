@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="ru" dir="ltr" class="client-nojs">
+<head>
+<link href='style.css' rel='stylesheet' type='text/css'/>
+<meta charset="UTF-8" />
+<title>LibreMoney API</title>
+<style>a:lang(ar),a:lang(ckb),a:lang(kk-arab),a:lang(mzn),a:lang(ps),a:lang(ur){text-decoration:none}</style>
+<body class="mediawiki ltr sitedir-ltr ns-0 ns-subject page-Nxt_API_ru skin-vector action-view vector-animateLayout">
+
+<h2>LibreMoney</h2>
+<h3>2. Основная часть</h3>
+<h4>2.8. API (RestAPI)</h4>
+
+
+<h2><span class="mw-headline" id=".D0.9E.D0.BF.D0.B5.D1.80.D0.B0.D1.86.D0.B8.D0.B8_.D0.BD.D0.B0_.D0.91.D0.B8.D1.80.D0.B6.D0.B5_.D0.90.D0.BA.D1.82.D0.B8.D0.B2.D0.BE.D0.B2"><b>Операции на Бирже Активов</b></span></h2>
+<p>Обратите  внимание - единицей биржевой операции является АКТИВ. Активом может быть что угодно - другая криптовалюта, акции и т.п.
+</p>
+<h3><span class="mw-headline" id="Issue_asset"><b>Issue asset</b></span></h3>
+<p>Создание актива для биржи
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_19"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=issueAsset&amp; 
+     secretPhrase=SECRET&amp; 
+     name=ASSETNAME&amp; 
+     description=DESCRIPTION&amp; 
+     quantityQNT=QTY&amp;
+     decimals=DECIMALS&amp;
+     fee=FEE&amp;
+     deadline=DEADLINE&amp; 
+     referencedTransaction=REFTX&amp;
+     broadcast=BROAD
+</pre>
+<p>Where:
+</p>
+<ul>
+<li> SECRET секретная фраза аккаунта создающего актив.
+</li>
+<li> ASSETNAME имя актива, который вы создаете для продажи на бирже
+</li>
+<li> DESCRIPTION описание актива. Этот текст должен быть URL-encoded, но может включать любые Unicode символы, и иметь максимальную длину 1000 символов. (опционально)
+</li>
+<li> QTY количество единиц актива
+</li>
+<li> DECIMALS количество знаков после запятой для указанного актива. Для примера, для USD это будет 2 (т.е. 1.87 USD), для Bitcoin это будет 8 (т.е. 0.00000025 BTC)
+</li>
+<li> FEE комиссия (в MilliLm) за транзакцию по созданию актива. На данный момент минимальная комиссия за создание активасоставляет 1000 MilliLm
+</li>
+<li> DEADLINE дедлайн до подтверждения транзакции, задается в минутах 
+</li>
+<li> REFTXID ID предыдущей транзакции на которую вы ссылаетесь. Это создает зависимые транзакции (цепочка транзакций), означая, что текущая транзакция не может быть подтверждена, пока транзакция на которую вы ссылаетесь, не будет подтверждена. (опционально)
+</li>
+<li> BROAD если вы хотите чтобы транзакция широковещательно передавалась или нет (опционально)
+</li>
+</ul>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_16"><b>Ответ</b></span></h4>
+<p>В ответе возвращаются идентификаторы транзакции (ID), который является также ID актива
+</p>
+<pre>
+{
+     &quot;fullHash&quot;:                 &quot;FULLHASH&quot;, 
+     &quot;signatureHash&quot;:            &quot;SIGHASH&quot;, 
+     &quot;transactionBytes&quot;:         &quot;TXBYTES&quot;, 
+     &quot;hash&quot;:                     &quot;HASH&quot;, 
+     &quot;transaction&quot;:              &quot;TX&quot;, 
+     &quot;broadcasted&quot;:              BROAD, 
+     &quot;unsignedTransactionBytes&quot;: &quot;UNTXBYTES&quot; 
+}
+</pre>
+<p>Where:
+</p>
+<ul>
+<li>FULLHASH полный хэш транзакции
+</li>
+<li>SIGHASH sha256 хэш подписи транзакции. Полезно для транзакций условного депонирования
+</li>
+<li>TXBYTES байткод транзакции
+</li>
+<li>HASH шэх всех полей транзакции за исключением подписи
+</li>
+<li>TX идентификатор (ID) транзакции
+</li>
+<li>BROAD указывает была транзакция передана или нет
+</li>
+<li>UNTXBYTES байты транзакции c подписью, частично замененной нулями
+</li>
+</ul>
+<p><small><i>Исправлено 22/05/14</i></small>
+</p>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_19"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=issueAsset&amp;
+     secretPhrase=123&amp;
+     name=turtleCoin&amp;
+     description=This+is+Turtlecoin+issued+by+Tommy-Turtle&amp;
+     quantityQNT=500&amp; 
+     deadline=1440&amp;
+     fee=1000
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{ 
+     &quot;fullHash&quot;:                 &quot;ebccb29dc4286a4a55ad9f0a4334cd3b0df75c26fcaf4a6ee3b62832f8f1a403&quot;, 
+     &quot;signatureHash&quot;:            &quot;adb63682ac9598b7ea951df09535ee662b4b2f977e4f8a3f1a1aa0fd1f3e3da1&quot;, 
+     &quot;transactionBytes&quot;:         &quot;0200701fdb00a005668683e673274c671802492d6f54cdc33d247aa426e7cef83776...&quot;, 
+     &quot;hash&quot;:                     &quot;f1fa3f7b8ca5dd38d529e9f9a052aac0f96a7e5a4ef57cdabb0e4633cb4fcd89&quot;, 
+     &quot;transaction&quot;:              &quot;5362143131262438635&quot;, 
+     &quot;broadcasted&quot;:              true, 
+     &quot;unsignedTransactionBytes&quot;: &quot;0200701fdb00a005668683e673274c671802492d6f54cdc33d247aa426e7ce...&quot; 
+}
+</pre>
+<p><small><i>Проверено 13/06/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_asset_IDs"><b>Get asset IDs</b></span></h3>
+<p>Получить список всех идентификаторов актива на бирже
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_20"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=getAssetIds
+</pre>
+<h4><span class="mw-headline" id=".27.D0.A0.D0.B5.D0.B7.D1.83.D0.BB.D1.8C.D1.82.D0.B0.D1.82.27">'<b>Результат'</b></span></h4>
+<pre>
+{
+     &quot;assetIds&quot;:       [ARRAY_OF_ASSET_IDs]
+}
+</pre>
+<p>Где ARRAY_OF_ASSET_IDs - массив/список идентификаторов актива
+</p>
+<h4><span class="mw-headline" id=".27.D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80.27_2">'<b>Пример'</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getAssetIds
+</pre>
+<p>Результат:
+</p>
+<pre>
+{
+     &quot;assetIds&quot;:
+          [
+               &quot;923860986719836&quot;, 
+               &quot;46556984592384756298&quot;, 
+               &quot;87918658237693184156&quot;,
+               ...
+          ]
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_asset"><b>Get asset</b></span></h3>
+<p>Позволяет получить информацию ассоциированную с ID актива
+</p>
+<h4><span class="mw-headline" id="Request_2"><b>Request</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=getAsset&amp; 
+     asset=ASSETID
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ASSETID ID актива, который вас интересует
+</li>
+</ul>
+<h4><span class="mw-headline" id="Response"><b>Response</b></span></h4>
+<pre>
+{
+     &quot;account&quot;:          &quot;ACCOUNT&quot;, 
+     &quot;accountRS&quot;:        &quot;ACCOUNTRS&quot;,
+     &quot;name&quot;:             &quot;NAME&quot;, 
+     &quot;description&quot;:      &quot;DESCRIPTION&quot;, 
+     &quot;quantityQNT&quot;:       QTY,
+     &quot;asset&quot;:             ASSETID,
+     &quot;decimals&quot;:          DECIMALS, 
+     &quot;numberOfTrades&quot;:    NUMTRADES
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ACCOUNT аккаунт которому принадлежит актив
+</li>
+<li>ACCOUNTRS адрес аккаунта в кодировке Reed-Solomon. 
+</li>
+<li>NAME имя/название актива
+</li>
+<li>DESCRIPTION описание актива.  Данная запись может не возвращаться, если описание отсутствует.
+</li>
+<li>QTY количество единиц актива
+</li>
+<li>ASSETID ID актива который вас интересует
+</li>
+<li>DECIMALS количество знаков после запятой для указанного актива. Для примера, для USD это будет 2 (т.е. 1.87 USD), для Bitcoin это будет 8 (т.е. 0.00000025 BTC)
+</li>
+<li>NUMTRADES число сделок с этим активом
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_20"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getAsset&amp; 
+     asset=46556984592384756298
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;account&quot;:           &quot;334765832685676&quot;,
+     &quot;accountRS&quot;:         &quot;LMA-DE2F-W76R-GL25-HMFPR&quot;,
+     &quot;name&quot;:              &quot;cfbBTCx1&quot;, 
+     &quot;description&quot;:       &quot;This is BTC issued by Come-from-Beyond&quot;, 
+     &quot;quantityQNT&quot;:       500,
+     &quot;asset&quot;:             46556984592384756298,
+     &quot;decimals&quot;:          6, 
+     &quot;numberOfTrades&quot;:    0
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_assets"><b>Get assets</b></span></h3>
+<p>Получить информацию, связанную с несколькими идентификаторами активов
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_21"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=getAssets&amp; 
+     assets=ASSETID&amp;
+     assets=ASSETID&amp;
+     ...
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ASSETID ID актива, который вас интереесует
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_22"><b>Запрос</b></span></h4>
+<pre>
+{
+     &quot;assets&quot;: [ {
+          &quot;account&quot;:          &quot;ACCOUNT&quot;, 
+          &quot;accountRS&quot;:        &quot;ACCOUNTRS&quot;,
+          &quot;name&quot;:             &quot;NAME&quot;, 
+          &quot;description&quot;:      &quot;DESCRIPTION&quot;, 
+          &quot;quantityQNT&quot;:       QTY,
+          &quot;asset&quot;:             ASSETID,
+          &quot;decimals&quot;:          DECIMALS, 
+          &quot;numberOfTrades&quot;:    NUMTRADES
+     },
+     {
+          ...
+     }]
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ACCOUNT аккаунт которому принадлежит актив
+</li>
+<li>ACCOUNTRS адрес аккаунта в кодировке Reed-Solomon. 
+</li>
+<li>NAME имя/название актива
+</li>
+<li>DESCRIPTION описание актива.  Данная запись может не возвращаться, если описание отсутствует.
+</li>
+<li>QTY количество единиц актива
+</li>
+<li>ASSETID ID актива который вас интересует
+</li>
+<li>DECIMALS количество знаков после запятой для указанного актива. Для примера, для USD это будет 2 (т.е. 1.87 USD), для Bitcoin это будет 8 (т.е. 0.00000025 BTC)
+</li>
+<li>NUMTRADES число сделок с этим активом
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_21"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getAssets&amp; 
+     assets=46556984592384756298
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;assets&quot;: [ {
+          &quot;account&quot;:           &quot;334765832685676&quot;, 
+          &quot;accountRS&quot;:         &quot;LMA-DE2F-W76R-GL25-HMFPR&quot;,
+          &quot;name&quot;:              &quot;cfbBTCx1&quot;, 
+          &quot;description&quot;:       &quot;This is BTC issued by Come-from-Beyond&quot;, 
+          &quot;quantityQNT&quot;:       500,
+          &quot;asset&quot;:             46556984592384756298,
+          &quot;decimals&quot;:          6, 
+          &quot;numberOfTrades&quot;:    0
+     } ]
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_all_assets"><b>Get all assets</b></span></h3>
+<p>Предоставляет информацию по всем активам представленным на бирже
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_23"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=getAllAssets
+</pre>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_17"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;assets&quot;: 
+     [ { 
+          &quot;account&quot;:           &quot;ACCOUNT&quot;, 
+          &quot;accountRS&quot;:         &quot;ACCOUNTRS&quot;
+          &quot;name&quot;:              &quot;NAME&quot;, 
+          &quot;description&quot;:       &quot;DESCRIPTION&quot;, 
+          &quot;quantityQNT&quot;:       QTY,
+          &quot;asset&quot;:             ASSETID,
+          &quot;decimals&quot;:          DECIMALS, 
+          &quot;numberOfTrades&quot;:    NUMTRADES
+     } ] 
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ACCOUNT аккаунт которому принадлежит актив
+</li>
+<li>ACCOUNTRS адрес аккаунта в кодировке Reed-Solomon. 
+</li>
+<li>NAME имя/название актива
+</li>
+<li>DESCRIPTION описание актива.  Данная запись может не возвращаться, если описание отсутствует.
+</li>
+<li>QTY количество единиц актива
+</li>
+<li>ASSETID ID актива который вас интересует
+</li>
+<li>DECIMALS количество знаков после запятой для указанного актива. Для примера, для USD это будет 2 (т.е. 1.87 USD), для Bitcoin это будет 8 (т.е. 0.00000025 BTC)
+</li>
+<li>NUMTRADES число сделок с этим активом
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_22"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getAllAssets
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;assets&quot;: 
+     [ { 
+          &quot;decimals&quot;:       7, 
+          &quot;numberOfTrades&quot;: 0, 
+          &quot;asset&quot;:          &quot;3283533989023503499&quot;, 
+          &quot;quantityQNT&quot;:    &quot;132249500000000&quot;, 
+          &quot;description&quot;:    &quot;CCGGUQMJKOMUCLBIEGGTKCQVSBSJAZSE&quot;, 
+          &quot;name&quot;:           &quot;GZSHFQY&quot;, 
+          &quot;account&quot;:        &quot;14136559604731496960&quot;,
+          &quot;accountRS&quot;:      &quot;LMA-KRDB-ZFA3-RNDV-AALNT&quot;
+       },
+       { 
+          &quot;decimals&quot;:       6, 
+          &quot;numberOfTrades&quot;: 0, 
+          &quot;asset&quot;:          &quot;5008310702202713285&quot;, 
+          &quot;quantityQNT&quot;:    &quot;994512000000000&quot;, 
+          &quot;description&quot;:    &quot;QESZUYEJCGBGHBVXIRC&quot;, 
+          &quot;name&quot;:           &quot;GWNU&quot;, 
+          &quot;account&quot;:        &quot;14136559604731496960&quot;,
+          &quot;accountRS&quot;:      &quot;LMA-UWKJ-GFEV-AGY4-5C4YS&quot;
+       },
+       ...
+     ]
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_assets_by_name_.28.D0.9D.D0.B5_.D0.B8.D1.81.D0.BF.D0.BE.D0.BB.D1.8C.D0.B7.D1.83.D0.B5.D1.82.D1.81.D1.8F.29"><b>Get assets by name (Не используется)</b></span></h3>
+<p>Предоставляет информацию ассоциированную  с именем актива. Функция не используется начиная с версии клиента 1.1.4.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_24"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=getAssetsByName&amp; 
+     assetName=ASSET
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ASSET название актива, который вас интересует
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_18"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;assets&quot;: 
+     [ { 
+          &quot;account&quot;:           &quot;ACCOUNT&quot;,
+          &quot;accountRS&quot;:         &quot;ACCOUNTRS&quot;
+          &quot;name&quot;:              &quot;NAME&quot;, 
+          &quot;description&quot;:       &quot;DESCRIPTION&quot;, 
+          &quot;quantityQNT&quot;:       QTY,
+          &quot;asset&quot;:             ASSETID,
+          &quot;decimals&quot;:          DECIMALS, 
+          &quot;numberOfTrades&quot;:    NUMTRADES
+     } ] 
+}
+</pre>
+<p>Where:
+</p>
+<ul>
+<li>ACCOUNT аккаунт которому принадлежит актив
+</li>
+<li>ACCOUNTRS адрес аккаунта в кодировке Reed-Solomon. 
+</li>
+<li>NAME имя/название актива
+</li>
+<li>DESCRIPTION описание актива.  Данная запись может не возвращаться, если описание отсутствует.
+</li>
+<li>QTY количество единиц актива
+</li>
+<li>ASSETID ID актива который вас интересует
+</li>
+<li>DECIMALS количество знаков после запятой для указанного актива. Для примера, для USD это будет 2 (т.е. 1.87 USD), для Bitcoin это будет 8 (т.е. 0.00000025 BTC)
+</li>
+<li>NUMTRADES число сделок с этим активом
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_23"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getAssetsByName&amp; 
+     assetName=GZSHFQY
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;assets&quot;: 
+     [ { 
+          &quot;decimals&quot;:       7, 
+          &quot;numberOfTrades&quot;: 0, 
+          &quot;asset&quot;:          &quot;3283533989023503499&quot;, 
+          &quot;quantityQNT&quot;:    &quot;132249500000000&quot;, 
+          &quot;description&quot;:    &quot;CCGGUQMJKOMUCLBIEGGTKCQVSBSJAZSE&quot;, 
+          &quot;name&quot;:           &quot;GZSHFQY&quot;, 
+          &quot;account&quot;:        &quot;14136559604731496960&quot;,
+          &quot;accountRS&quot;:      &quot;LMA-UWKJ-GFEV-AGY4-5C4YS&quot;
+     } ] 
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_assets_by_issuer"><b>Get assets by issuer</b></span></h3>
+<p>Возвращает все активы, которые создал указанный аккаунт
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_25"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=getAssetsByIssuer&amp; 
+     account=ACCOUNT
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ACCOUNT аккаунт который выпустил актив
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_19"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;assets&quot;: 
+     [ { 
+          &quot;account&quot;:                 &quot;ACCOUNT&quot;, 
+          &quot;accountRS&quot;:             &quot;ACCOUNTRS&quot;,
+          &quot;name&quot;:                    &quot;NAME&quot;, 
+          &quot;description&quot;:           &quot;DESCRIPTION&quot;, 
+          &quot;quantityQNT&quot;:          QTY,
+          &quot;asset&quot;:                      ASSETID,
+          &quot;decimals&quot;:                DECIMALS, 
+          &quot;numberOfTrades&quot;:    NUMTRADES
+     } ] 
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ACCOUNT аккаунт которому принадлежит актив
+</li>
+<li>ACCOUNTRS адрес аккаунта в кодировке Reed-Solomon. 
+</li>
+<li>NAME имя/название актива
+</li>
+<li>DESCRIPTION описание актива.  Данная запись может не возвращаться, если описание отсутствует.
+</li>
+<li>QTY количество единиц актива
+</li>
+<li>ASSETID ID актива который вас интересует
+</li>
+<li>DECIMALS количество знаков после запятой для указанного актива. Для примера, для USD это будет 2 (т.е. 1.87 USD), для Bitcoin это будет 8 (т.е. 0.00000025 BTC)
+</li>
+<li>NUMTRADES число сделок с этим активом
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_24"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getAssetsByIssuer&amp; 
+     account=1562462127635514638
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;assets&quot;: 
+     [ { 
+          &quot;decimals&quot;:             7, 
+          &quot;numberOfTrades&quot;: 0, 
+          &quot;asset&quot;:                   &quot;3283533989023503499&quot;, 
+          &quot;quantityQNT&quot;:        &quot;132249500000000&quot;, 
+          &quot;description&quot;:          &quot;CCGGUQMJKOMUCLBIEGGTKCQVSBSJAZSE&quot;, 
+          &quot;name&quot;:                   &quot;GZSHFQY&quot;, 
+          &quot;accountRS&quot;:            &quot;LMA-GKAG-2VGD-U473-3VRDD&quot;,
+          &quot;account&quot;:                &quot;1562462127635514638&quot;
+     } ] 
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_all_trades"><b>Get all trades</b></span></h3>
+<p>Возвращает все сделки, начиная с определенного времени
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_26"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=getAllTrades&amp; 
+     timestamp=TIME
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>TIME задается в секундах, от времени создания генезисного блока. Установка параметра в 0 вернет все сделки (опционально)
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_20"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;trades&quot;: [
+     { 
+          &quot;timestamp&quot;:   TIME, 
+          &quot;price&quot;:    &quot;PRICE&quot;, 
+          &quot;asset&quot;:       &quot;ASSETID&quot;, 
+          &quot;quantityQNT&quot;: &quot;QTY&quot;, 
+          &quot;block&quot;:       &quot;BLOCK&quot;, 
+          &quot;askOrder&quot;:    &quot;ASK&quot;, 
+          &quot;bidOrder&quot;:    &quot;BID&quot; 
+     },
+     {
+          ...
+     }
+     ]
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li> TIME время заданное в секундахis от момента создания генезисного блока
+</li>
+<li> ASSETID ID актива
+</li>
+<li> QTY количество ордеров
+</li>
+<li> PRICE цена, выраженная в MilliLm
+</li>
+<li> BLOCK блок сделки
+</li>
+<li> ASK ID ордера на покупку
+</li>
+<li> BID ID ордера на продажу
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_25"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getAllTrades
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;trades&quot;: [ 
+     { 
+          &quot;timestamp&quot;:   13530463, 
+          &quot;price&quot;:    &quot;2500000000&quot;, 
+          &quot;asset&quot;:       &quot;13920592454636198263&quot;, 
+          &quot;quantityQNT&quot;: &quot;2&quot;, 
+          &quot;block&quot;:       &quot;1942829179466651543&quot;, 
+          &quot;askOrder&quot;:    &quot;16791208091984728819&quot;, 
+          &quot;bidOrder&quot;:    &quot;12730658526877674075&quot; 
+     },
+     {
+          ...
+     }
+     ]
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_trades"><b>Get trades</b></span></h3>
+<p>ПОлучить все торговые операции по активу с указанным ID
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_27"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=getTrades&amp; 
+     asset=ASSETID&amp;
+     firstIndex=RANGE_START
+     lastIndex=RANGE_END
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ASSETID ID актива который вас интересует
+</li>
+<li>RANGE_START порядковый номер самой ранней торговой операции, которую вы хотите увидеть.  Если не указанно, то по умолчанию 0
+</li>
+<li>RANGE_END порядковый номер последней торговой операции которую вы хотите видеть.  Если не указанно, то по умолчанию устанавливается  2<sup>32</sup>-1
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_21"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;trades&quot;: [
+     { 
+          &quot;timestamp&quot;:   TIME, 
+          &quot;price&quot;:    &quot;PRICE&quot;, 
+          &quot;asset&quot;:       &quot;ASSETID&quot;, 
+          &quot;quantityQNT&quot;: &quot;QTY&quot;, 
+          &quot;block&quot;:       &quot;BLOCK&quot;, 
+          &quot;askOrder&quot;:    &quot;ASK&quot;, 
+          &quot;bidOrder&quot;:    &quot;BID&quot; 
+     },
+     {
+          ...
+     }
+     ]
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>TIME is the time expressed in seconds since the genesis block of the trade
+</li>
+<li>ASSETID ID актива
+</li>
+<li>QTY количество ордеров
+</li>
+<li>PRICE цена, указывается в MilliLm
+</li>
+<li>BLOCK блок сделки
+</li>
+<li>ASK ID ордера на покупку
+</li>
+<li>BID ID ордера на продажу
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_26"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getTrades&amp; 
+     asset=14269709746849295412&amp;
+     firstIndex=0
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;trades&quot;: [
+     { 
+          &quot;timestamp&quot;:   13386268, 
+          &quot;price&quot;:    &quot;100000000&quot;, 
+          &quot;asset&quot;:       &quot;13388701969217905199&quot;, 
+          &quot;quantityQNT&quot;: &quot;12&quot;, 
+          &quot;block&quot;:       &quot;15363991879367428772&quot;, 
+          &quot;askOrder&quot;:    &quot;9028610672087970547&quot;, 
+          &quot;bidOrder&quot;:    &quot;7785235474459518056&quot; 
+     },
+     {
+          ...
+     }
+     ] 
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Transfer_asset"><b>Transfer asset</b></span></h3>
+<p>Функция для передачи определенного количества актива с одного аккаунта на другой
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_28"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=transferAsset&amp;
+     secretPhrase=SECRET&amp;
+     recipient=ACCOUNT&amp; 
+     asset=ASSETID&amp;
+     comment=COMMENT&amp;
+     quantityQNT=QTY&amp;
+     fee=FEE&amp;
+     deadline=DEADLINE&amp; 
+     referencedTransaction=REFTXID&amp;
+     broadcast=BROAD
+</pre>
+<p>Где:
+</p>
+<ul>
+<li> SECRET секретная фраза аккаунта который осуществляет передачу актива 
+</li>
+<li> RECIPIENT аккаунт получателя
+</li>
+<li> ASSETID идентификатор (ID) актива который будет передаваться
+</li>
+<li> QTY количество единиц актива которое будет передаваться
+</li>
+<li> COMMENT комментарий к перемещению  (опционально)
+</li>
+<li> FEE объем комиссии за эту транзакция, в MilliLm
+</li>
+<li> DEADLINE время в минутах, в течении которого транзакция должна быть подтверждена в сети.
+</li>
+<li> REFTX Идентификатор (ID)предыдущей транзакции на которую ссылается данная транзакция. Это значит, что создается цепочка зависимых транзакций, и текущая транзакция не может быть подтверждена, пока транзакция, на которую ссылаются, не будет подтверждена (опционально)
+</li>
+<li>BROAD если вы хотите чтобы транзакция широковещательно передавалась или нет (опционально)
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_22"><b>Ответ</b></span></h4>
+ <pre>
+{
+     &quot;fullHash&quot;:                 &quot;FULLHASH&quot;, 
+     &quot;signatureHash&quot;:            &quot;SIGHASH&quot;, 
+     &quot;transactionBytes&quot;:         &quot;TXBYTES&quot;, 
+     &quot;hash&quot;:                     &quot;HASH&quot;, 
+     &quot;transaction&quot;:              &quot;TX&quot;, 
+     &quot;broadcasted&quot;:              BROAD, 
+     &quot;unsignedTransactionBytes&quot;: &quot;UNTXBYTES&quot; 
+}
+</pre>
+<p>Где
+</p>
+<ul>
+<li>FULLHASH полный хэш транзакции 
+</li>
+<li>SIGHASH sha256 хэш подписи транзакции. Используется для транзакций условного депонирования
+</li>
+<li>TXBYTES байткод транзакции 
+</li>
+<li>HASH хэш всех полей транзакции, за исключение подписи
+</li>
+<li>TX ID транзакции
+</li>
+<li>BROAD указывает была транзакция передана или нет
+</li>
+<li>UNTXBYTES байты транзакции c подписью, частично замененной нулями
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_27"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=transferAsset&amp;
+     secretPhrase=123&amp;
+     recipient=81623458239475&amp;
+     asset=46556984592384756298&amp;
+     quantityQNT=45&amp;
+     fee=100000000&amp;
+     deadline=1440
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{ 
+     &quot;fullHash&quot;:                 &quot;9bd14e7a93d228a85e82a98071f1bd96c158dda856311722e6feafb1a36e71e2&quot;, 
+     &quot;signatureHash&quot;:            &quot;540a2963aac95e63c5e4d13b452be02160e5ecd9cb1c3e8306eed4b47975b9ba&quot;, 
+     &quot;transactionBytes&quot;:         &quot;0201f120db00a005668683e673274c671802492d6f54cdc33d247a...&quot;, 
+     &quot;hash&quot;:                     &quot;8633ca65458bb9895ef53c3875ff59dd4b85ddf922dcaae3f276796932d33731&quot;, 
+     &quot;transaction&quot;:              &quot;12117166328294330779&quot;, 
+     &quot;broadcasted&quot;:              true, 
+     &quot;unsignedTransactionBytes&quot;: &quot;0201f120db00a005668683e673274c671802492d6f54cdc33d2...&quot; 
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Place_order"><b>Place order</b></span></h3>
+<p>Размещает на бирже заявку на "покупку" или "продажу" актива
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_29"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=BID_OR_ASK&amp;
+     secretPhrase=SECRET&amp;
+     asset=ASSETID&amp;
+     quantityQNT=QTY&amp;
+     price=PRICE&amp;
+     fee=FEE&amp;
+     deadline=DEADLINE&amp;
+     referencedTransaction=REFTXID&amp;
+     broadcast=BROAD
+</pre>
+<p>Где:
+</p>
+<ul>
+<li> BID_OR_ASK тип размещаемой заявки "placeAskOrder" (купить) or "placeBidOrder"(продать)
+</li>
+<li> SECRET секретная фраза от аккаунта, который создает транзакцию
+</li>
+<li> ASSETID идентификатор (ID) актива на который формируется запрос
+</li>
+<li> QTY количество единиц актива на который формируется запрос
+</li>
+<li> PRICE цена покупки/продажи, измеряется в MilliLm (т.е. "1456" это "1.456 Lm")
+</li>
+<li> FEE комиссия за эту транзакцию, в MilliLm
+</li>
+<li> DEADLINE время в минутах, в течении которого данная транзакция должна быть подтверждена в сети.
+</li>
+<li> REFTX Идентификатор (ID)предыдущей транзакции на которую ссылается данная транзакция. Это значит, что создается цепочка зависимых транзакций, и текущая транзакция не может быть подтверждена, пока транзакция, на которую ссылаются, не будет подтверждена (опционально)
+</li>
+<li>BROAD если вы хотите чтобы транзакция широковещательно передавалась или нет (опционально)
+</li>
+</ul>
+<h4><span class="mw-headline" id=".27.D0.9E.D1.82.D0.B2.D0.B5.D1.82.27_5">'<b>Ответ'</b></span></h4>
+<pre>
+{
+     &quot;fullHash&quot;:                 &quot;FULLHASH&quot;, 
+     &quot;signatureHash&quot;:            &quot;SIGHASH&quot;, 
+     &quot;transactionBytes&quot;:         &quot;TXBYTES&quot;, 
+     &quot;hash&quot;:                     &quot;HASH&quot;, 
+     &quot;transaction&quot;:              &quot;TX&quot;, 
+     &quot;broadcasted&quot;:              BROAD, 
+     &quot;unsignedTransactionBytes&quot;: &quot;UNTXBYTES&quot; 
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>FULLHASH полный хэш транзакции
+</li>
+<li>SIGHASH sha256 хэш подписи транзакции. Используется для транзакций условного депонирования
+</li>
+<li>TXBYTES байткод транзакции
+</li>
+<li>HASH хеш всех полей транзакции, за исключением подписи
+</li>
+<li>TX ID транзакции
+</li>
+<li>BROAD статус - транзакция была передана или нет
+</li>
+<li>UNTXBYTES байты транзакции с частью подписи, заменяемой нулями
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_28"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=placeBidOrder&amp;
+     secretPhrase=123&amp;
+     asset=46556984592384756298&amp;
+     quantityQNT=70&amp;
+     price=145&amp;
+     fee=100000000&amp;
+     deadline=1440&amp;
+     referencedTransaction=65374835678
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;fullHash&quot;:                 &quot;a797ff58c5ed5c6f53c708dbe137812495c6af0eb280a3d001bb1917eb6a5561&quot;, 
+     &quot;signatureHash&quot;:            &quot;751c9df738e1894ef550bf9e0725188168d4febf48a4da51b1efafaaa840dbcb&quot;, 
+     &quot;transactionBytes&quot;:         &quot;02035d0fdb00a005668683e673274c671802492d6f54cdc33d247aa426e7cef83776...&quot;, 
+     &quot;hash&quot;:                     &quot;4785247b3238fda4fe53d47bc8a97a2b3acf974a02854792b59b092f3473eecd&quot;, 
+     &quot;transaction&quot;:              &quot;8024550067924866983&quot;, 
+     &quot;broadcasted&quot;:              true, 
+     &quot;unsignedTransactionBytes&quot;: &quot;02035d0fdb00a005668683e673274c671802492d6f54cdc33d247aa426e7cef...&quot; 
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_order_IDs"><b>Get order IDs</b></span></h3>
+<p>Получить идентификаторы (ID) заявок на покупку/продажу определенного актива
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_30"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=GET_BID_OR_ASK&amp;
+     asset=ASSETID
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>GET_BID_OR_ASK тип операции "getAskOrderIds" или "getBidOrderIds"
+</li>
+<li>ASSETID ID актива, ордера по которому вы желаете получить
+</li>
+</ul>
+<h4><span class="mw-headline" id=".27.D0.A0.D0.B5.D0.B7.D1.83.D0.BB.D1.8C.D1.82.D0.B0.D1.82.27_2">'<b>Результат'</b></span></h4>
+<p>Возвращает массив (список) ордеров покупки/продажи:
+</p>
+<pre>
+{
+     &quot;GET_BID_OR_ASK&quot;: [ARRAY_OF_ORDER_IDs]
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>GET_BID_OR_ASK тип операции "getAskOrderIds" или "getBidOrderIds"
+</li>
+</ul>
+<h4><span class="mw-headline" id=".27.D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80.27_3">'<b>Пример'</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getAskOrderIds
+     asset=14269709746849295412
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;askOrderIds&quot;:
+          [
+               &quot;3467356724512&quot;, 
+               &quot;824756987236452&quot;
+          ]
+}
+</pre>
+<p><small><i>Проверено 16/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_orders"><b>Get orders</b></span></h3>
+<p>Возвращает все ордера на покупку/продажу, по указанному активу
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_31"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=GET_BID_OR_ASK&amp;
+     asset=ASSETID&amp;
+     limit=LIMIT
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>GET_BID_OR_ASK может быть "getAskOrders" или "getAskOrders"
+</li>
+<li>ASSETID идентификатор (ID) актива, информация по которому вас интересует
+</li>
+<li>LIMIT определяет сколько ордеров необходимо отобразить, если не указанно, должен отобразить их все.
+</li>
+</ul>
+<p><small><i>Проверено 18/05/14</i></small>
+</p>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_23"><b>Ответ</b></span></h4>
+<p>Возвращает массив ордеров покупки/продажи:
+</p>
+<pre>
+{
+     &quot;GET_BID_OR_ASK&quot;: [ARRAY_OF_ORDERs]
+}
+</pre>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_29"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getAskOrders
+     asset=15680163033397272955
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+    &quot;askOrders&quot;: [
+        {
+            &quot;height&quot;: 90703,
+            &quot;price&quot;: &quot;78932342&quot;,
+            &quot;asset&quot;: &quot;15680163033397272955&quot;,
+            &quot;order&quot;: &quot;4529944714996630823&quot;,
+            &quot;quantityQNT&quot;: &quot;20&quot;,
+            &quot;accountRS&quot;: &quot;LMA-JNYK-TP3W-VDBB-9FRVB&quot;,
+            &quot;account&quot;: &quot;8425933418718057425&quot;,
+            &quot;type&quot;: &quot;ask&quot;
+        },
+        {
+            &quot;height&quot;: 77415,
+            &quot;price&quot;: &quot;99000000&quot;,
+            &quot;asset&quot;: &quot;15680163033397272955&quot;,
+            &quot;order&quot;: &quot;3158651792442050495&quot;,
+            &quot;quantityQNT&quot;: &quot;39&quot;,
+            &quot;accountRS&quot;: &quot;LMA-AMPQ-B6ZZ-S8TL-EFDBH&quot;,
+            &quot;account&quot;: &quot;14386024746077933238&quot;,
+            &quot;type&quot;: &quot;ask&quot;
+        },
+        {
+            &quot;height&quot;: 78822,
+            &quot;price&quot;: &quot;150000000&quot;,
+            &quot;asset&quot;: &quot;15680163033397272955&quot;,
+            &quot;order&quot;: &quot;954178876942447633&quot;,
+            &quot;quantityQNT&quot;: &quot;1&quot;,
+            &quot;accountRS&quot;: &quot;LMA-FVXE-SLB6-KL5V-A2Q75&quot;,
+            &quot;account&quot;: &quot;9337862827899547564&quot;,
+            &quot;type&quot;: &quot;ask&quot;
+        }
+    ]
+}
+</pre>
+<p><small><i>Исправлено 22/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_current_account_order_IDs"><b>Get current account order IDs</b></span></h3>
+<p>Возвращает идентификаторы (ID) ордеров на покупку или продажу для указанного аккаунта, опционально данные фильтруются согласно заданному идентификатору актива (assetID). Реализовано начиная с версии 0.5.9.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_32"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=GET_BID_OR_ASK&amp;
+     account=ACCOUNT&amp;
+     asset=ASSETID
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>GET_BID_OR_ASK может быть "getAccountCurrentAskOrderIds" или "getAccountCurrentBidOrderIds"
+</li>
+<li>ACCOUNT номер аккаунта ордера которого вы хотите получить.
+</li>
+<li>ASSETID идентификатор (ID) актива ордера с которым вы хотите получить.
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_24"><b>Ответ</b></span></h4>
+<p>Возвращает массив из всех идентификаторов (ID) запросов/предложений:
+</p>
+<pre>
+{
+     &quot;GET_BID_OR_ASK_IDs&quot;: 
+          [ARRAY_OF_ORDER_IDs]
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>GET_BID_OR_ASK_IDs может быть "askOrderIds" или "bidOrderIds"
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_30"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getAccountCurrentAskOrderIds&amp;
+     account=1189524830352486657&amp;
+     asset=2438729719254516952
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;askOrderIds&quot;:
+          [
+               &quot;3467356725412&quot;, 
+               &quot;824756987456452
+          ]
+}
+</pre>
+<h3><span class="mw-headline" id="Get_order"><b>Get order</b></span></h3>
+<p>Возвращает полную информацию о указанном ордере на покупку/продажу
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_33"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=GET_BID_OR_ASK&amp;
+     order=ORDERID</pre>
+<p>Где:
+</p>
+<ul>
+<li>GET_BID_OR_ASK может быть "getAskOrder" или "getBidOrder"
+</li>
+<li>ORDERID Идентификатор (ID) ордера, который вас интересует
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_25"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;account&quot;:       &quot;ACCOUNT&quot;,
+     &quot;accountRS&quot;:     &quot;ACCOUNTRS&quot;,
+     &quot;height&quot;:        HEIGHT,
+     &quot;asset&quot;:         &quot;ASSETID&quot;, 
+     &quot;quantityQNT&quot;:   QTY, 
+     &quot;price&quot;:      PRICE,
+     &quot;order&quot;:         &quot;ORDER&quot;,
+     &quot;type&quot;:          &quot;TYPE&quot;
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li> ACCOUNT номер аккаунта ассоциированный с ордером
+</li>
+<li> ACCOUNTRS адрес аккаунта в кодировке Reed-Solomon. 
+</li>
+<li> ASSETID идентификатор (ID) актива в ордере
+</li>
+<li> QTY количество актива в ордере
+</li>
+<li> PRICE цена, указана в MilliLm
+</li>
+<li> HEIGHT высота блока
+</li>
+<li> ORDER номер ордера
+</li>
+<li> TYPE тип ордера (покупка/продажа)
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_31"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getBidOrder&amp;
+     order=17936094171153028796
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;height&quot;:        90703, 
+     &quot;price&quot;:      &quot;78932342&quot;, 
+     &quot;asset&quot;:         &quot;15680163033397272955&quot;, 
+     &quot;order&quot;:         &quot;17936094171153028796&quot;, 
+     &quot;quantityQNT&quot;:   &quot;20&quot;, 
+     &quot;account&quot;:       &quot;8425933418718057425&quot;,
+     &quot;accountRS&quot;:     &quot;LMA-7HL4-WMNR-XGFL-ASVHV&quot;, 
+     &quot;type&quot;:          &quot;ask&quot;
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_all_open_orders"><b>Get all open orders</b></span></h3>
+<p>Возвращает информацию о всех открытых ордерах
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_34"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=getAllOpenOrders
+</pre>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_26"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;height&quot;:        HEIGHT,
+     &quot;account&quot;:       &quot;ACCOUNT&quot;,
+     &quot;accountRS&quot;:     &quot;ACCOUNTRS&quot;,
+     &quot;asset&quot;:         &quot;ASSETID&quot;,
+     &quot;order&quot;:         &quot;ORDER&quot;,
+     &quot;quantityQNT&quot;:   QTY, 
+     &quot;price&quot;:      PRICE,
+     &quot;type&quot;:          TYPE
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li> ACCOUNT номер аккаунта связанный с ордером
+</li>
+<li> ACCOUNTRS адрес аккаунта в кодировке Reed-Solomon
+</li>
+<li> ASSETID идентификатор (ID) актива
+</li>
+<li> QTY количеств актива в ордере
+</li>
+<li> PRICE цена, задается в MilliLm
+</li>
+<li> TYPE тип ордера (т.е. покупка, продажа)
+</li>
+<li> HEIGHT высота блока
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_32"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getAllOpenOrders
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{ 
+     &quot;openOrders&quot;: 
+     [ { 
+          &quot;height&quot;:      90703, 
+          &quot;price&quot;:    &quot;78932342&quot;, 
+          &quot;asset&quot;:       &quot;15680163033397272955&quot;, 
+          &quot;order&quot;:       &quot;17936094171153028796&quot;, 
+          &quot;quantityQNT&quot;: &quot;20&quot;, 
+          &quot;account&quot;:     &quot;8425933418718057425&quot;, 
+          &quot;accountRS&quot;:   &quot;LMA-2UKS-7VYN-Q73Y-EKE8Y&quot;,
+          &quot;type&quot;:        &quot;ask&quot; 
+     }, 
+     {
+          ...
+     }
+     ]
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Cancel_order"><b>Cancel order</b></span></h3>
+<p>Отмена ранее созданного ордера
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_35"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=BID_OR_ASK&amp;
+     secretPhrase=SECRET&amp;
+     order=ORDERID&amp;
+     fee=FEE&amp;
+     deadline=DEADLINE&amp;
+     referencedTransaction=REFTXID&amp;
+     broadcast=BROAD
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>BID_OR_ASK указание типа операции "cancelAskOrder" или "cancelBidOrder"
+</li>
+<li>SECRET секретная фраза от аккаунта создавшего транзакцию
+</li>
+<li>ORDERID идентификатор(ID) ордера, который необходимо отменить
+</li>
+<li>FEE размер комиссии за данную транзакцию
+</li>
+<li>DEADLINE время (в минутах)в течении которого транзакция должна быть подтверждена
+</li>
+<li>REFTXID идентификатор транзакции (ID) на которую ссылается текущая транзакция. Используется если создана зависимая транзакция и означает, что текущая транзакция не может быть подтверждена, если транзакция, на которую ссылаются еще не подтверждена. Опциональный параметр.
+</li>
+<li>BROAD если вы хотите чтобы транзакция широковещательно передавалась или нет (опционально) 
+</li>
+</ul>
+<h4><span class="mw-headline" id=".27.D0.9E.D1.82.D0.B2.D0.B5.D1.82.27_6">'<b>Ответ'</b></span></h4>
+<pre>
+{
+     &quot;fullHash&quot;:                 &quot;FULLHASH&quot;, 
+     &quot;signatureHash&quot;:            &quot;SIGHASH&quot;, 
+     &quot;transactionBytes&quot;:         &quot;TXBYTES&quot;, 
+     &quot;hash&quot;:                     &quot;HASH&quot;, 
+     &quot;transaction&quot;:              &quot;TX&quot;, 
+     &quot;broadcasted&quot;:              BROAD, 
+     &quot;unsignedTransactionBytes&quot;: &quot;UNTXBYTES&quot; 
+}
+</pre>
+<ul>
+<li>FULLHASH полный хэш транзакции
+</li>
+<li>SIGHASH sha256 хэш подписи транзакции. Используется для транзакций условного депонирования
+</li>
+<li>TXBYTES байткод транзакции
+</li>
+<li>HASH хеш всех полей транзакции, за исключением подписи
+</li>
+<li>TX ID транзакции
+</li>
+<li>BROAD статус - транзакция была передана или нет
+</li>
+<li>UNTXBYTES байты транзакции с частью подписи, заменяемой нулями
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_33"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=cancelAskOrder&amp;
+     secretPhrase=123&amp;
+     order=3467356724512&amp; 
+     fee=100000000&amp;
+     deadline=1440
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;fullHash&quot;:                 &quot;e9c821547e851998f05ef39a39dc196b27f5e3069c1bf516fffaf53359304cc4&quot;, 
+     &quot;signatureHash&quot;:            &quot;a5bf7481f5ad02be69f5fff7cd73c3dd7e443a4335721511e9e79198bc6f0324&quot;, 
+     &quot;transactionBytes&quot;:         &quot;02051316db00a005668683e673274c671802492d6f54cdc33d247aa...&quot;, 
+     &quot;hash&quot;:                     &quot;10ffcff771db618ca243b561943e09fd4098ade100efb2dc68f7861705f6262d&quot;, 
+     &quot;transaction&quot;:              &quot;10959937945806686441&quot;, 
+     &quot;broadcasted&quot;:              true, 
+     &quot;unsignedTransactionBytes&quot;: &quot;02051316db00a005668683e673274c671802492d6f54cdc33d247aa426e7c...&quot; 
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+
+
+</body>
+</html>

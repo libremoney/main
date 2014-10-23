@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="ru" dir="ltr" class="client-nojs">
+<head>
+<link href='style.css' rel='stylesheet' type='text/css'/>
+<meta charset="UTF-8" />
+<title>LibreMoney API</title>
+<style>a:lang(ar),a:lang(ckb),a:lang(kk-arab),a:lang(mzn),a:lang(ps),a:lang(ur){text-decoration:none}</style>
+<body class="mediawiki ltr sitedir-ltr ns-0 ns-subject page-Nxt_API_ru skin-vector action-view vector-animateLayout">
+
+<h2>LibreMoney</h2>
+<h3>2. Основная часть</h3>
+<h4>2.8. API (RestAPI)</h4>
+
+
+<h2><span class="mw-headline" id=".D0.9E.D0.BF.D0.B5.D1.80.D0.B0.D1.86.D0.B8.D0.B8_.D1.81_.D1.82.D1.80.D0.B0.D0.BD.D0.B7.D0.B0.D0.BA.D1.86.D0.B8.D1.8F.D0.BC.D0.B8"><b>Операции с транзакциями</b></span></h2>
+<h3><span class="mw-headline" id="Broadcast_Transaction"><b>Broadcast Transaction</b></span></h3>
+<p>Широковещательная передачи транзакции в сеть
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_51"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=broadcastTransaction&amp;
+     transactionBytes=TX_BYTECODE
+</pre>
+<p>Где:
+</p>
+<ul>
+<li> TX_BYTECODE - байткод транзакции
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_39"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;transaction&quot;:       &quot;TRANSACTION_ID&quot;
+}
+</pre>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_49"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=broadcastTransaction&amp;
+     transactionBytes= 000022e22800e8036653833f4272604d...</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;transaction&quot;:       &quot;17484500871708980634&quot;
+}
+</pre>
+<ul>
+<li>Внимание: Вы можете получить ошибку '"error": "Double spending transaction"' если транзакция уже была транслирована в сеть
+</li>
+</ul>
+<p><small><i>Проверено 18/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Calculate_Full_Hash"><b>Calculate Full Hash</b></span></h3>
+<p>Вычислить полный хэш транзакции
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_52"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=calculateFullHash&amp;
+     unsignedTransactionBytes=UNTXBYTES&amp;
+     signatureHash=SIGHASH
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>UNTXBYTES неподписанные байты, содержавшиеся в транзакции 
+</li>
+<li>SIGHASH sha256 хэш подписи транзакции. Применяется для операций условного депонирования
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_40"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;fullHash&quot;: &quot;FULLHASH&quot; 
+}
+</pre>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_50"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=calculateFullHash&amp;
+     unsignedTransactionBytes=01016e23d700a005668683e673274c67...&amp;
+     signatureHash=07afbcfb72b4fa91d8e22f8f47950404270edc1d250d2c6edad7a58679fbe1cf
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{ 
+     &quot;fullHash&quot;: &quot;cc98e57a065610d17c6ba6a6406e4930b9a740bf1737847ab2e96e3733233984&quot; 
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_Account_Transaction_IDs_2"><b>Get Account Transaction IDs</b></span></h3>
+<p>Позволяет получать список идентификаторов транзакций, связанных с указанным аккаунтом
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_53"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=getAccountTransactionIds&amp;
+     account=ACCOUNT&amp;
+     timestamp=TIME
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>ACCOUNT - номер аккаунта по которому вы запрашиваете информацию 
+</li>
+<li>TIME - время в секундах, с момента генерации генезисного блока
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_41"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;transactionIds&quot;:
+          [ARRAY_OF_IDs]
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li> ARRAY_OF_IDs - список (массив) идентификаторов транзакций, связанных с указанным аккаунтом
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_51"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getAccountTransactionIds&amp;
+     account=6331110009135084386&amp;
+     timestamp=0</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;transactionIds&quot;:
+          [
+               &quot;17484500871708980634&quot;
+          ]
+}
+</pre>
+<h3><span class="mw-headline" id="Get_Unconfirmed_Account_Transaction_IDs"><b>Get Unconfirmed Account Transaction IDs</b></span></h3>
+<p>Получить список идентификаторов неподтвержденных транзакций связанных с заданным LibreMoney аккаунтом
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_54"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=getUnconfirmedTransactionIds&amp;
+     account=ACCOUNT
+</pre>
+<p>Где:
+</p>
+<ul>
+<li> ACCOUNT номер аккаунта, список идентификаторов неподтвержденных транзакций которого, вы хотите получить
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_42"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;unconfirmedTransactionIds&quot;:
+          [ARRAY_OF_IDs]
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li> ARRAY_OF_IDs массив идентификаторов неподтвержденных транзакций, относящихся к заданному аккаунту
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_52"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getUnconfirmedTransactionIds&amp;
+     account=6331110009135084386
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;unconfirmedTransactionIds&quot;:
+          [
+               &quot;17484500871708980634&quot;
+          ]
+}
+</pre>
+<p><small><i>Проверено 18/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_Transaction"><b>Get Transaction</b></span></h3>
+<p>Возвращает данные заданной транзакции.  Может задаваться  <b>любым</b> параметром:  ID транзакции, hash, или fullhash транзакции.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_55"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=getTransaction&amp;
+     transaction=TRANSID&amp;
+     hash=HASH&amp;
+     fullHash=FULLHASH
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>TRANSID ID транзакции LibreMoney
+</li>
+<li>HASH hash транзакции
+</li>
+<li>FULLHASH fullhash транзакции
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_43"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;sender&quot;:          &quot;SENDERACCOUNT&quot;,
+     &quot;senderRS&quot;:        &quot;SENDERACCOUNTRS&quot;,
+     &quot;fee&quot;:          &quot;FEE&quot;,
+     &quot;amount&quot;:       &quot;AMOUNT&quot;,
+     &quot;timestamp&quot;:       TIME,
+     &quot;referencedTransaction&quot;:       REFTX,
+     &quot;confirmations&quot;:   CONFIRMS,
+     &quot;subtype&quot;:         SUBTYPE,
+     &quot;block&quot;:           &quot;BLOCKID&quot;,
+     &quot;senderPublicKey&quot;: &quot;PUBKEY&quot;,
+     &quot;type&quot;:            TYPE,
+     &quot;deadline&quot;:        DEADLINE,
+     &quot;signature&quot;:       &quot;SIGNATURE&quot;,
+     &quot;recipient&quot;:       &quot;RECIPACCOUNT&quot;,
+     &quot;recipientRS&quot;:     &quot;RECIPACCOUNTRS&quot;,
+     &quot;fullHash&quot;:        &quot;FULLHASH&quot;, 
+     &quot;signatureHash&quot;:   &quot;SIGHASH&quot;, 
+     &quot;hash&quot;:            &quot;HASH&quot;, 
+     &quot;transaction&quot;:     &quot;TRANSID&quot;, 
+     &quot;attachment&quot;:
+     {
+          ATTACHMENT
+     }
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>SENDERACCOUNT номер аккаунта отправителя
+</li>
+<li>SENDERACCOUNTRS адрес отправителя в кодировке Reed-Solomon
+</li>
+<li>FEE комиссия (в MilliLm) за данную транзакцию
+</li>
+<li>AMOUNT количество MilliLm в данной транзакции
+</li>
+<li>TIME время транзакции, измеряется в количестве секунд от времени создания генезисного блока
+</li>
+<li>REFTX Идентификатор (ID)предыдущей транзакции на которую ссылается данная транзакция. Должно быть "0" iесли отсутствует транзакция на которую ссылается данная.
+</li>
+<li>CONFIRMS количество подтверждений транзакции
+</li>
+<li>TYPE тип транзакции:
+<ul>
+<li>0 обыкновенная транзакция
+</li>
+<li>1 альяс или произвольное сообщение в составе транзакции
+</li>
+<li>2 если это транзакция биржи активов
+</li>
+</ul>
+</li>
+<li>SUBTYPE субтип транзакции:
+<ul>
+<li>Для альясов/произвольных сообщений:
+<ul>
+<li>0 транзакция произвольного сообщения
+</li>
+<li>1 транзакция альяса
+</li>
+</ul>
+</li>
+<li>Для биржи активов:
+<ul>
+<li>0 выпуск актива
+</li>
+<li> 1 трансфер актива
+</li>
+<li> 2 запрос на размещение заказа на покупку 
+</li>
+<li> 3 запрос на размещение заказа на продажу
+</li>
+<li> 4 отмена ордера на покупку
+</li>
+<li> 5 отмена ордера на продажу
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li> BLOCKID ID идентификатор блока содержащий данную транзакцию
+</li>
+<li> ATTACHMENT суб-бъект, представляющий любые дополнительные данные, необходимые для транзакции. Будет присутствовать только если применимо к транзакции.
+</li>
+<li> PUBKEY публичный ключ отправляющего аккаунта для транзакции
+</li>
+<li> DEADLINE дедлайн транзакции, указывается в минутах
+</li>
+<li> SIGNATURE цифровая подпись транзакции transaction
+</li>
+<li> SIGHASH хэш sha256 подписи транзакции. Используется для условного операций депонирования. 
+</li>
+<li> RECIPACCOUNT номер аккаунта получателя
+</li>
+<li> RECIPACCOUNTRS адрес получателя в кодировке Reed-Solomon
+</li>
+</ul>
+<p><b>Внимание:</b> Данные о неподтвержденной транзакции не содержат параметров "block" и/или "confirmations".  Данные double-spending транзакций не возвращаются.
+</p>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_53"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getTransaction&amp;
+     transaction=16244659048134841060
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;sender&quot;:       &quot;14336428216306750617&quot;,
+     &quot;senderRS&quot;:     &quot;LMA-6DWM-GFYD-A7PS-72P3P&quot;,
+     &quot;fee&quot;:       &quot;100000000&quot;,
+     &quot;amount&quot;:       &quot;0&quot;,
+     &quot;timestamp&quot;:       7376798,
+     &quot;referencedTransaction&quot;:       &quot;0&quot;,
+     &quot;confirmations&quot;:       6,
+     &quot;subtype&quot;:       1,
+     &quot;block&quot;:       &quot;16385359704305994802&quot;,
+     &quot;blockTimestamp&quot;:       7376860,
+     &quot;attachment&quot;:
+     {
+          &quot;alias&quot;:&quot;LmApi&quot;,
+          &quot;uri&quot;:&quot;http:\/\/libremoney.org/&quot;
+     },
+     &quot;senderPublicKey&quot;:       &quot;64f103fbf0cc41045b1544cda6624eecfb8212b021fba22029a461c4b40c5d79&quot;,
+     &quot;type&quot;:       1,
+     &quot;deadline&quot;:       1,
+     &quot;signature&quot;:       &quot;0cdf64cb06ea21396180a6f201b6a...&quot;,
+     &quot;recipient&quot;:       &quot;1739068987193023818&quot;,
+     &quot;recipientRS&quot;:     &quot;LMA-BK2J-ZMY4-93UY-8EM9V&quot;,
+     &quot;fullHash&quot;: &quot;a3c47c4a2e60c2907efc9c4b9310066cabdf3e2137e67814aa57cb960ad2dfe1&quot;, 
+     &quot;signatureHash&quot;: &quot;95cc276d1608dc0c14942a5efc82ccc701a56e873746ef1bfd37995c37ef5991&quot;, 
+     &quot;hash&quot;: &quot;15a86f71e1ac267dce35791cefafb71460f458920784ea0d10894844f05894b0&quot;, 
+     &quot;transaction&quot;: &quot;10431005438877942947&quot;
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Parse_Transaction"><b>Parse Transaction</b></span></h3>
+<p>Получает данные транзакции
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_56"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=parseTransaction&amp;
+     transactionBytes=TRANSBYTES
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>TRANSBYTES байты LibreMoney транзакции
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_44"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;sender&quot;:          &quot;SENDERACCOUNT&quot;,
+     &quot;senderRS&quot;:        &quot;SENDERACCOUNTRS&quot;,
+     &quot;fee&quot;:          &quot;FEE&quot;,
+     &quot;amount&quot;:       &quot;AMOUNT&quot;,
+     &quot;timestamp&quot;:       TIME,
+     &quot;referencedTransaction&quot;:       REFTX,
+     &quot;confirmations&quot;:   CONFIRMS,
+     &quot;subtype&quot;:         SUBTYPE,
+     &quot;block&quot;:           &quot;BLOCKID&quot;,
+     &quot;senderPublicKey&quot;: &quot;PUBKEY&quot;,
+     &quot;type&quot;:            TYPE,
+     &quot;deadline&quot;:        DEADLINE,
+     &quot;signature&quot;:       &quot;SIGNATURE&quot;,
+     &quot;recipient&quot;:       &quot;RECIPACCOUNT&quot;,
+     &quot;recipientRS&quot;:     &quot;RECIPACCOUNTRS&quot;,
+     &quot;fullHash&quot;:        &quot;FULLHASH&quot;, 
+     &quot;signatureHash&quot;:   &quot;SIGHASH&quot;, 
+     &quot;hash&quot;:            &quot;HASH&quot;, 
+     &quot;transaction&quot;:     &quot;TRANSID&quot;, 
+     &quot;attachment&quot;:
+     {
+          ATTACHMENT
+     }
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>SENDERACCOUNT номер аккаунта отправителя
+</li>
+<li>SENDERACCOUNTRS адрес отправителя в кодировке Reed-Solomon
+</li>
+<li>FEE комиссия (в MilliLm) за данную транзакцию
+</li>
+<li>AMOUNT количество MilliLm в данной транзакции
+</li>
+<li>TIME время транзакции, измеряется в количестве секунд от времени создания генезисного блока
+</li>
+<li>REFTX Идентификатор (ID)предыдущей транзакции на которую ссылается данная транзакция. Должно быть "0" iесли отсутствует транзакция на которую ссылается данная.
+</li>
+<li>CONFIRMS количество подтверждений транзакции
+</li>
+<li>TYPE тип транзакции:
+<ul>
+<li>0 обыкновенная транзакция
+</li>
+<li>1 альяс или произвольное сообщение в составе транзакции
+</li>
+<li>2 если это транзакция биржи активов
+</li>
+</ul>
+</li>
+<li>SUBTYPE субтип транзакции:
+<ul>
+<li>Для альясов/произвольных сообщений:
+<ul>
+<li>0 транзакция произвольного сообщения
+</li>
+<li>1 транзакция альяса
+</li>
+</ul>
+</li>
+<li>Для биржи активов:
+<ul>
+<li>0 выпуск актива
+</li>
+<li>1 трансфер актива
+</li>
+<li>2 запрос на размещение заказа на покупку
+</li>
+<li>3 запрос на размещение заказа на продажу
+</li>
+<li>4 отмена ордера на покупку
+</li>
+<li>5 отмена ордера на продажу
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>BLOCKID ID идентификатор блока содержащий данную транзакцию
+</li>
+<li>ATTACHMENT суб-бъект, представляющий любые дополнительные данные, необходимые для транзакции. Будет присутствовать только если применимо к транзакции.
+</li>
+<li>PUBKEY публичный ключ отправляющего аккаунта для транзакции
+</li>
+<li>DEADLINE дедлайн транзакции, указывается в минутах
+</li>
+<li>SIGNATURE цифровая подпись транзакции transaction
+</li>
+<li>SIGHASH хэш sha256 подписи транзакции. Используется для условного операций депонирования.
+</li>
+<li>RECIPACCOUNT номер аккаунта получателя
+</li>
+<li>RECIPACCOUNTRS адрес получателя в кодировке Reed-Solomon
+</li>
+</ul>
+<p><b>Внимание</b>: Данные о неподтвержденной транзакции не содержат параметров "block" и/или "confirmations". Данные double-spending транзакций не возвращаются.
+</p>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_54"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=parseTransaction&amp;
+     transactionBytes=000022e22800e8036653833f4272604d5d3ef39...
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;sender&quot;:       &quot;14336428216306750617&quot;,
+     &quot;senderRS&quot;:     &quot;LMA-6DWM-GFYD-A7PS-72P3P&quot;,
+     &quot;fee&quot;:       &quot;100000000&quot;,
+     &quot;amount&quot;:       &quot;0&quot;,
+     &quot;timestamp&quot;:       7376798,
+     &quot;referencedTransaction&quot;:       &quot;0&quot;,
+     &quot;confirmations&quot;:       6,
+     &quot;subtype&quot;:       1,
+     &quot;block&quot;:       &quot;16385359704305994802&quot;,
+     &quot;blockTimestamp&quot;:       7376860,
+     &quot;senderPublicKey&quot;:       &quot;64f103fbf0cc41045b1544cda6624eecfb8212b021fba22029a461c4b40c5d79&quot;,
+     &quot;type&quot;:       1,
+     &quot;deadline&quot;:       1,
+     &quot;signature&quot;:       &quot;0cdf64cb06ea21396180a6f201b6a...&quot;,
+     &quot;recipient&quot;:       &quot;1739068987193023818&quot;,
+     &quot;recipientRS&quot;:     &quot;LMA-BK2J-ZMY4-93UY-8EM9V&quot;,
+     &quot;fullHash&quot;: &quot;a3c47c4a2e60c2907efc9c4b9310066cabdf3e2137e67814aa57cb960ad2dfe1&quot;, 
+     &quot;signatureHash&quot;: &quot;95cc276d1608dc0c14942a5efc82ccc701a56e873746ef1bfd37995c37ef5991&quot;, 
+     &quot;hash&quot;: &quot;15a86f71e1ac267dce35791cefafb71460f458920784ea0d10894844f05894b0&quot;, 
+     &quot;transaction&quot;: &quot;10431005438877942947&quot;
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Get_Transaction_Bytes"><b>Get Transaction Bytes</b></span></h3>
+<p>Возвращает байт-код транзакции.
+</p>
+<h3><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_57"><b>Запрос</b></span></h3>
+<pre>http://localhost:1400/api?
+     requestType=getTransactionBytes&amp;
+     transaction=TXID</pre>
+<p>Где: 
+</p>
+<ul>
+<li> TXID - идентификатор транзакции (ID)
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_45"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;confirmations&quot;:            CONFS,
+     &quot;transactionBytes&quot;:         &quot;BYTECODE&quot;,
+     &quot;unsignedTransactionBytes&quot;: &quot;UNBYTECODE&quot;
+}
+</pre>
+<p>Где: 
+</p>
+<ul>
+<li> CONFS количество подтверждений транзакции
+</li>
+<li> BYTECODE запрашиваемый байт-код транзакции
+</li>
+<li> BYTECODE неподписанные байты, включенные в транзакцию
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_55"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=getTransactionBytes&amp;
+     transaction=17484500871708980634
+</pre>
+<p>Ответ:
+</p>
+<pre>{
+     &quot;confirmations&quot;:       4462,
+     &quot;transactionBytes&quot;:         &quot;000022e22800e8036653833f4272604d5...&quot;,
+     &quot;unsignedTransactionBytes&quot;: &quot;000022e22800e8036653833f42...&quot; 
+}
+</pre>
+<p><small><i>Проверено 18/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Send_Lm"><b>Send Lm</b></span></h3>
+<p>Переслать указанное количество MilliLm на указанный аккаунт.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_58"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=sendMoney&amp;
+     secretPhrase=SECRET&amp;
+     recipient=RECIPACCOUNT&amp; 
+     amount=AMOUNT&amp; 
+     fee=FEE&amp; 
+     deadline=DEADLINE&amp; 
+     referencedTransaction=REFTRANSACTION&amp;
+     publicKey=PUBKEY
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>SECRET - секретная фраза/пароль для аккаунта с которого будут отправлены средства
+</li>
+<li>RECIPACCOUNT - аккаунт получателя
+</li>
+<li>AMOUNT - Количество MilliLm передаваемых в данной транзакции
+</li>
+<li>FEE - комиссия (в MilliLm) для этой транзакции
+</li>
+<li>DEADLINE - deadline для транзакции, в минутах
+</li>
+<li>REFTRANSACTION - опционально: ссылка на идентификатор (ID) предыдущей транзакции (основная транзакция не подтвердится, пока не подтвердилась предыдущая)
+</li>
+<li>PUBKEY 64-битный публичный ключ ассоциированный с аккаунтом и дополняет поле SECRET.
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_46"><b>Ответ</b></span></h4>
+<pre>
+{ 
+     &quot;transaction&quot;:        &quot;TRANSACTIONID&quot; 
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>TRANSACTIONID - идентификатор только что созданной транзакции.
+</li>
+</ul>
+<p>'<i>Внимание!</i> "deadline" указывается в минутах. "referencedTransaction" не обязательный параметр, может не использоваться.
+</p>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_56"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=sendMoney&amp;
+     secretPhrase=IWontTellYou&amp;
+     recipient=398532577100249608&amp;
+     amount=1500&amp;
+     fee=5&amp;
+     deadline=900&amp;
+     referencedTransaction=13689168149259791567
+</pre>
+<p>Результат:
+</p>
+<pre>
+{ 
+     &quot;transaction&quot;:        &quot;16244659048134841060&quot; 
+}
+</pre>
+<p><small><i>Проверено 18/05/14</i></small>
+</p><p><br />
+</p>
+<h3><span class="mw-headline" id="Sign_Transation"><b>Sign Transation</b></span></h3>
+<p>Рассчитать полный хэш (full hash), хэш подписи (signature hash), и транзакцию из неподписанной транзакции
+</p>
+<h4><span class="mw-headline" id="Request_4"><b>Request</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=signTransaction&amp;
+     unsignedTransactionBytes=UNTXBYTES&amp;
+     secretPhrase=SECRET
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>UNTXBYTES неподписанные байты в транзакции 
+</li>
+<li>SECRET секретная фраза аккаунта
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_47"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;fullHash&quot;:                 &quot;FULLHASH&quot;, 
+     &quot;signatureHash&quot;:            &quot;SIGHASH&quot;, 
+     &quot;transactionBytes&quot;:         &quot;TXBYTES&quot;, 
+     &quot;transaction&quot;:              &quot;TX&quot;, 
+     &quot;verify&quot;:                   &quot;VERIFY&quot;
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>FULLHASH полный хэш транзакции
+</li>
+<li>SIGHASH sha256 хэш подписи транзакции. Используется для транзакций условного депонирования
+</li>
+<li>TXBYTES байткод транзакции
+</li>
+<li>TX ID транзакции
+</li>
+<li>VERIFY если верифицировано (true/false)
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_57"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=signTransaction&amp;
+     unsignedTransactionBytes=01016e23d700a005668683e673274c67...&amp;
+     secretPhrase=0123456789
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{ 
+     &quot;fullHash&quot;:         &quot;d56ade2c322083d76ebcdb9f9ef18d7d52c6d105f67be040cc423c7a41a47aea&quot;, 
+     &quot;signatureHash&quot;:    &quot;458514e72f4272c789f99201c27cff611460de10fe484b474166c1199c23e754&quot;, 
+     &quot;transactionBytes&quot;: &quot;0100471ddb00a005668683e673274c67180240...&quot;, 
+     &quot;transaction&quot;:      &quot;15529291339976829653&quot;, 
+     &quot;verify&quot;:           true 
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+
+
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru" dir="ltr" class="client-nojs">
+<head>
+<link href='style.css' rel='stylesheet' type='text/css'/>
+<meta charset="UTF-8" />
+<title>LibreMoney API</title>
+<style>a:lang(ar),a:lang(ckb),a:lang(kk-arab),a:lang(mzn),a:lang(ps),a:lang(ur){text-decoration:none}</style>
+<body class="mediawiki ltr sitedir-ltr ns-0 ns-subject page-Nxt_API_ru skin-vector action-view vector-animateLayout">
+
+<h2>LibreMoney</h2>
+<h3>2. Основная часть</h3>
+<h4>2.8. API (RestAPI)</h4>
+
+
+<h2><span class="mw-headline" id=".22.22.D0.9A.D0.BE.D0.B4.D1.8B_.D0.BE.D1.88.D0.B8.D0.B1.D0.BE.D0.BA.22.22">""Коды ошибок""</span></h2>
+<ul>
+<li>Код ошибки: 1 - Incorrect request. Неверный запрос. Скорее всего вы допустили ошибку при написании/копировании запроса. 
+</li>
+</ul>
+<p>Внимательно смотрите запрос к серверу <a rel="nofollow" class="external free" href="http://localhost:1400/api?requestType=здесь_должна_быть_введена_корректная_функция">http://localhost:1400/api?requestType=здесь_должна_быть_введена_корректная_функция</a> системы&amp;...
+</p>
+<ul>
+<li>Код ошибки: 2 - Blockchain not up to date. Blockchain не обновлен, т.е. находится в неактуальном состоянии.
+</li>
+</ul>
+<ul>
+<li>Код ошибки: 3 - Parameter not specified. Параметр не определен. Скорее всего вы указали в запросе параметр, которого не должно быть (лишний, некорректный)
+</li>
+</ul>
+<ul>
+<li>Код ошибки: 4 - Incorrect parameter. Некорректный параметр. Т.е. вы ввели неправильные данные, например вместо числа - цифру. Будьте внимательны при вводе данных!
+</li>
+</ul>
+<ul>
+<li>Код ошибки: 5 - Unknown object (block, transaction, etc.) Неизвестный объект (блок, транзакция...). В случае если это аккаунт, это может говорить также и о том, что данный аккаунт не активен (т.е. с ним не производилось никаких операций по перемещению средств) 
+</li>
+</ul>
+<ul>
+<li>Код ошибки: 6 - Not enough funds. Недостаточно средств. Скорее всего вы указали в операции больше средств чем у вас есть, или что-то не учли (например комиссию)
+</li>
+</ul>
+
+
+</body>
+</html>

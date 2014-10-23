@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru" dir="ltr" class="client-nojs">
+<head>
+<link href='style.css' rel='stylesheet' type='text/css'/>
+<meta charset="UTF-8" />
+<title>LibreMoney API</title>
+<style>a:lang(ar),a:lang(ckb),a:lang(kk-arab),a:lang(mzn),a:lang(ps),a:lang(ur){text-decoration:none}</style>
+<body class="mediawiki ltr sitedir-ltr ns-0 ns-subject page-Nxt_API_ru skin-vector action-view vector-animateLayout">
+
+<h2>LibreMoney</h2>
+<h3>2. Основная часть</h3>
+<h4>2.8. API (RestAPI)</h4>
+
+
+<h2><span class="mw-headline" id=".D0.9E.D0.BF.D0.B5.D1.80.D0.B0.D1.86.D0.B8.D0.B8_.D1.81_.D0.BA.D0.BB.D0.B5.D0.B9.D0.BC.D0.B0.D0.BC.D0.B8_.28hallmarks.29"><b>Операции с клеймами (hallmarks)</b></span></h2>
+<h3><span class="mw-headline" id="Decode_Hallmark"><b>Decode Hallmark</b></span></h3>
+<p>Декодирует клеймо узла.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_47"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=decodeHallmark&amp;
+     hallmark=HEXSTRING
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>HEXSTRING — значение клейма
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_35"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;valid&quot;:        VALID,
+     &quot;weight&quot;:       WEIGHT,
+     &quot;host&quot;:         &quot;HOSTIP&quot;,
+     &quot;account&quot;:      &quot;ACCOUNT&quot;,
+     &quot;accountRS&quot;:    &quot;ACCOUNTRS&quot;,
+     &quot;date&quot;:         &quot;DATE&quot;
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>VALID — либо true (истина), либо false (ложь)
+</li>
+<li>WEIGHT — вес, присвоенный клейму
+</li>
+<li>HOSTIP — IP-адрес или имя домена, ассоциированные с клеймом
+</li>
+<li>ACCOUNT — номер аккаунта, ассоциированный с клеймом
+</li>
+<li>ACCOUNT номер аккаунта ассоциированный с заданным клеймом
+</li>
+<li>ACCOUNTRS адрес аккаунта в кодировке Reed-Solomon
+</li>
+<li>DATE — дата создания клейма, в формате yyyy-mm-dd
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_45"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://127.0.0.1:1400/api?
+     requestType=decodeHallmark&amp;
+     hallmark=d67f03a47cd91fc...8b9e30f371a9fcc8f
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;valid&quot;:      true,
+     &quot;weight&quot;:     1000,
+     &quot;host&quot;:       &quot;162.23.47.189&quot;,
+     &quot;account&quot;:    &quot;LMA-5EGB-HKFP-NQUT-DKYFH&quot;,
+     &quot;accountRS&quot;:  &quot;ACCOUNTRS&quot;,
+     &quot;date&quot;:       &quot;2013-12-09&quot;
+}
+</pre>
+<p><small><i>Проверено 15/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Generate_Hallmark"><b>Generate Hallmark</b></span></h3>
+<p>Генерирует клеймо узла.
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_48"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=markHost&amp;
+     secretPhrase=MY_SECRET&amp;
+     host=MY_HOST&amp;
+     weight=WEIGHT&amp;
+     date=CURRENT_DATE
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>MY_SECRET — секретная фраза аккаунта, для которого на ноде создается клеймо. Должна быть URL-encoded.
+</li>
+<li>MY_HOST — имя хоста для узла, которую вы хотите "заклеймить"
+</li>
+<li>WEIGHT — вес, который вы хотели бы назначить ноде. Если на одном и том же аккаунте "заклеймены" более, чем одна нода, этот вес будет определен как (этот_вес/сумма_всех_весов)
+</li>
+<li>CURRENT_DATE — сегодняшняя дата, в формате yyyy-mm-dd
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_36"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;hallmark&quot;:       &quot;HEXSTRING&quot;
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>HEXSTRING — строка с закодированным клеймом (1856 байт)
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_46"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=markHost&amp;
+     secretPhrase=MySuperSecretPasswordThatIsNotEasy&amp;
+     host=node23.nodesrus.com&amp;
+     weight=100&amp;
+     date=2014-01-01
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;hallmark&quot;:       &quot;d67f03a47cd91fc1...fd49f66b462daa1f14ae8&quot;
+}
+</pre>
+<p><small><i>Проверено 18/05/14</i></small>
+</p>
+
+
+</body>
+</html>

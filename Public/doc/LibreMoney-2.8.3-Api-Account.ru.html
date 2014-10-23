@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="ru" dir="ltr" class="client-nojs">
+<head>
+<link href='style.css' rel='stylesheet' type='text/css'/>
+<meta charset="UTF-8" />
+<title>LibreMoney API</title>
+<style>a:lang(ar),a:lang(ckb),a:lang(kk-arab),a:lang(mzn),a:lang(ps),a:lang(ur){text-decoration:none}</style>
+<body class="mediawiki ltr sitedir-ltr ns-0 ns-subject page-Nxt_API_ru skin-vector action-view vector-animateLayout">
+
+<h2>LibreMoney</h2>
+<h3>2. Основная часть</h3>
+<h4>2.8. API (RestAPI)</h4>
+
+
+<h2><span class="mw-headline" id=".D0.9E.D0.BF.D0.B5.D1.80.D0.B0.D1.86.D0.B8.D0.B8_.D1.81.D0.BE_.D1.81.D1.87.D0.B5.D1.82.D0.BE.D0.BC"><b>Операции со счетом</b></span></h2>
+
+
+<h3><span class="mw-headline" id="Get_Account"><b>Get Account</b></span></h3>
+
+<p>Возвращает информацию о аккаунте, ассоциированным с предоставленным номером аккаунта.</p>
+
+
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81"><b>Запрос</b></span></h4>
+
+<pre>http://localhost:1400/api?
+     requestType=getAccount&amp;
+     account=ACCOUNTNUM
+</pre>
+
+<p>Where:</p>
+
+<ul>
+<li>ACCOUNTNUM Это ID аккаунта, по которому вы запрашиваете информацию.
+</li>
+</ul>
+
+
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82"><b>Ответ</b></span></h4>
+
+<pre>
+{
+    &quot;publicKey&quot;: &quot;PUBKEY&quot;,
+    &quot;assetBalances&quot;: [
+        {
+            [ARRAY_OF_ASSETs]
+        }
+    ],
+    &quot;balance&quot;: &quot;BALANCE&quot;,
+    &quot;accountRS&quot;: &quot;ACCOUNTRS&quot;,
+    &quot;unconfirmedAssetBalances&quot;: [
+        {
+            [ARRAY_OF_UNCONFIRMED_ASSETs]
+        }
+    ],
+    &quot;account&quot;: &quot;ACCOUNT&quot;,
+    &quot;effectiveBalance&quot;: EFFBALANCE,
+    &quot;unconfirmedBalance&quot;: &quot;UNCONFBALANCE&quot;,
+    &quot;forgedBalance&quot;: &quot;FORGEDBAL&quot;
+}
+</pre>
+
+<p>Where:</p>
+
+<ul>
+<li>PUBKEY 64-битный публичный ключ ассоциированный с аккаунтом.
+</li>
+<li>ACCOUNTRS адрес аккаунта в формате Reed-Solomon.
+</li>
+<li>BALANCE: количество MilliLm которым вы владеете независимо от числа подтвержденных транзакций, связанные с этим аккаунтом
+</li>
+<li>ACCOUNT учетная запись, создавшая актив
+</li>
+<li>EFFBALANCE: количество MilliLm которым вы владеете и которое подтверждено более чем 1440 раз. Это эффективный баланс , который может использоваться для форжинга.
+</li>
+<li>UNCONFBALANCE: баланс (в MilliLm) за вычетом всех неподтвержденных исходящих транзакций. Также не включаются неподтвержденные входящие транзакции и double-spending. Пользователь видит неподтвержденный баланс в клиенте.
+</li>
+<li>FORGEDBAL баланс который используется для форжинга, в MilliLm
+</li>
+</ul>
+
+
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80"><b>Пример</b></span></h4>
+
+<p>Запрос:</p>
+
+<pre>http://localhost:1400/api?
+     requestType=getAccount&amp;
+     account=7898870630272254992
+</pre>
+
+<p>Ответ:</p>
+
+<pre>
+{
+    &quot;publicKey&quot;: &quot;ce0fc0f2fed0645f7018e251493a8af1e1ecfb444a4603902e71bfd2a4b41558&quot;,
+    &quot;assetBalances&quot;: [
+        {
+            &quot;asset&quot;: &quot;1013693125509851736&quot;,
+            &quot;balanceQNT&quot;: &quot;48&quot;
+        }
+    ],
+    &quot;balance&quot;: &quot;1000700000000&quot;,
+    &quot;accountRS&quot;: &quot;LMA-BK2J-ZMY4-93UY-8EM9V&quot;,
+    &quot;unconfirmedAssetBalances&quot;: [
+        {
+            &quot;unconfirmedBalanceQNT&quot;: &quot;48&quot;,
+            &quot;asset&quot;: &quot;1013693125509851736&quot;
+        }
+    ],
+    &quot;account&quot;: &quot;7898870630272254992&quot;,
+    &quot;effectiveBalance&quot;: 9932,
+    &quot;unconfirmedBalance&quot;: &quot;1000700000000&quot;,
+    &quot;forgedBalance&quot;: &quot;0&quot;
+}
+</pre>
+
+<p><small><i>Verified 5/12/14</i></small></p>
+
+
+<h3><span class="mw-headline" id="Get_Account_ID"><b>Get Account ID</b></span></h3>
+
+<p>Возвращает номер счета, связанный с переданной парольной фразой.</p>
+
+
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_2"><b>Запрос</b></span></h4>
+
+<pre>http://localhost:1400/api?
+     requestType=getAccountId&amp;
+     secretPhrase=PASSPHRASE
+</pre>
+
+<p>Где:</p>
+
+<ul>
+<li>PASSPHRASE — парольная фраза того счета, ID которого вы хотите получить
+</li>
+</ul>
+
+
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_2"><b>Ответ</b></span></h4>
+
+<pre>
+{
+     &quot;accountId&quot;:       &quot;ACCOUNTNUM&quot;
+     &quot;accountRS&quot;:       &quot;ACCOUNTRS&quot;
+}
+</pre>
+
+<p>Where:</p>
+
+<ul>
+<li>ACCOUNTNUM ассоциированный с аккаунтом ID.
+</li>
+<li>ACCOUNTRS адрес аккаунта в кодировке Reed-Solomon. 
+</li>
+</ul>
+
+
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_2"><b>Пример</b></span></h4>
+
+<p>Запрос:</p>
+
+<pre>http://localhost:1400/api?
+     requestType=getAccountId&amp;
+     secretPhrase=mySuperSecretPassphraseThatYouCanNeverGuess
+</pre>
+
+<p>Ответ:</p>
+
+<pre>
+{
+     &quot;accountId&quot;:       &quot;4357314498768237104&quot;
+     &quot;accountRS&quot;:       &quot;LMA-UWKJ-GFEV-AGY4-5C4YS&quot;
+}
+</pre>
+
+<p><i>Внимание: Вы получите ERRORCODE:1, если вы делаете этот запрос не через метод POST</i><br />
+<small><i>Проверено 14/05/14</i></small>
+</p>
+
+
+<h3><span class="mw-headline" id="Get_Account_Block_IDs"><b>Get Account Block IDs</b></span></h3>
+
+<p>Возвращает ID всех блоков, созданных данным аккаунтом. Результаты отсортированы в хронологическом порядке.</p>
+
+
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_3"><b>Запрос</b></span></h4>
+
+<pre>http://localhost:1400/api?
+     requestType=getAccountBlockIds&amp;
+     account=ACCOUNT
+     timestamp=TIME
+</pre>
+
+<p>Где:</p>
+
+<ul>
+<li>ACCOUNT — номер счета, который вы хотите проверить
+</li>
+<li>TIME — значение в секундах начиная с создания генезис блока, определяющее время самой ранней генерации блока, который вы бы хотели получить. Установка параметра в 0 даст ID всех блоков, сгенерированных данным аккаунтом.
+</li>
+</ul>
+
+
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_3"><b>Ответ</b></span></h4>
+
+<pre>
+{
+     &quot;blockIds&quot;:
+          [ARRAY_OF_BLOCK_IDs]
+}
+</pre>
+
+<p><b>Примечание:</b> результаты отсортированы в хронологическом порядке (самый ранний блок отображается первым)</p>
+
+
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_3"><b>Пример</b></span></h4>
+
+<p>Запрос:</p>
+
+<pre>http://localhost:1400/api?
+     requestType=getAccountBlockIds&amp;
+     account=387977119245692429
+     timestamp=0
+</pre>
+
+<p>Ответ:</p>
+
+<pre>
+{
+     &quot;blockIds&quot;:
+          [
+               &quot;932115710792099523&quot;
+          ]
+}
+</pre>
+
+<p><small><i>Проверено 15/05/2014</i></small></p>
+
+
+<h3><span class="mw-headline" id="Get_Account_Public_Key"><b>Get Account Public Key</b></span></h3>
+
+<p>Возвращает публичный ключ, связанный с переданным номером счета.</p>
+
+
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_4"><b>Запрос</b></span></h4>
+
+<pre>http://localhost:1400/api?
+     requestType=getAccountPublicKey&amp;
+     account=ACCOUNTNUM
+</pre>
+
+<p>Где:</p>
+
+<ul>
+<li>ACCOUNTNUM — номер счета, который вы хотите проверить
+</li>
+</ul>
+
+
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_4"><b>Ответ</b></span></h4>
+
+<pre>
+{
+     &quot;publicKey&quot;:       &quot;PUBKEY&quot;
+}
+</pre>
+
+<p>Где:</p>
+
+<ul>
+<li>PUBKEY — 64-битный публичный ключ, связанный с данным счетом.
+</li>
+</ul>
+
+<p>Примечание:  если переданный номер счета не известен, вы получите ошибку с кодом 5. Если счет существует, но с него не посылались транзакции, вы получите пустое значение:  <code>{}</code></p>
+
+
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_4"><b>Пример</b></span></h4>
+
+<p>Запрос:</p>
+
+<pre>http://localhost:1400/api?
+     requestType=getAccountPublicKey&amp;
+     account=6483973064837388393
+</pre>
+
+<p>Ответ:</p>
+<pre>
+{
+     &quot;publicKey&quot;:       &quot;29592749cd26f5c1c4bf0225f8ab225f289449b4978495e6fec09d486ae2d217&quot;
+}
+</pre>
+
+<p><small><i>Проверено 14/05/14</i></small></p>
+
+
+<h3><span class="mw-headline" id="Get_Account_Transaction_IDs"><b>Get Account Transaction IDs</b></span></h3>
+
+<p>Возвращает ID транзакций, связанных с переданным номером счета. Параметр timestamp определяет насколько далеко в прошлое вам нужно заглянуть в вашем списке транзакций; нулевое значение позволит вам получить все транзакции данного счета, начиная с генезис блока.
+</p>
+
+
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_5"><b>Запрос</b></span></h4>
+
+<pre>http://localhost:1400/api?
+     requestType=getAccountTransactionIds&amp;
+     account=ACCOUNT&amp;
+     timestamp=TIME&amp;
+     type=TYPE&amp;
+     subtype=SUBTYPE
+</pre>
+
+<p>Где:</p>
+
+<ul>
+<li>ACCOUNT — номер счета, который вы хотите проверить
+</li>
+<li>TIME — значение в секундах начиная с создания генезис блока, определяющее время самой ранней транзакции, которую вы бы хотели получить. Установка параметра в 0 даст ID всех транзакций данного аккаунта.
+</li>
+<li>TYPE (Optional) тип транзакции которую вы запрашиваете
+</li>
+<li>SUBTYPE (Optional) тип суб-транзакции которую вы запрашиваете
+</li>
+</ul>
+
+
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_5"><b>Ответ</b></span></h4>
+
+<pre>
+{
+     &quot;transactionIds&quot;:
+          [ARRAY_OF_IDs]
+}
+</pre>
+
+<p>Где:</p>
+
+<ul>
+<li>ARRAY_OF_IDs — массив ID транзакций.
+</li>
+</ul>
+<p><b>Примечание:</b>  результаты отсортированы в хронологическом порядке (самая ранняя транзакция отображается первой)
+</p>
+
+
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_5"><b>Пример</b></span></h4>
+
+<p>Запрос:</p>
+
+<pre>http://localhost:1400/api?
+     requestType=getAccountTransactionIds&amp;
+     account=25940420118693217452&amp;
+     timestamp=0
+</pre>
+
+<p>Ответ:</p>
+
+<pre>
+{
+     &quot;transactionIds&quot;:
+          [
+               &quot;17484500871708980634&quot;,
+               &quot;51938275284739120529&quot;
+          ]
+}
+</pre>
+
+<p><small><i>Проверено 15/05/14</i></small></p>
+
+
+<h3><span class="mw-headline" id="Get_Balance"><b>Get Balance</b></span></h3>
+
+<p>Возвращает баланс аккаунта.</p>
+
+
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_6"><b>Запрос</b></span></h4>
+
+<pre>http://localhost:1400/api?
+     requestType=getBalance&amp;
+     account=ACCOUNT
+</pre>
+
+<p>Где:</p>
+
+<ul>
+<li>ACCOUNT — номер счета LibreMoney
+</li>
+</ul>
+
+
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_6"><b>Ответ</b></span></h4>
+
+<pre>
+{
+    &quot;guaranteedBalance&quot;: &quot;GUARANTEED_BALANCE&quot;,
+    &quot;balance&quot;: &quot;BALANCE&quot;,
+    &quot;effectiveBalance&quot;: EFFBALANCE,
+    &quot;unconfirmedBalance&quot;: &quot;UNCONFBALANCE&quot;,
+    &quot;forgedBalance&quot;: &quot;0&quot;
+}
+</pre>
+
+<p>Где:</p>
+
+<ul>
+<li>GUARANTEED_BALANCE общий баланс аккаунта соответствующего критериям. Результат выражается в MilliLm
+</li>
+<li>BALANCE количество MilliLm которым вы владеете отображается в MilliLm, независимо от числа подтвержденных транзакций связанных с этими имеющимся аккаунтом.
+</li>
+<li>EFFBALANCE количество которым вы владеете и которые имеют минимум 1440 подтверждений.  Этот баланс Это - баланс, который используется для форжинга. 
+</li>
+<li>UNCONFBALANCE баланс (в MilliLm) за вычетом всех неподтвержденных исходящих транзакций. Он также не включает не подтвержденные входящие транзакции и double-spending. Пользователь видит этот неподтвержденный балансA  в клиенте.
+</li>
+<li>FORGEDBAL баланс который используется аккаунтом для форжинга,выражается в MilliLm
+</li>
+</ul>
+
+
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_6"><b>Пример</b></span></h4>
+
+<p>Запрос:</p>
+
+<pre>http://localhost:1400/api?
+     requestType=getBalance&amp;
+     account=7898870630272254992
+</pre>
+
+<p>Ответ:</p>
+
+<pre>
+{
+    &quot;guaranteedBalance&quot;: &quot;0&quot;,
+    &quot;balance&quot;: &quot;1000700000000&quot;,
+    &quot;effectiveBalance&quot;: 9932,
+    &quot;unconfirmedBalance&quot;: &quot;1000700000000&quot;,
+    &quot;forgedBalance&quot;: &quot;0&quot;
+}
+</pre>
+
+<p><small><i>Проверено 14/05/14</i></small></p>
+
+
+<h3><span class="mw-headline" id="Get_Guaranteed_Balance"><b>Get Guaranteed Balance</b></span></h3>
+
+<p>Возвращает баланс счета, который подтвержден определенное число раз. Реализовано, начиная с версии 0.5.5</p>
+
+
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_7"><b>Запрос</b></span></h4>
+
+<pre>http://localhost:1400/api?
+     requestType=getGuaranteedBalance&amp;
+     account=ACCOUNT&amp;
+     numberOfConfirmations=CONFIRMATIONS
+</pre>
+
+<p>Где:</p>
+
+<ul>
+<li>ACCOUNT — номер LibreMoney аккаунта 
+</li>
+<li>CONFIRMATIONS — минимальное число подтверждений транзакции, позволяющее ей быть видимой при подсчете гарантированного баланса
+</li>
+</ul>
+
+
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_7"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;guaranteedBalance&quot;:       GUARANTEED_BALANCE
+}
+</pre>
+
+<p>Где:</p>
+
+<ul>
+<li>GUARANTEED_BALANCE — общий баланс счета, удовлетворяющий критериям CONFIRMATIONS. Выражается в MilliLm.
+</li>
+</ul>
+
+
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_7"><b>Пример</b></span></h4>
+
+<p>Запрос:</p>
+
+<pre>http://localhost:1400/api?
+     requestType=getGuaranteedBalance&amp;
+     account=3847997711292454692&amp;
+     numberOfConfirmations=15
+</pre>
+
+<p>Ответ:</p>
+
+<pre>
+{
+     &quot;guaranteedBalance&quot;:       1303400000000
+}
+</pre>
+
+<p><small><i>Проверено 14/05/14</i></small></p>
+
+
+<h3><span class="mw-headline" id="Lease_Balance"><b>Lease Balance</b></span></h3>
+
+<p>Передача вашего баланса в аренду другому аккаунту.</p>
+
+
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_8"><b>Запрос</b></span></h4>
+
+<pre>http://localhost:1400/api?
+     requestType=leaseBalance&amp;
+     period=PERIOD&amp;
+     recipient=REC&amp;
+     secretPhrase=SECRET&amp;
+     fee=FEE&amp;
+     deadline=DEADLINE&amp;
+     referencedTransaction=REFTXID&amp;
+     broadcast=BROAD
+</pre>
+
+<p>Где:</p>
+
+<ul>
+<li>PERIOD продолжительность аренды вашего баланса, продолжительность указывается в количестве блоков.
+</li>
+<li>REC аккаунт которому вы передаете в аренду свои средства
+</li>
+<li>SECRET секретная фраза аккаунта передающего в аренду свои средства
+</li>
+<li>FEE комиссия которую вы платите за транзакцию (в MilliLm)
+</li>
+<li>DEADLINE дедлайн транзакции до получения подтверждения, определяется в минутах
+</li>
+<li>REFTXID ID предыдущей транзакции на которую вы ссылаетесь. Это создает зависимые транзакции (цепочка транзакций), означая, что текущая транзакция не может быть подтверждена, пока транзакция на которую вы ссылаетесь, не подтверждена. (опционально)
+</li>
+<li>BROAD если вы хотите чтобы транзакция широковещательно передавалась или нет (опционально) 
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_8"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;fullHash&quot;:                 &quot;FULLHASH&quot;, 
+     &quot;signatureHash&quot;:            &quot;SIGHASH&quot;, 
+     &quot;transactionBytes&quot;:         &quot;TXBYTES&quot;, 
+     &quot;hash&quot;:                     &quot;HASH&quot;, 
+     &quot;transaction&quot;:              &quot;TX&quot;, 
+     &quot;broadcasted&quot;:              BROAD, 
+     &quot;unsignedTransactionBytes&quot;: &quot;UNTXBYTES&quot; 
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>FULLHASH полный хэш транзакции
+</li>
+<li>SIGHASH sha256 хэш подписи транзакции. Используется для транзакций условного депонирования
+</li>
+<li>TXBYTES байткод транзакции
+</li>
+<li>HASH хеш всех полей транзакции, за исключением подписи
+</li>
+<li>TX ID транзакции
+</li>
+<li>BROAD статус - транзакция была передана или нет
+</li>
+<li>UNTXBYTES байты транзакции с частью подписи, заменяемой нулями
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_8"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=leaseBalance&amp;
+     period=2880&amp;
+     recipient=1562462127635514638&amp;
+     secretPhrase=123&amp;
+     fee=100000000&amp;
+     deadline=1440
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;fullHash&quot;:                 &quot;e4d1f83e1cf26ee71d8566d00077510c4a641e04174e7ec3893d7e5aafc82e65&quot;, 
+     &quot;signatureHash&quot;:            &quot;48cab5351b4c08ac2816b5e13e9d238fa910085a0d07a16e1c7d7986222fc444&quot;, 
+     &quot;transactionBytes&quot;:         &quot;0400401adb00a005668683e673274c671802492d6f5...&quot;, 
+     &quot;hash&quot;:                     &quot;9b64d859cecdf63773d0696777c2783892616f3a793794544531e4fd7b8a66b2&quot;, 
+     &quot;transaction&quot;:              &quot;16676532673329025508&quot;, 
+     &quot;broadcasted&quot;:              true, 
+     &quot;unsignedTransactionBytes&quot;: &quot;0400401adb00a005668683e673274c671802492d6f54cdc...&quot; 
+}
+</pre>
+<p><small><i>Проверено 14/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Start_.2F_Stop_Forging"><b>Start / Stop Forging</b></span></h3>
+<p>Запуск или остановка форжинга аккаунтом, или проверка, чтобы увидеть, форжит ли учетная запись. Учетная запись форжит, когда ее секретная фраза (закрытый ключ) предоставлена серверу/узлу LibreMoney. 
+</p>
+<h4><span class="mw-headline" id=".D0.97.D0.B0.D0.BF.D1.80.D0.BE.D1.81_9"><b>Запрос</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=START_OR_STOP_OR_GET&amp;
+     secretPhrase=SECRET
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>START_OR_STOP startForging или stopForging
+</li>
+<li>SECRET секретная фраза (личный ключ) для аккаунта, форжинг на котором вы хотите начать или остановить
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_9"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;deadline&quot;:       DEADLINE
+}
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>DEADLINE оценочное число секунд до генерации аккаунтом нового блока
+</li>
+</ul>
+<p>Для "stopForging":
+</p>
+<pre>
+{
+     &quot;foundAndStopped&quot;:       TRUE_OR_FALSE
+}
+</pre>
+<p><br />
+</p>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_9"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=startForging&amp;
+     secretPhrase=MySuperSecretPasswordThatIsNotActuallyPostedHereOrIsEvenRealSoDoNotEvenTryIt
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{
+     &quot;deadline&quot;:       1036742
+}
+</pre>
+<p><small><i>Проверено 14/05/14</i></small>
+</p>
+<h3><span class="mw-headline" id="Set_Account_Information"><b>Set Account Information</b></span></h3>
+<p>Установка сведений об аккаунте
+</p>
+<h4><span class="mw-headline" id="Request"><b>Request</b></span></h4>
+<pre>http://localhost:1400/api?
+     requestType=setAccountInfo&amp;
+     secretPhrase=SECRET&amp;
+     name=NAME&amp;
+     description=DESCRIPT&amp;
+     publicKey=PUBKEY&amp;	
+     fee=FEE&amp;
+     deadline=DEADLINE&amp;
+     referencedTransactionFullHash=REFTXHASH&amp;
+     broadcast=BROAD
+</pre>
+<p>Где:
+</p>
+<ul>
+<li>SECRET секретная фраза (приватный ключ) аккаунта
+</li>
+<li>DEADLINE дедлайн для транзакции, задается в минутах
+</li>
+<li>FEE комиссия за транзакцию (в MilliLm)
+</li>
+<li>PUBKEY открытый ключ передающего счета для транзакции (опционально)
+</li>
+<li>NAME имя которое вы хотите установить для аккаунта(опционально)
+</li>
+<li>DESCIPT описание которое вы хотите дать для аккаунта(опционально)
+</li>
+<li>REFTXHASH ID транзакции, на которую ссылается эта транзакция(опционально)
+</li>
+<li>BROAD true или false если это должно быть передано широковещательно (опционально)
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9E.D1.82.D0.B2.D0.B5.D1.82_10"><b>Ответ</b></span></h4>
+<pre>
+{
+     &quot;fullHash&quot;:                 &quot;FULLHASH&quot;, 
+     &quot;signatureHash&quot;:            &quot;SIGHASH&quot;, 
+     &quot;transactionBytes&quot;:         &quot;TXBYTES&quot;, 
+     &quot;hash&quot;:                     &quot;HASH&quot;, 
+     &quot;transaction&quot;:              &quot;TX&quot;, 
+     &quot;broadcasted&quot;:              BROAD, 
+     &quot;unsignedTransactionBytes&quot;: &quot;UNTXBYTES&quot; 
+}
+</pre>
+<p>Where:
+</p>
+<ul>
+<li>FULLHASH полный хэш транзакции 
+</li>
+<li>SIGHASH sha256 хэш подписи транзакции. Используется для транзакций условного депонирования
+</li>
+<li>TXBYTES байткод транзакции 
+</li>
+<li>HASH хэш всех полей транзакции, за исключение подписи
+</li>
+<li>TX ID транзакции
+</li>
+<li>BROAD указывает была транзакция передана или нет
+</li>
+<li>UNTXBYTES байты транзакции c подписью, частично замененной нулями
+</li>
+</ul>
+<h4><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80_10"><b>Пример</b></span></h4>
+<p>Запрос:
+</p>
+<pre>http://localhost:1400/api?
+     requestType=setAccountInfo&amp;
+     secretPhrase=MySuperSecretPasswordThatIsNotActuallyPostedHereOrIsEvenRealSoDoNotEvenTryIt&amp;
+     fee=100000000&amp;
+     deadline=1440
+</pre>
+<p>Ответ:
+</p>
+<pre>
+{ 
+     &quot;fullHash&quot;:                 &quot;93e8bba270eed8693f62576e13b45b45a848dd475e510fdb1e4026712829b734&quot;, 
+     &quot;signatureHash&quot;:            &quot;5487681f5a828d379864cbbdba9b1f4f2c6f7035c8cf2f272dc323147aea5eac&quot;, 
+     &quot;transactionBytes&quot;:         &quot;0105c84ad700a005668683e673274c671802492d6f54cdc33d247aa426e7...&quot;, 
+     &quot;hash&quot;:                     &quot;6b6ec6ad2f06119493caca546b6561069cd5341b41884d5be068e0b1d9ce7748&quot;, 
+     &quot;transaction&quot;:              &quot;7627108136485906579&quot;, 
+     &quot;broadcasted&quot;:              true, 
+     &quot;unsignedTransactionBytes&quot;: &quot;0105c84ad700a005668683e673274c671802492d6f54cdc33d247aa4...&quot; 
+}
+</pre>
+<p><small>Проверено 14/05/14</small>
+</p>
+
+
+</body>
+</html>
